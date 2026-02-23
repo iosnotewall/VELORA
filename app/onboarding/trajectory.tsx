@@ -242,7 +242,7 @@ export default function TrajectoryScreen() {
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="Let's build my plan" onPress={() => router.push('/onboarding/goal' as any)} variant="white" />
+        <PrimaryButton title="Let's build my plan" onPress={() => router.push('/onboarding/reality' as any)} variant="white" />
       </Animated.View>
     </View>
   );

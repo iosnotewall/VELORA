@@ -30,7 +30,7 @@ export default function CommitmentScreen() {
 
   const handleContinue = useCallback(() => {
     updateState({ commitmentLevel: selected });
-    router.push('/onboarding/signature' as any);
+    router.push('/onboarding/notification' as any);
   }, [selected, updateState, router]);
 
   return (

@@ -102,7 +102,7 @@ export default function ImpactScreen() {
 
   const handleContinue = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push('/onboarding/trajectory' as any);
+    router.push('/onboarding/goal' as any);
   }, [router]);
 
   return (

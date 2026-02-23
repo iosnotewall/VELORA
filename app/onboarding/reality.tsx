@@ -118,7 +118,7 @@ export default function RealityScreen() {
   return (
     <OnboardingScreen
       step={5}
-      totalSteps={9}
+      totalSteps={7}
       ctaText="That's where I am"
       ctaEnabled={hasInteracted}
       onCta={() => {

@@ -74,7 +74,7 @@ export default function DayOneScreen() {
   return (
     <OnboardingScreen
       step={7}
-      totalSteps={9}
+      totalSteps={7}
       ctaText={hasLogged ? 'Continue' : "I've taken my supplements today"}
       onCta={hasLogged ? () => router.push('/onboarding/loading' as any) : handleLog}
     >

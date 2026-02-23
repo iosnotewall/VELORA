@@ -23,8 +23,8 @@ export default function ProductsScreen() {
 
   return (
     <OnboardingScreen
-      step={2}
-      totalSteps={9}
+      step={3}
+      totalSteps={7}
       ctaText="These are mine"
       ctaEnabled={selected.length > 0}
       onCta={() => {

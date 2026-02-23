@@ -54,7 +54,7 @@ export default function MirrorScreen() {
   return (
     <OnboardingScreen
       step={6}
-      totalSteps={9}
+      totalSteps={7}
       ctaText="Let's start"
       onCta={() => router.push('/onboarding/day-one' as any)}
     >
