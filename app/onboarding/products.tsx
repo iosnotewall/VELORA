@@ -1,7 +1,7 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useCallback, useMemo } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Check } from 'lucide-react-native';
+import { Check, Search } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
@@ -13,6 +13,7 @@ export default function ProductsScreen() {
   const router = useRouter();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string[]>([]);
+  const [query, setQuery] = useState('');
 
   const toggleProduct = useCallback((id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -20,6 +21,15 @@ export default function ProductsScreen() {
       prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]
     );
   }, []);
+
+  const filtered = useMemo(() =>
+    query.trim().length === 0
+      ? PRODUCTS
+      : PRODUCTS.filter(p =>
+          p.name.toLowerCase().includes(query.toLowerCase()) ||
+          p.tagline.toLowerCase().includes(query.toLowerCase())
+        ),
+  [query]);
 
   return (
     <OnboardingScreen
@@ -34,14 +44,35 @@ export default function ProductsScreen() {
     >
       <Text style={styles.headline}>Which supplements do you take?</Text>
 
+      <View style={styles.searchWrap}>
+        <Search size={16} color={Colors.mediumGray} strokeWidth={2} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search supplements…"
+          placeholderTextColor={Colors.mediumGray}
+          value={query}
+          onChangeText={setQuery}
+          autoCapitalize="none"
+          returnKeyType="search"
+          testID="product-search"
+        />
+        {query.length > 0 && (
+          <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <View style={styles.clearDot}>
+              <Text style={styles.clearX}>✕</Text>
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
+
       <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
-        {PRODUCTS.map((product, index) => {
+        {filtered.map((product, index) => {
           const isSelected = selected.includes(product.id);
           return (
             <TouchableOpacity
               key={product.id}
               onPress={() => toggleProduct(product.id)}
-              style={[styles.productRow, index < PRODUCTS.length - 1 && styles.productBorder]}
+              style={[styles.productRow, index < filtered.length - 1 && styles.productBorder]}
               activeOpacity={0.7}
               testID={`product-${product.id}`}
             >
@@ -56,12 +87,59 @@ export default function ProductsScreen() {
             </TouchableOpacity>
           );
         })}
+        {filtered.length === 0 && (
+          <View style={styles.emptyWrap}>
+            <Text style={styles.emptyText}>No supplements found</Text>
+          </View>
+        )}
       </ScrollView>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  searchWrap: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.softBlue,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 16,
+    gap: 10,
+  },
+  searchInput: {
+    flex: 1,
+    fontFamily: Fonts.body,
+    fontSize: 15,
+    color: Colors.navy,
+    paddingVertical: 0,
+  },
+  clearDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: Colors.border,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  clearX: {
+    fontSize: 9,
+    color: Colors.mediumGray,
+    fontFamily: Fonts.bodySemiBold,
+    lineHeight: 11,
+  },
+  emptyWrap: {
+    paddingVertical: 32,
+    alignItems: 'center' as const,
+  },
+  emptyText: {
+    fontFamily: Fonts.body,
+    fontSize: 15,
+    color: Colors.mediumGray,
+  },
   headline: {
     fontFamily: Fonts.heading,
     fontSize: 26,

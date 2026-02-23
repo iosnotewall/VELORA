@@ -84,7 +84,11 @@ export default function NameScreen() {
           </View>
 
           <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 16) }]}>
-            <PrimaryButton title="Continue" onPress={handleContinue} disabled={!name.trim()} />
+            <PrimaryButton
+              title={name.trim() ? `Let's find your goals, ${name.trim().split(' ')[0]} →` : 'Discover My Health Goals →'}
+              onPress={handleContinue}
+              disabled={!name.trim()}
+            />
           </View>
         </View>
       </TouchableWithoutFeedback>
