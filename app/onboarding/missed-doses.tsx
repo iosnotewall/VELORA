@@ -91,9 +91,6 @@ export default function MissedDosesScreen() {
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelActive]}>
                     {option.label}
                   </Text>
-                  <Text style={[styles.optionDesc, isSelected && styles.optionDescActive]}>
-                    {option.desc}
-                  </Text>
                 </View>
               </TouchableOpacity>
             </Animated.View>
