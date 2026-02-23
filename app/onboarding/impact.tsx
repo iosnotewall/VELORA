@@ -1,12 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ArrowRight } from 'lucide-react-native';
+import { TrendingDown, Clock, CalendarX } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
+import PrimaryButton from '@/components/PrimaryButton';
 
 export default function ImpactScreen() {
   const router = useRouter();
@@ -19,12 +20,14 @@ export default function ImpactScreen() {
   const weeksLost = Math.round(missedPerYear / 7);
   const monthsLost = Math.round(weeksLost / 4.3);
 
-  const line1Anim = useRef(new Animated.Value(0)).current;
-  const line2Anim = useRef(new Animated.Value(0)).current;
-  const line3Anim = useRef(new Animated.Value(0)).current;
-  const line4Anim = useRef(new Animated.Value(0)).current;
-  const ctaAnim = useRef(new Animated.Value(0)).current;
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const numberAnim = useRef(new Animated.Value(0)).current;
+  const labelAnim = useRef(new Animated.Value(0)).current;
   const dividerAnim = useRef(new Animated.Value(0)).current;
+  const card1Anim = useRef(new Animated.Value(0)).current;
+  const card2Anim = useRef(new Animated.Value(0)).current;
+  const ghostAnim = useRef(new Animated.Value(0)).current;
+  const btnAnim = useRef(new Animated.Value(0)).current;
 
   const [counterVal, setCounterVal] = useState(0);
   const counterAnim = useRef(new Animated.Value(0)).current;
@@ -36,20 +39,23 @@ export default function ImpactScreen() {
 
     Animated.sequence([
       Animated.delay(300),
-      Animated.timing(line1Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(150),
+      Animated.timing(headerAnim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(200),
       Animated.parallel([
         Animated.timing(counterAnim, { toValue: missedPerYear, duration: 1200, useNativeDriver: false }),
-        Animated.timing(line2Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+        Animated.timing(numberAnim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
       ]),
-      Animated.delay(400),
+      Animated.timing(labelAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(300),
       Animated.timing(dividerAnim, { toValue: 1, duration: 300, useNativeDriver: false }),
       Animated.delay(100),
-      Animated.timing(line3Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(card1Anim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(200),
+      Animated.timing(card2Anim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
       Animated.delay(400),
-      Animated.timing(line4Anim, { toValue: 1, duration: 450, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.delay(300),
-      Animated.timing(ctaAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(ghostAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.delay(200),
+      Animated.timing(btnAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web' }),
     ]).start();
 
     setTimeout(() => {
@@ -61,7 +67,7 @@ export default function ImpactScreen() {
 
   const fadeSlide = (anim: Animated.Value) => ({
     opacity: anim,
-    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] }) }],
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] }) }],
   });
 
   const handleContinue = () => {
@@ -69,54 +75,54 @@ export default function ImpactScreen() {
     router.push('/onboarding/shock' as any);
   };
 
-  const dividerWidth = dividerAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0%', '100%'],
-  });
-
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
       <View style={styles.content}>
-        <View style={styles.textBlock}>
-          <Animated.Text style={[styles.nameLine, fadeSlide(line1Anim)]}>
-            <Text style={styles.nameHighlight}>{userName || 'friend'}</Text>
-            <Text style={styles.headingText}>, you'll miss about</Text>
-          </Animated.Text>
+        <Animated.Text style={[styles.nameLine, fadeSlide(headerAnim)]}>
+          {userName || 'friend'}, you'll miss about
+        </Animated.Text>
 
-          <Animated.View style={[styles.dosesRow, fadeSlide(line2Anim)]}>
-            <Text style={styles.bigNumber}>{counterVal}</Text>
-            <Text style={styles.dosesLabel}> doses</Text>
-            <Text style={styles.headingText}> this year</Text>
+        <Animated.View style={[styles.numberBlock, fadeSlide(numberAnim)]}>
+          <Text style={styles.bigNumber}>{counterVal}</Text>
+          <Animated.Text style={[styles.dosesLabel, fadeSlide(labelAnim)]}>
+            doses this year
+          </Animated.Text>
+        </Animated.View>
+
+        <Animated.View style={[styles.divider, { opacity: dividerAnim }]} />
+
+        <View style={styles.cardsWrap}>
+          <Animated.View style={[styles.statCard, fadeSlide(card1Anim)]}>
+            <View style={[styles.statIconWrap, { backgroundColor: Colors.warningBg }]}>
+              <Clock size={18} color={Colors.warning} strokeWidth={2.2} />
+            </View>
+            <View style={styles.statContent}>
+              <Text style={styles.statValue}>
+                <Text style={styles.statHighlight}>{weeksLost} weeks</Text> of lost progress
+              </Text>
+            </View>
+          </Animated.View>
+
+          <Animated.View style={[styles.statCard, fadeSlide(card2Anim)]}>
+            <View style={[styles.statIconWrap, { backgroundColor: Colors.blueBg }]}>
+              <CalendarX size={18} color={Colors.blue} strokeWidth={2.2} />
+            </View>
+            <View style={styles.statContent}>
+              <Text style={styles.statValue}>
+                <Text style={styles.statHighlight}>{monthsLost} months</Text> your body could've been improving
+              </Text>
+            </View>
           </Animated.View>
         </View>
 
-        <Animated.View style={[styles.divider, { width: dividerWidth }]} />
-
-        <View style={styles.statsBlock}>
-          <Animated.Text style={[styles.statLine, fadeSlide(line3Anim)]}>
-            that's <Text style={styles.accentBlue}>{weeksLost} weeks</Text> of lost progress
-          </Animated.Text>
-
-          <Animated.Text style={[styles.statLine, fadeSlide(line4Anim)]}>
-            or <Text style={styles.accentBlue}>{monthsLost} months</Text> your body could've{`\n`}been improving...
-          </Animated.Text>
-        </View>
-
-        <Animated.Text style={[styles.ghostLine, fadeSlide(ctaAnim)]}>
-          what if you never missed again?
-        </Animated.Text>
+        <Animated.View style={[styles.ghostWrap, fadeSlide(ghostAnim)]}>
+          <View style={styles.accentLine} />
+          <Text style={styles.ghostText}>what if you never missed again?</Text>
+        </Animated.View>
       </View>
 
-      <Animated.View style={[styles.footer, { opacity: ctaAnim, paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <TouchableOpacity
-          onPress={handleContinue}
-          style={styles.ctaRow}
-          activeOpacity={0.7}
-          testID="impact-continue"
-        >
-          <Text style={styles.ctaText}>tap to continue</Text>
-          <ArrowRight size={18} color={Colors.blue} strokeWidth={2.5} />
-        </TouchableOpacity>
+      <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
+        <PrimaryButton title="Show me how" onPress={handleContinue} />
       </Animated.View>
     </View>
   );
@@ -125,86 +131,96 @@ export default function ImpactScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.navy,
+    backgroundColor: '#F7F9FC',
   },
   content: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     justifyContent: 'center' as const,
-    gap: 24,
-  },
-  textBlock: {
-    gap: 6,
   },
   nameLine: {
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
+    fontFamily: Fonts.body,
+    fontSize: 17,
+    color: Colors.mediumGray,
+    marginBottom: 8,
   },
-  nameHighlight: {
-    fontFamily: Fonts.heading,
-    fontSize: 30,
-    color: Colors.gold,
-    lineHeight: 42,
-  },
-  headingText: {
-    fontFamily: Fonts.heading,
-    fontSize: 30,
-    color: Colors.white,
-    lineHeight: 42,
-  },
-  dosesRow: {
-    flexDirection: 'row' as const,
-    flexWrap: 'wrap' as const,
-    alignItems: 'baseline' as const,
+  numberBlock: {
+    marginBottom: 28,
   },
   bigNumber: {
     fontFamily: Fonts.heading,
-    fontSize: 48,
-    color: Colors.gold,
-    lineHeight: 56,
+    fontSize: 72,
+    color: Colors.navy,
+    letterSpacing: -2,
+    lineHeight: 80,
   },
   dosesLabel: {
-    fontFamily: Fonts.heading,
-    fontSize: 30,
-    color: Colors.gold,
-    lineHeight: 42,
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 22,
+    color: Colors.navy,
+    marginTop: 2,
   },
   divider: {
     height: 1,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: Colors.border,
+    marginBottom: 24,
   },
-  statsBlock: {
+  cardsWrap: {
     gap: 12,
+    marginBottom: 32,
   },
-  statLine: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 22,
-    color: 'rgba(255,255,255,0.75)',
-    lineHeight: 32,
-  },
-  accentBlue: {
-    color: Colors.blue,
-  },
-  ghostLine: {
-    fontFamily: Fonts.heading,
-    fontSize: 22,
-    color: 'rgba(255,255,255,0.35)',
-    lineHeight: 32,
-    marginTop: 4,
-  },
-  footer: {
-    paddingHorizontal: 28,
-  },
-  ctaRow: {
+  statCard: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'flex-end' as const,
-    gap: 8,
-    paddingVertical: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    gap: 14,
   },
-  ctaText: {
+  statIconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  statContent: {
+    flex: 1,
+  },
+  statValue: {
     fontFamily: Fonts.body,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.45)',
+    color: Colors.darkGray,
+    lineHeight: 22,
+  },
+  statHighlight: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 15,
+    color: Colors.navy,
+  },
+  ghostWrap: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 12,
+    paddingHorizontal: 4,
+  },
+  accentLine: {
+    width: 3,
+    height: 24,
+    backgroundColor: Colors.blue,
+    borderRadius: 2,
+  },
+  ghostText: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 18,
+    color: Colors.blue,
+    flex: 1,
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
   },
 });
