@@ -83,7 +83,7 @@ export default function MissedDosesScreen() {
 
   return (
     <OnboardingScreen step={4} totalSteps={9} ctaText="Continue" ctaEnabled={selected !== null} onCta={handleContinue}>
-      <Text style={styles.headline}>How many days a week do you actually take them?</Text>
+      <Text style={styles.headline}>How many times a week do you actually take your supplements?</Text>
 
       <View style={styles.optionsWrap}>
         {OPTIONS.map((option, index) => {
