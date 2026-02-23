@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Nothing Project",
-    "slug": "nothing-project-vmgdr1j",
+    "name": "IVB Wellness Routine",
+    "slug": "ivb-wellness-routine",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -15,14 +15,14 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "app.rork.nothing-project-vmgdr1j"
+      "bundleIdentifier": "app.rork.ivb-wellness-routine"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.nothing_project_vmgdr1j"
+      "package": "app.rork.ivb_wellness_routine"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

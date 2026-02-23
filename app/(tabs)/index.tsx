@@ -1,12 +1,5 @@
-import { StyleSheet, View } from "react-native";
+import { Redirect } from 'expo-router';
 
-export default function TabOneScreen() {
-  return <View style={styles.container} testID="black-screen" />;
+export default function TabIndex() {
+  return <Redirect href="/today" as any />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
-});
