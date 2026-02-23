@@ -1,48 +1,37 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Easing } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-import PrimaryButton from '@/components/PrimaryButton';
 
 const OPTIONS = [
-  { label: '1–2 times', value: 2, sub: 'occasionally' },
-  { label: '3–4 times', value: 4, sub: 'pretty often' },
-  { label: '5–6 times', value: 6, sub: 'most days' },
-  { label: 'every day', value: 7, sub: 'all the time' },
+  { label: '1–2 days', value: 2, sub: 'Just getting started', emoji: '😟' },
+  { label: '3–4 days', value: 4, sub: 'Building a habit', emoji: '😐' },
+  { label: '5–6 days', value: 6, sub: 'Almost daily', emoji: '😊' },
+  { label: 'Every single day', value: 7, sub: 'Fully committed', emoji: '🌟' },
 ];
 
 export default function MissedDosesScreen() {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<number | null>(null);
 
-  const titleAnim = useRef(new Animated.Value(0)).current;
   const optionAnims = useRef(OPTIONS.map(() => new Animated.Value(0))).current;
   const scaleAnims = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
   const selectionAnims = useRef(OPTIONS.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
-    Animated.sequence([
-      Animated.delay(200),
-      Animated.timing(titleAnim, {
+    Animated.stagger(100, optionAnims.map(anim =>
+      Animated.timing(anim, {
         toValue: 1,
-        duration: 500,
+        duration: 400,
+        easing: Easing.out(Easing.back(1.2)),
         useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.stagger(100, optionAnims.map(anim =>
-        Animated.timing(anim, {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.out(Easing.back(1.2)),
-          useNativeDriver: Platform.OS !== 'web',
-        })
-      )),
-    ]).start();
+      })
+    )).start();
   }, []);
 
   const handleSelect = useCallback((index: number) => {
@@ -93,109 +82,74 @@ export default function MissedDosesScreen() {
   });
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 20 }]}>
-      <View style={styles.content}>
-        <Animated.View style={fadeSlide(titleAnim)}>
-          <Text style={styles.preTitle}>be honest</Text>
-          <Text style={styles.headline}>
-            How often do you{'\n'}
-            <Text style={styles.headlineAccent}>miss</Text> your supplements?
-          </Text>
-        </Animated.View>
+    <OnboardingScreen step={4} totalSteps={9} ctaText="Continue" ctaEnabled={selected !== null} onCta={handleContinue}>
+      <Text style={styles.headline}>How many days a week do you actually take them?</Text>
 
-        <View style={styles.optionsWrap}>
-          {OPTIONS.map((option, index) => {
-            const isSelected = selected === index;
+      <View style={styles.optionsWrap}>
+        {OPTIONS.map((option, index) => {
+          const isSelected = selected === index;
 
-            const bgColor = selectionAnims[index].interpolate({
-              inputRange: [0, 1],
-              outputRange: ['#FFFFFF', '#EBF2FF'],
-            });
+          const bgColor = selectionAnims[index].interpolate({
+            inputRange: [0, 1],
+            outputRange: [Colors.white, Colors.softBlue],
+          });
 
-            const borderColor = selectionAnims[index].interpolate({
-              inputRange: [0, 1],
-              outputRange: [Colors.border, Colors.blue],
-            });
+          const borderColor = selectionAnims[index].interpolate({
+            inputRange: [0, 1],
+            outputRange: [Colors.border, Colors.navy],
+          });
 
-            return (
-              <Animated.View
-                key={index}
-                style={[
-                  fadeSlide(optionAnims[index]),
-                  { transform: [{ scale: scaleAnims[index] }, ...(fadeSlide(optionAnims[index]).transform || [])] },
-                ]}
+          const borderWidth = selectionAnims[index].interpolate({
+            inputRange: [0, 1],
+            outputRange: [1.5, 2],
+          });
+
+          return (
+            <Animated.View
+              key={index}
+              style={[
+                fadeSlide(optionAnims[index]),
+                { transform: [{ scale: scaleAnims[index] }, ...(fadeSlide(optionAnims[index]).transform || [])] },
+              ]}
+            >
+              <TouchableOpacity
+                onPress={() => handleSelect(index)}
+                activeOpacity={0.7}
+                testID={`missed-doses-${index}`}
               >
-                <TouchableOpacity
-                  onPress={() => handleSelect(index)}
-                  activeOpacity={0.8}
-                  testID={`missed-doses-${index}`}
+                <Animated.View
+                  style={[
+                    styles.optionCard,
+                    { backgroundColor: bgColor, borderColor: borderColor, borderWidth: borderWidth },
+                  ]}
                 >
-                  <Animated.View
-                    style={[
-                      styles.optionCard,
-                      { backgroundColor: bgColor, borderColor: borderColor },
-                    ]}
-                  >
-                    <View style={styles.optionContent}>
-                      <Text style={[styles.optionLabel, isSelected && styles.optionLabelActive]}>
-                        {option.label}
-                      </Text>
-                      <Text style={[styles.optionSub, isSelected && styles.optionSubActive]}>
-                        {option.sub}
-                      </Text>
-                    </View>
-                    <Animated.View
-                      style={[
-                        styles.radioOuter,
-                        {
-                          borderColor: borderColor,
-                        },
-                      ]}
-                    >
-                      {isSelected && <View style={styles.radioInner} />}
-                    </Animated.View>
-                  </Animated.View>
-                </TouchableOpacity>
-              </Animated.View>
-            );
-          })}
-        </View>
+                  <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                  <View style={styles.optionContent}>
+                    <Text style={[styles.optionLabel, isSelected && styles.optionLabelActive]}>
+                      {option.label}
+                    </Text>
+                    <Text style={[styles.optionSub, isSelected && styles.optionSubActive]}>
+                      {option.sub}
+                    </Text>
+                  </View>
+                </Animated.View>
+              </TouchableOpacity>
+            </Animated.View>
+          );
+        })}
       </View>
-
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="Continue" onPress={handleContinue} disabled={selected === null} />
-      </View>
-    </View>
+    </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F7F9FC',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    justifyContent: 'center' as const,
-  },
-  preTitle: {
-    fontFamily: Fonts.body,
-    fontSize: 16,
-    color: Colors.mediumGray,
-    marginBottom: 8,
-    letterSpacing: 0.5,
-  },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 30,
+    fontSize: 26,
     color: Colors.navy,
-    lineHeight: 40,
-    marginBottom: 36,
-    letterSpacing: -0.3,
-  },
-  headlineAccent: {
-    color: Colors.warning,
+    lineHeight: 34,
+    marginTop: 8,
+    marginBottom: 24,
   },
   optionsWrap: {
     gap: 12,
@@ -203,50 +157,34 @@ const styles = StyleSheet.create({
   optionCard: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    borderWidth: 1.5,
     borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
     paddingVertical: 18,
     paddingHorizontal: 20,
+    gap: 16,
+  },
+  optionEmoji: {
+    fontSize: 28,
   },
   optionContent: {
     flex: 1,
   },
   optionLabel: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 18,
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 16,
     color: Colors.navy,
-    marginBottom: 2,
   },
   optionLabelActive: {
-    color: Colors.deepBlue,
+    color: Colors.navy,
   },
   optionSub: {
     fontFamily: Fonts.body,
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.mediumGray,
+    marginTop: 2,
   },
   optionSubActive: {
-    color: Colors.blue,
-  },
-  radioOuter: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    marginLeft: 12,
-  },
-  radioInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: Colors.blue,
-  },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 12,
+    color: Colors.darkGray,
   },
 });
