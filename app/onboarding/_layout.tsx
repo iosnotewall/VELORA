@@ -15,6 +15,8 @@ export default function OnboardingLayout() {
       <Stack.Screen name="bridge" options={{ animation: 'fade' }} />
       <Stack.Screen name="name" options={{ animation: 'fade' }} />
       <Stack.Screen name="consider" options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="missed-doses" options={{ animation: 'fade' }} />
+      <Stack.Screen name="impact" options={{ animation: 'fade' }} />
       <Stack.Screen name="shock" options={{ animation: 'fade' }} />
       <Stack.Screen name="loading" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="reviews" options={{ animation: 'fade' }} />

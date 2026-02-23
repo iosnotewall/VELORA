@@ -20,6 +20,7 @@ export interface AppState {
   friction: string;
   energyLevel: number;
   commitmentLevel: string;
+  missedDoses: number;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -39,6 +40,7 @@ const DEFAULT_STATE: AppState = {
   friction: '',
   energyLevel: 0,
   commitmentLevel: '',
+  missedDoses: 0,
 };
 
 const STORAGE_KEY = 'ivb_app_state';

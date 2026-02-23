@@ -23,7 +23,7 @@ export default function ConsiderScreen() {
     ]).start();
 
     const timer = setTimeout(() => {
-      router.push('/onboarding/shock' as any);
+      router.push('/onboarding/missed-doses' as any);
     }, 2800);
 
     return () => clearTimeout(timer);
