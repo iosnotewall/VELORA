@@ -59,7 +59,7 @@ export default function WelcomeScreen() {
 
         <Animated.View style={[styles.footer, { opacity: footerAnim }]}>
           <Text style={styles.tapText}>tap to continue</Text>
-          <ArrowRight size={18} color={MUTED} strokeWidth={2.5} />
+          <ArrowRight size={18} color="rgba(255,255,255,0.4)" strokeWidth={2.5} />
         </Animated.View>
       </View>
     </Pressable>
@@ -69,22 +69,22 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: NAVY,
   },
   content: {
     flex: 1,
-    paddingHorizontal: 28,
-    paddingTop: 120,
-    gap: 40,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   headingBlock: {
-    gap: 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   heading: {
     fontFamily: Fonts.heading,
-    fontSize: 32,
-    color: NAVY,
-    lineHeight: 42,
+    fontSize: 48,
+    color: '#FFFFFF',
+    lineHeight: 58,
     letterSpacing: -0.3,
   },
   footer: {
@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
   tapText: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 16,
-    color: MUTED,
+    color: 'rgba(255,255,255,0.4)',
     letterSpacing: 0.3,
   },
 });
