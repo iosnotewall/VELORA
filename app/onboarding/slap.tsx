@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
+    fontSize: 24,
     color: NAVY,
-    lineHeight: 38,
+    lineHeight: 34,
     letterSpacing: -0.3,
   },
   headingHighlight: {
