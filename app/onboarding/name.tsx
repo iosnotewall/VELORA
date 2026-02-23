@@ -62,7 +62,7 @@ export default function NameScreen() {
             <Animated.Text style={[styles.preTitle, slideUp(titleAnim)]}>
               First things first,
             </Animated.Text>
-            <Animated.Text style={[styles.headline, slideUp(titleAnim)]}>
+            <Animated.Text style={[styles.headline, slideUp(titleAnim)]} numberOfLines={1} adjustsFontSizeToFit>
               What should we call you?
             </Animated.Text>
 
@@ -113,9 +113,8 @@ const styles = StyleSheet.create({
   },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
+    fontSize: 26,
     color: Colors.navy,
-    lineHeight: 36,
     marginBottom: 48,
   },
   inputWrap: {
