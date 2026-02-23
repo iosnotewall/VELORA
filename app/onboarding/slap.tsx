@@ -12,9 +12,9 @@ const ACCENT = Colors.blue;
 const MUTED = '#8A919E';
 
 const HEADING_LINES = [
-  { text: 'what if everything', highlight: false },
-  { text: "you're taking", highlight: false },
-  { text: 'is doing nothing?', highlight: true },
+  { text: 'ever feel like you bought', highlight: false },
+  { text: 'all these supplements that', highlight: false },
+  { text: 'are doing nothing?', highlight: true },
 ];
 
 const BODY_LINES = [
@@ -138,9 +138,9 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontFamily: Fonts.heading,
-    fontSize: 32,
+    fontSize: 28,
     color: NAVY,
-    lineHeight: 42,
+    lineHeight: 38,
     letterSpacing: -0.3,
   },
   headingHighlight: {

@@ -46,7 +46,7 @@ export default function ConsiderScreen() {
         ]}
       >
         <Text style={styles.text}>
-          ever feel like you bought{'\n'}all these supplements that{'\n'}are doing nothing?
+          all right, <Text style={styles.name}>{userName}</Text>
         </Text>
       </Animated.View>
     </View>
@@ -66,10 +66,17 @@ const styles = StyleSheet.create({
   },
   text: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
-    color: Colors.mediumGray,
+    fontSize: 40,
+    color: Colors.navy,
     textAlign: 'center' as const,
-    lineHeight: 38,
-    letterSpacing: -0.3,
+    lineHeight: 50,
+    letterSpacing: -0.5,
+  },
+  name: {
+    fontFamily: Fonts.heading,
+    fontSize: 40,
+    color: Colors.blue,
+    lineHeight: 50,
+    letterSpacing: -0.5,
   },
 });
