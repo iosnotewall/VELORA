@@ -113,9 +113,9 @@ const styles = StyleSheet.create({
   },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 36,
+    fontSize: 28,
     color: Colors.navy,
-    lineHeight: 46,
+    lineHeight: 36,
     marginBottom: 48,
   },
   inputWrap: {
