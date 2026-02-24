@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { X, ChevronRight } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
@@ -37,26 +37,49 @@ const OPTIONS = [
   },
 ];
 
+const HONESTY_OPTIONS = [
+  { id: 'five-six', label: 'Most days, I slip sometimes', emoji: '🤷‍♀️' },
+  { id: 'three-four', label: 'I skip a few days', emoji: '😬' },
+  { id: 'every-day', label: 'No really — every day', emoji: '💪' },
+];
+
 export default function MissedDosesScreen() {
   const router = useRouter();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string | null>(null);
   const [showHonestyModal, setShowHonestyModal] = useState(false);
   const modalAnim = useRef(new Animated.Value(0)).current;
+  const backdropAnim = useRef(new Animated.Value(0)).current;
 
   const scaleAnims = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
 
   const openModal = useCallback(() => {
     setShowHonestyModal(true);
-    Animated.spring(modalAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 140 }).start();
-  }, [modalAnim]);
+    Animated.parallel([
+      Animated.timing(backdropAnim, { toValue: 1, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.spring(modalAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 22, stiffness: 180 }),
+    ]).start();
+  }, [modalAnim, backdropAnim]);
 
   const closeModal = useCallback((chosenId: string) => {
-    Animated.timing(modalAnim, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' }).start(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Animated.parallel([
+      Animated.timing(backdropAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(modalAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
+    ]).start(() => {
       setShowHonestyModal(false);
       setSelected(chosenId);
     });
-  }, [modalAnim]);
+  }, [modalAnim, backdropAnim]);
+
+  const dismissModal = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(backdropAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(modalAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
+    ]).start(() => {
+      setShowHonestyModal(false);
+    });
+  }, [modalAnim, backdropAnim]);
 
   const handleSelect = useCallback((id: string, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -111,40 +134,46 @@ export default function MissedDosesScreen() {
       </View>
 
       <Modal visible={showHonestyModal} transparent animationType="none" statusBarTranslucent>
-        <Animated.View style={[styles.modalOverlay, { opacity: modalAnim }]}>
-          <TouchableOpacity style={styles.modalOverlayTouch} activeOpacity={1} onPress={() => setShowHonestyModal(false)} />
-          <Animated.View style={[styles.modalSheet, { transform: [{ translateY: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [300, 0] }) }] }]}>
-            <View style={styles.sheetHandle} />
+        <View style={styles.modalContainer}>
+          <Animated.View style={[styles.modalBackdrop, { opacity: backdropAnim }]}>
+            <TouchableOpacity style={styles.modalOverlayTouch} activeOpacity={1} onPress={dismissModal} />
+          </Animated.View>
 
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Be honest with yourself</Text>
-              <TouchableOpacity style={styles.sheetClose} onPress={() => setShowHonestyModal(false)} activeOpacity={0.7}>
-                <X size={18} color={Colors.mediumGray} strokeWidth={2.5} />
-              </TouchableOpacity>
-            </View>
+          <Animated.View style={[
+            styles.modalSheet,
+            {
+              opacity: modalAnim,
+              transform: [{
+                scale: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }),
+              }],
+            },
+          ]}>
+            <TouchableOpacity style={styles.closeBtn} onPress={dismissModal} activeOpacity={0.7}>
+              <X size={16} color={Colors.mediumGray} strokeWidth={2.5} />
+            </TouchableOpacity>
 
-            <Text style={styles.sheetBody}>
-              Most people overestimate their consistency. Even forgetting once a week means your supplements aren't building up properly in your system.
-            </Text>
-
-            <Text style={styles.sheetPrompt}>How often do you really take them?</Text>
+            <Text style={styles.sheetEmoji}>🪞</Text>
+            <Text style={styles.sheetTitle}>Are you sure?</Text>
+            <Text style={styles.sheetSub}>92% of people overestimate this.</Text>
 
             <View style={styles.sheetOptions}>
-              <TouchableOpacity style={styles.sheetOption} onPress={() => closeModal('five-six')} activeOpacity={0.6}>
-                <Text style={styles.sheetOptionText}>Almost every day, maybe miss one</Text>
-                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.sheetOption} onPress={() => closeModal('three-four')} activeOpacity={0.6}>
-                <Text style={styles.sheetOptionText}>I skip a couple days a week</Text>
-                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.sheetOption, styles.sheetOptionLast]} onPress={() => closeModal('every-day')} activeOpacity={0.6}>
-                <Text style={styles.sheetOptionText}>Truly every single day</Text>
-                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
-              </TouchableOpacity>
+              {HONESTY_OPTIONS.map((opt, i) => (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[
+                    styles.sheetOption,
+                    i === HONESTY_OPTIONS.length - 1 && styles.sheetOptionLast,
+                  ]}
+                  onPress={() => closeModal(opt.id)}
+                  activeOpacity={0.6}
+                >
+                  <Text style={styles.sheetOptionEmoji}>{opt.emoji}</Text>
+                  <Text style={styles.sheetOptionText}>{opt.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </Animated.View>
-        </Animated.View>
+        </View>
       </Modal>
     </OnboardingScreen>
   );
@@ -191,83 +220,85 @@ const styles = StyleSheet.create({
   optionLabelActive: {
     color: Colors.navy,
   },
-  modalOverlay: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end' as const,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 32,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 18, 35, 0.55)',
   },
   modalOverlayTouch: {
     flex: 1,
   },
   modalSheet: {
-    backgroundColor: Colors.cream,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 28,
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    paddingTop: 28,
+    paddingBottom: 8,
     paddingHorizontal: 24,
-    maxWidth: SCREEN_WIDTH,
-  },
-  sheetHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
-    alignSelf: 'center' as const,
-    marginBottom: 20,
-  },
-  sheetHeader: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
+    width: '100%' as const,
+    maxWidth: 340,
     alignItems: 'center' as const,
+    ...(Platform.OS === 'web'
+      ? { boxShadow: '0px 20px 60px rgba(0,0,0,0.18)' }
+      : {
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 20 },
+          shadowOpacity: 0.18,
+          shadowRadius: 30,
+          elevation: 24,
+        }),
+  },
+  closeBtn: {
+    position: 'absolute' as const,
+    top: 14,
+    right: 14,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: Colors.lightGray,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  sheetEmoji: {
+    fontSize: 36,
     marginBottom: 12,
   },
   sheetTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 20,
+    fontSize: 22,
     color: Colors.navy,
-    flex: 1,
+    textAlign: 'center' as const,
+    marginBottom: 4,
   },
-  sheetClose: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: Colors.lightGray,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginLeft: 12,
-  },
-  sheetBody: {
+  sheetSub: {
     fontFamily: Fonts.body,
-    fontSize: 15,
-    color: Colors.darkGray,
-    lineHeight: 22,
-    marginBottom: 22,
-  },
-  sheetPrompt: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
+    fontSize: 14,
     color: Colors.mediumGray,
-    textTransform: 'uppercase' as const,
-    letterSpacing: 1,
-    marginBottom: 10,
+    textAlign: 'center' as const,
+    marginBottom: 24,
   },
   sheetOptions: {
-    backgroundColor: Colors.white,
-    borderRadius: 14,
-    overflow: 'hidden' as const,
+    width: '100%' as const,
   },
   sheetOption: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.border,
+    paddingVertical: 14,
+    paddingHorizontal: 14,
+    marginBottom: 6,
+    borderRadius: 14,
+    backgroundColor: Colors.cream,
   },
   sheetOptionLast: {
-    borderBottomWidth: 0,
+    marginBottom: 12,
+  },
+  sheetOptionEmoji: {
+    fontSize: 18,
+    marginRight: 12,
   },
   sheetOptionText: {
     fontFamily: Fonts.bodySemiBold,
