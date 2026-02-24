@@ -258,7 +258,7 @@ export default function TrajectoryScreen() {
         <Animated.View style={[styles.bottomSection, fadeSlide(bottomAnim)]}>
           <Text style={styles.bottomTitle}>Consistency is the only variable.</Text>
           <Text style={styles.bottomSubtext}>
-            Your supplements already work. The problem is never about what you take — it's about showing up every day. Volera makes that effortless.
+            Your supplements work. Volera just makes sure you never miss a day.
           </Text>
         </Animated.View>
       </View>
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: Fonts.heading,
-    fontSize: 34,
+    fontSize: 30,
     color: Colors.white,
     letterSpacing: -0.5,
     marginBottom: 12,
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   labelUp: {
     position: 'absolute' as const,
     top: 10,
-    right: 50,
+    right: 55,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(74,144,217,0.15)',
@@ -335,8 +335,8 @@ const styles = StyleSheet.create({
   },
   labelDown: {
     position: 'absolute' as const,
-    top: 65,
-    right: 20,
+    top: 72,
+    right: 15,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     backgroundColor: 'rgba(255,59,59,0.12)',
