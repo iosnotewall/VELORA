@@ -27,6 +27,10 @@ export default function OnboardingLayout() {
       <Stack.Screen name="notification" options={{ animation: 'fade' }} />
       <Stack.Screen name="loading" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="plan-ready" options={{ animation: 'fade' }} />
+      <Stack.Screen name="commitment" options={{ animation: 'fade' }} />
+      <Stack.Screen name="love-it" options={{ animation: 'fade', gestureEnabled: false }} />
+      <Stack.Screen name="snapshot" options={{ animation: 'fade' }} />
+      <Stack.Screen name="reviews" options={{ animation: 'fade' }} />
       <Stack.Screen name="paywall" options={{ animation: 'fade' }} />
     </Stack>
   );
