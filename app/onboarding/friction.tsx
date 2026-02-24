@@ -2,20 +2,11 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { Clock, Brain, RefreshCw, BatteryLow, HelpCircle } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { FRICTION_OPTIONS } from '@/constants/content';
-
-const FRICTION_ICON_MAP: Record<string, React.ComponentType<any>> = {
-  Clock,
-  Brain,
-  RefreshCw,
-  BatteryLow,
-  HelpCircle,
-};
 
 export default function FrictionScreen() {
   const router = useRouter();
@@ -52,9 +43,6 @@ export default function FrictionScreen() {
                   style={[styles.optionCard, isSelected && styles.optionSelected]}
                   activeOpacity={0.7}
                 >
-                  <View style={[styles.iconWrap, isSelected && styles.iconWrapSelected]}>
-                    {FRICTION_ICON_MAP[option.icon] && React.createElement(FRICTION_ICON_MAP[option.icon], { size: 20, color: isSelected ? Colors.blue : Colors.mediumGray, strokeWidth: 2 })}
-                  </View>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>{option.label}</Text>
                 </TouchableOpacity>
               </Animated.View>
@@ -80,32 +68,19 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   optionCard: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    gap: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
   },
   optionSelected: {
     borderColor: Colors.navy,
     borderWidth: 2,
     backgroundColor: Colors.softBlue,
   },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F0EEED',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  iconWrapSelected: {
-    backgroundColor: '#E0E8F5',
-  },
+
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,

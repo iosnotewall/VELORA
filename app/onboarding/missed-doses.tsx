@@ -2,18 +2,11 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { AlertTriangle, Shuffle, TrendingUp, CheckCircle, X, AlertCircle } from 'lucide-react-native';
+import { X, AlertCircle } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-
-const ICON_MAP = {
-  'one-two': AlertTriangle,
-  'three-four': Shuffle,
-  'five-six': TrendingUp,
-  'every-day': CheckCircle,
-} as const;
 
 const OPTIONS = [
   {
@@ -98,7 +91,6 @@ export default function MissedDosesScreen() {
       <View style={styles.optionsWrap}>
         {OPTIONS.map((option, index) => {
           const isSelected = selected === option.id;
-          const IconComponent = ICON_MAP[option.id];
           return (
             <Animated.View key={option.id} style={{ transform: [{ scale: scaleAnims[index] }] }}>
               <TouchableOpacity
@@ -107,14 +99,9 @@ export default function MissedDosesScreen() {
                 activeOpacity={0.7}
                 testID={`missed-doses-${option.id}`}
               >
-                <View style={[styles.iconWrap, isSelected && styles.iconWrapSelected]}>
-                  <IconComponent size={20} color={isSelected ? Colors.blue : Colors.mediumGray} strokeWidth={2} />
-                </View>
-                <View style={styles.optionContent}>
-                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelActive]}>
-                    {option.label}
-                  </Text>
-                </View>
+                <Text style={[styles.optionLabel, isSelected && styles.optionLabelActive]}>
+                  {option.label}
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           );
@@ -180,35 +167,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   optionCard: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    gap: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
   },
   optionSelected: {
     borderColor: Colors.navy,
     borderWidth: 2,
     backgroundColor: Colors.softBlue,
   },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: '#F0EEED',
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  iconWrapSelected: {
-    backgroundColor: '#E0E8F5',
-  },
-  optionContent: {
-    flex: 1,
-  },
+
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,
