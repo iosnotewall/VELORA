@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Leaf, Pill, Hourglass, Flame } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { useAppState } from '@/hooks/useAppState';
@@ -68,7 +69,9 @@ export default function SnapshotScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.content}>
         <Animated.View style={fadeSlide(headerAnim)}>
-          <Text style={styles.headerEmoji}>🌿</Text>
+          <View style={styles.headerIconWrap}>
+            <Leaf size={24} color={Colors.blue} strokeWidth={2} />
+          </View>
           <Text style={styles.headline}>your personalized{'\n'}supplement snapshot</Text>
         </Animated.View>
 
@@ -78,7 +81,9 @@ export default function SnapshotScreen() {
 
         <Animated.View style={[styles.card, fadeSlide(card1Anim)]}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>💊</Text>
+            <View style={styles.cardIconWrap}>
+              <Pill size={18} color={Colors.blue} strokeWidth={2} />
+            </View>
             <Text style={styles.cardTitle}>current consistency</Text>
           </View>
           <View style={styles.barContainer}>
@@ -95,7 +100,9 @@ export default function SnapshotScreen() {
 
         <Animated.View style={[styles.card, fadeSlide(card2Anim)]}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>⏳</Text>
+            <View style={styles.cardIconWrap}>
+              <Hourglass size={18} color={Colors.gold} strokeWidth={2} />
+            </View>
             <Text style={styles.cardTitle}>estimated absorption rate</Text>
           </View>
           <Text style={styles.cardDescription}>based on {productCount} supplement{productCount > 1 ? 's' : ''} &amp; your routine</Text>
@@ -104,7 +111,9 @@ export default function SnapshotScreen() {
 
         <Animated.View style={[styles.card, fadeSlide(card3Anim)]}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardIcon}>🔥</Text>
+            <View style={styles.cardIconWrap}>
+              <Flame size={18} color={Colors.warning} strokeWidth={2} />
+            </View>
             <Text style={styles.cardTitle}>commitment level</Text>
           </View>
           <View style={styles.barContainer}>
@@ -137,8 +146,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 16,
   },
-  headerEmoji: {
-    fontSize: 28,
+  headerIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: Colors.softBlue,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     marginBottom: 8,
   },
   headline: {
@@ -169,8 +183,13 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 10,
   },
-  cardIcon: {
-    fontSize: 20,
+  cardIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#F0F2F8',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   cardTitle: {
     fontFamily: Fonts.heading,

@@ -121,25 +121,25 @@ export function getDayInsight(day: number): string {
 }
 
 export const FREQUENCY_OPTIONS = [
-  { id: 'rarely', label: 'Almost never', sub: '0–1 days per week', value: 1, emoji: '😟' },
-  { id: 'sometimes', label: 'Sometimes', sub: '2–3 days per week', value: 3, emoji: '😐' },
-  { id: 'most', label: 'Most days', sub: '4–5 days per week', value: 5, emoji: '😊' },
-  { id: 'daily', label: 'Every day', sub: '6–7 days per week', value: 7, emoji: '🌟' },
+  { id: 'rarely', label: 'Almost never', sub: '0–1 days per week', value: 1, icon: 'XCircle' as const },
+  { id: 'sometimes', label: 'Sometimes', sub: '2–3 days per week', value: 3, icon: 'CircleDot' as const },
+  { id: 'most', label: 'Most days', sub: '4–5 days per week', value: 5, icon: 'TrendingUp' as const },
+  { id: 'daily', label: 'Every day', sub: '6–7 days per week', value: 7, icon: 'Star' as const },
 ];
 
 export const FRICTION_OPTIONS = [
-  { id: 'busy', label: 'Busy mornings', emoji: '🏃' },
-  { id: 'forget', label: 'I just forget', emoji: '🧠' },
-  { id: 'routine', label: 'No clear routine', emoji: '🔄' },
-  { id: 'motivation', label: 'Lack of motivation', emoji: '😴' },
-  { id: 'unsure', label: 'Not sure if they work', emoji: '🤷' },
+  { id: 'busy', label: 'Busy mornings', icon: 'Clock' as const },
+  { id: 'forget', label: 'I just forget', icon: 'Brain' as const },
+  { id: 'routine', label: 'No clear routine', icon: 'RefreshCw' as const },
+  { id: 'motivation', label: 'Lack of motivation', icon: 'BatteryLow' as const },
+  { id: 'unsure', label: 'Not sure if they work', icon: 'HelpCircle' as const },
 ];
 
 export const COMMITMENT_OPTIONS = [
-  { id: 'somewhat', label: 'Somewhat', emoji: '🤔', value: 1 },
-  { id: 'fairly', label: 'Fairly committed', emoji: '👍', value: 2 },
-  { id: 'very', label: 'Very committed', emoji: '💪', value: 3 },
-  { id: 'extremely', label: 'Extremely committed', emoji: '🔥', value: 4 },
+  { id: 'somewhat', label: 'Somewhat', icon: 'CircleDot' as const, value: 1 },
+  { id: 'fairly', label: 'Fairly committed', icon: 'ThumbsUp' as const, value: 2 },
+  { id: 'very', label: 'Very committed', icon: 'Target' as const, value: 3 },
+  { id: 'extremely', label: 'Extremely committed', icon: 'Flame' as const, value: 4 },
 ];
 
 export const REVIEWS_DATA = [

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { ThumbsUp, Check } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -48,7 +49,9 @@ export default function LoveItScreen() {
         <View style={styles.circleContainer}>
           <Animated.View style={[styles.outerGlow, { opacity: circleAnim, transform: [{ scale: pulseAnim }] }]} />
           <Animated.View style={[styles.circle, { opacity: circleAnim, transform: [{ scale: circleAnim }] }]}>
-            <Animated.Text style={[styles.thumbEmoji, { transform: [{ scale: thumbAnim }] }]}>👍</Animated.Text>
+            <Animated.View style={{ transform: [{ scale: thumbAnim }] }}>
+              <ThumbsUp size={56} color={Colors.white} strokeWidth={1.6} />
+            </Animated.View>
           </Animated.View>
         </View>
       </View>
@@ -63,7 +66,7 @@ export default function LoveItScreen() {
         </Animated.Text>
 
         <Animated.View style={[styles.btnWrap, { opacity: btnAnim, transform: [{ translateY: btnAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-          <PrimaryButton title="done ✓" onPress={handleContinue} variant="white" />
+          <PrimaryButton title="Continue" onPress={handleContinue} variant="white" />
         </Animated.View>
       </View>
     </View>
@@ -99,9 +102,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  thumbEmoji: {
-    fontSize: 64,
-  },
+
   bottomSection: {
     paddingHorizontal: 28,
     paddingBottom: 8,

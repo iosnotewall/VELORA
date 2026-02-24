@@ -3,11 +3,19 @@ import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 're
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { CircleDot, ThumbsUp, Target, Flame, Check } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { useAppState } from '@/hooks/useAppState';
 import { COMMITMENT_OPTIONS } from '@/constants/content';
 import PrimaryButton from '@/components/PrimaryButton';
+
+const COMMIT_ICON_MAP: Record<string, React.ComponentType<any>> = {
+  CircleDot,
+  ThumbsUp,
+  Target,
+  Flame,
+};
 
 export default function CommitmentScreen() {
   const router = useRouter();
@@ -75,13 +83,15 @@ export default function CommitmentScreen() {
                   ]}
                   testID={`commitment-${option.id}`}
                 >
-                  <Text style={styles.optionEmoji}>{option.emoji}</Text>
+                  <View style={[styles.iconWrap, isSelected && styles.iconWrapSelected]}>
+                    {COMMIT_ICON_MAP[option.icon] && React.createElement(COMMIT_ICON_MAP[option.icon], { size: 20, color: isSelected ? Colors.blue : Colors.mediumGray, strokeWidth: 2 })}
+                  </View>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
                     {option.label}
                   </Text>
                   {isSelected && (
                     <View style={styles.checkCircle}>
-                      <Text style={styles.checkMark}>✓</Text>
+                      <Check size={14} color={Colors.white} strokeWidth={3} />
                     </View>
                   )}
                 </TouchableOpacity>
@@ -148,9 +158,17 @@ const styles = StyleSheet.create({
     borderColor: Colors.blue,
     backgroundColor: '#F0F4FA',
   },
-  optionEmoji: {
-    fontSize: 22,
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: '#F0EEED',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     marginRight: 14,
+  },
+  iconWrapSelected: {
+    backgroundColor: '#E0E8F5',
   },
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
@@ -169,11 +187,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  checkMark: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: '700' as const,
-  },
+
   footer: {
     paddingTop: 12,
   },
