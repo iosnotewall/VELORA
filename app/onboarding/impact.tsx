@@ -112,8 +112,9 @@ export default function ImpactScreen() {
       <View style={styles.content}>
         <Animated.View style={[styles.topSection, fadeSlide(sceneAnim)]}>
           <Text style={styles.eyebrow}>YOUR REALITY CHECK</Text>
-          <Text style={styles.headline} numberOfLines={2} adjustsFontSizeToFit>
-            {namePrefix} supplements are only working at
+          <Text style={styles.headline}>
+            {namePrefix} supplements{'
+'}are only working at
           </Text>
         </Animated.View>
 
