@@ -24,6 +24,7 @@ export default function ImpactScreen() {
 
   const daysPerWeek = missedDoses ?? 3;
   const consistencyPct = Math.round((daysPerWeek / 7) * 100);
+  const isPerfect = consistencyPct >= 100;
 
   const sceneAnim = useRef(new Animated.Value(0)).current;
   const pctAnim = useRef(new Animated.Value(0)).current;
@@ -38,7 +39,7 @@ export default function ImpactScreen() {
   const [displayPct, setDisplayPct] = useState(0);
   const [strokeDashoffset, setStrokeDashoffset] = useState(CIRCUMFERENCE);
 
-  const gaugeColor = consistencyPct >= 70 ? '#3AAF6C' : consistencyPct >= 45 ? '#E8A838' : '#FF4D4D';
+  const gaugeColor = isPerfect ? '#E8A838' : consistencyPct >= 70 ? '#E8A838' : consistencyPct >= 45 ? '#E87C38' : '#FF4D4D';
 
   useEffect(() => {
     const useNative = Platform.OS !== 'web';
@@ -113,7 +114,10 @@ export default function ImpactScreen() {
         <Animated.View style={[styles.topSection, fadeSlide(sceneAnim)]}>
           <Text style={styles.eyebrow}>YOUR REALITY CHECK</Text>
           <Text style={styles.headline}>
-            {namePrefix} supplements{' '}are only working at
+            {isPerfect
+              ? `${namePrefix} supplements could be doing so much more`
+              : `${namePrefix} supplements are only working at`
+            }
           </Text>
         </Animated.View>
 
@@ -145,26 +149,38 @@ export default function ImpactScreen() {
             <View style={styles.gaugeCenter}>
               <Text style={[styles.pctNumber, { color: gaugeColor }]}>{displayPct}%</Text>
               <Animated.Text style={[styles.pctLabel, { opacity: labelAnim }]}>
-                effectiveness
+                {isPerfect ? 'potential unlocked' : 'effectiveness'}
               </Animated.Text>
             </View>
           </View>
         </Animated.View>
 
         <Animated.View style={[styles.punchSection, fadeSlide(punchAnim)]}>
-          <Text style={styles.punchLine}>
-            You're paying for 100%.{'\n'}
-            <Text style={styles.punchBut}>but </Text>
-            <Text style={[styles.punchHighlight, { color: gaugeColor }]}>
-              you're only getting {consistencyPct}%.
+          {isPerfect ? (
+            <Text style={styles.punchLine}>
+              Consistency alone{' '}
+              <Text style={[styles.punchHighlight, { color: '#FF6B6B' }]}>isn't enough.</Text>
+              {'\n'}Timing, stacking & absorption{' '}
+              <Text style={styles.punchBut}>matter more.</Text>
             </Text>
-          </Text>
+          ) : (
+            <Text style={styles.punchLine}>
+              You're paying for 100%.{'\n'}
+              <Text style={styles.punchBut}>but </Text>
+              <Text style={[styles.punchHighlight, { color: gaugeColor }]}>
+                you're only getting {consistencyPct}%.
+              </Text>
+            </Text>
+          )}
         </Animated.View>
 
         <Animated.View style={[styles.moneySection, fadeSlide(moneyAnim)]}>
-          <View style={[styles.moneyDot, { backgroundColor: gaugeColor }]} />
+          <View style={[styles.moneyDot, { backgroundColor: isPerfect ? '#FF6B6B' : gaugeColor }]} />
           <Text style={styles.moneyText}>
-            No wonder you're not feeling the full effect of your supplements.
+            {isPerfect
+              ? 'Most people who take supplements daily still lose up to 40% of their benefits without the right protocol.'
+              : 'No wonder you\'re not feeling the full effect of your supplements.'
+            }
           </Text>
         </Animated.View>
       </View>
