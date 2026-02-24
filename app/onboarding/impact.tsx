@@ -154,8 +154,9 @@ export default function ImpactScreen() {
         <Animated.View style={[styles.punchSection, fadeSlide(punchAnim)]}>
           <Text style={styles.punchLine}>
             You're paying for 100%.{'\n'}
+            <Text style={styles.punchBut}>but </Text>
             <Text style={[styles.punchHighlight, { color: gaugeColor }]}>
-              You're only getting {consistencyPct}%.
+              you're only getting {consistencyPct}%.
             </Text>
           </Text>
         </Animated.View>
@@ -240,6 +241,11 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
     lineHeight: 30,
     textAlign: 'center' as const,
+  },
+  punchBut: {
+    fontFamily: Fonts.heading,
+    fontSize: 20,
+    color: 'rgba(255,255,255,0.75)',
   },
   punchHighlight: {
     fontFamily: Fonts.heading,
