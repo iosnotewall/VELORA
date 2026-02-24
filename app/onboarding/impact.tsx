@@ -113,7 +113,7 @@ export default function ImpactScreen() {
         <Animated.View style={[styles.topSection, fadeSlide(sceneAnim)]}>
           <Text style={styles.eyebrow}>YOUR REALITY CHECK</Text>
           <Text style={styles.headline}>
-            {namePrefix} supplements{"\n"}are only working at
+            {namePrefix} supplements{' '}are only working at
           </Text>
         </Animated.View>
 
@@ -163,7 +163,7 @@ export default function ImpactScreen() {
         <Animated.View style={[styles.moneySection, fadeSlide(moneyAnim)]}>
           <View style={[styles.moneyDot, { backgroundColor: gaugeColor }]} />
           <Text style={styles.moneyText}>
-            That's {100 - consistencyPct}% of your investment wasted — every single month.
+            No wonder you're not feeling the full effect of your supplements.
           </Text>
         </Animated.View>
       </View>
@@ -197,9 +197,9 @@ const styles = StyleSheet.create({
   },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
+    fontSize: 24,
     color: Colors.white,
-    lineHeight: 36,
+    lineHeight: 32,
     letterSpacing: -0.3,
   },
   gaugeSection: {
