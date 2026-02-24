@@ -1,14 +1,13 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal, Dimensions } from 'react-native';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { X } from 'lucide-react-native';
+import { ChevronLeft, Check } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const OPTIONS = [
   {
@@ -38,54 +37,80 @@ const OPTIONS = [
 ];
 
 const HONESTY_OPTIONS = [
-  { id: 'five-six', label: 'Most days, I slip sometimes', emoji: '🤷‍♀️' },
-  { id: 'three-four', label: 'I skip a few days', emoji: '😬' },
-  { id: 'every-day', label: 'No really — every day', emoji: '💪' },
+  { id: 'most-days', resolvedId: 'five-six', label: 'Most days, I slip sometimes' },
+  { id: 'skip-few', resolvedId: 'three-four', label: 'I skip a few days' },
+  { id: 'really-every', resolvedId: 'every-day', label: 'No really — every day' },
 ];
 
 export default function MissedDosesScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string | null>(null);
-  const [showHonestyModal, setShowHonestyModal] = useState(false);
-  const modalAnim = useRef(new Animated.Value(0)).current;
-  const backdropAnim = useRef(new Animated.Value(0)).current;
+  const [showHonestyScreen, setShowHonestyScreen] = useState(false);
+  const [honestySelected, setHonestySelected] = useState<string | null>(null);
+
+  const screenAnim = useRef(new Animated.Value(0)).current;
+  const titleAnim = useRef(new Animated.Value(0)).current;
+  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const honestyOptionAnims = useRef(HONESTY_OPTIONS.map(() => new Animated.Value(0))).current;
+  const btnAnim = useRef(new Animated.Value(0)).current;
 
   const scaleAnims = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
 
-  const openModal = useCallback(() => {
-    setShowHonestyModal(true);
-    Animated.parallel([
-      Animated.timing(backdropAnim, { toValue: 1, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.spring(modalAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 22, stiffness: 180 }),
+  const animateHonestyIn = useCallback(() => {
+    screenAnim.setValue(0);
+    titleAnim.setValue(0);
+    subtitleAnim.setValue(0);
+    honestyOptionAnims.forEach(a => a.setValue(0));
+    btnAnim.setValue(0);
+
+    Animated.sequence([
+      Animated.timing(screenAnim, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(titleAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(subtitleAnim, { toValue: 1, duration: 350, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.stagger(80, honestyOptionAnims.map(a =>
+        Animated.spring(a, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 20, stiffness: 140 })
+      )),
     ]).start();
-  }, [modalAnim, backdropAnim]);
+  }, [screenAnim, titleAnim, subtitleAnim, honestyOptionAnims, btnAnim]);
 
-  const closeModal = useCallback((chosenId: string) => {
+  const openHonestyScreen = useCallback(() => {
+    setShowHonestyScreen(true);
+    setHonestySelected(null);
+    animateHonestyIn();
+  }, [animateHonestyIn]);
+
+  const closeHonestyScreen = useCallback((chosenResolvedId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Animated.parallel([
-      Animated.timing(backdropAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(modalAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
-    ]).start(() => {
-      setShowHonestyModal(false);
-      setSelected(chosenId);
+    Animated.timing(screenAnim, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' }).start(() => {
+      setShowHonestyScreen(false);
+      setSelected(chosenResolvedId);
     });
-  }, [modalAnim, backdropAnim]);
+  }, [screenAnim]);
 
-  const dismissModal = useCallback(() => {
-    Animated.parallel([
-      Animated.timing(backdropAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(modalAnim, { toValue: 0, duration: 180, useNativeDriver: Platform.OS !== 'web' }),
-    ]).start(() => {
-      setShowHonestyModal(false);
+  const dismissHonestyScreen = useCallback(() => {
+    Animated.timing(screenAnim, { toValue: 0, duration: 200, useNativeDriver: Platform.OS !== 'web' }).start(() => {
+      setShowHonestyScreen(false);
     });
-  }, [modalAnim, backdropAnim]);
+  }, [screenAnim]);
+
+  const handleHonestySelect = useCallback((opt: typeof HONESTY_OPTIONS[number]) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setHonestySelected(opt.id);
+
+    Animated.spring(btnAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 140 }).start();
+
+    setTimeout(() => {
+      closeHonestyScreen(opt.resolvedId);
+    }, 400);
+  }, [btnAnim, closeHonestyScreen]);
 
   const handleSelect = useCallback((id: string, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     if (id === 'every-day') {
-      openModal();
+      openHonestyScreen();
       return;
     }
 
@@ -94,7 +119,7 @@ export default function MissedDosesScreen() {
       Animated.spring(scaleAnims[index], { toValue: 0.96, useNativeDriver: Platform.OS !== 'web', speed: 50, bounciness: 0 }),
       Animated.spring(scaleAnims[index], { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 15, stiffness: 200 }),
     ]).start();
-  }, [scaleAnims, openModal]);
+  }, [scaleAnims, openHonestyScreen]);
 
   const handleContinue = useCallback(() => {
     if (selected === null) return;
@@ -107,6 +132,11 @@ export default function MissedDosesScreen() {
 
     router.push('/onboarding/impact' as any);
   }, [selected, updateState, router]);
+
+  const fadeSlide = (anim: Animated.Value, distance = 18) => ({
+    opacity: anim,
+    transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [distance, 0] }) }],
+  });
 
   return (
     <OnboardingScreen step={1} totalSteps={9} ctaText="Continue" ctaEnabled={selected !== null} onCta={handleContinue}>
@@ -133,47 +163,53 @@ export default function MissedDosesScreen() {
         })}
       </View>
 
-      <Modal visible={showHonestyModal} transparent animationType="none" statusBarTranslucent>
-        <View style={styles.modalContainer}>
-          <Animated.View style={[styles.modalBackdrop, { opacity: backdropAnim }]}>
-            <TouchableOpacity style={styles.modalOverlayTouch} activeOpacity={1} onPress={dismissModal} />
-          </Animated.View>
-
-          <Animated.View style={[
-            styles.modalSheet,
-            {
-              opacity: modalAnim,
-              transform: [{
-                scale: modalAnim.interpolate({ inputRange: [0, 1], outputRange: [0.9, 1] }),
-              }],
-            },
-          ]}>
-            <TouchableOpacity style={styles.closeBtn} onPress={dismissModal} activeOpacity={0.7}>
-              <X size={16} color={Colors.mediumGray} strokeWidth={2.5} />
+      <Modal visible={showHonestyScreen} transparent animationType="none" statusBarTranslucent>
+        <Animated.View style={[styles.honestyContainer, { opacity: screenAnim, paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom, 20) }]}>
+          <View style={styles.honestyHeader}>
+            <TouchableOpacity onPress={dismissHonestyScreen} style={styles.backButton} activeOpacity={0.7}>
+              <ChevronLeft size={24} color={Colors.navy} />
             </TouchableOpacity>
+          </View>
 
-            <Text style={styles.sheetEmoji}>🪞</Text>
-            <Text style={styles.sheetTitle}>Are you sure?</Text>
-            <Text style={styles.sheetSub}>92% of people overestimate this.</Text>
+          <View style={styles.honestyContent}>
+            <Animated.Text style={[styles.honestyEyebrow, fadeSlide(subtitleAnim, 12)]}>
+              92% of people overestimate this
+            </Animated.Text>
+            <Animated.Text style={[styles.honestyHeadline, fadeSlide(titleAnim)]}>
+              are you sure about that?
+            </Animated.Text>
 
-            <View style={styles.sheetOptions}>
-              {HONESTY_OPTIONS.map((opt, i) => (
-                <TouchableOpacity
-                  key={opt.id}
-                  style={[
-                    styles.sheetOption,
-                    i === HONESTY_OPTIONS.length - 1 && styles.sheetOptionLast,
-                  ]}
-                  onPress={() => closeModal(opt.id)}
-                  activeOpacity={0.6}
-                >
-                  <Text style={styles.sheetOptionEmoji}>{opt.emoji}</Text>
-                  <Text style={styles.sheetOptionText}>{opt.label}</Text>
-                </TouchableOpacity>
-              ))}
+            <View style={styles.honestyOptions}>
+              {HONESTY_OPTIONS.map((opt, i) => {
+                const isChosen = honestySelected === opt.id;
+                return (
+                  <Animated.View key={opt.id} style={fadeSlide(honestyOptionAnims[i])}>
+                    <TouchableOpacity
+                      onPress={() => handleHonestySelect(opt)}
+                      activeOpacity={0.8}
+                      style={[
+                        styles.honestyOptionCard,
+                        isChosen && styles.honestyOptionCardSelected,
+                      ]}
+                    >
+                      <Text style={[
+                        styles.honestyOptionLabel,
+                        isChosen && styles.honestyOptionLabelSelected,
+                      ]}>
+                        {opt.label}
+                      </Text>
+                      {isChosen && (
+                        <View style={styles.checkCircle}>
+                          <Check size={14} color={Colors.white} strokeWidth={3} />
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  </Animated.View>
+                );
+              })}
             </View>
-          </Animated.View>
-        </View>
+          </View>
+        </Animated.View>
       </Modal>
     </OnboardingScreen>
   );
@@ -220,90 +256,77 @@ const styles = StyleSheet.create({
   optionLabelActive: {
     color: Colors.navy,
   },
-  modalContainer: {
+  honestyContainer: {
     flex: 1,
-    justifyContent: 'center' as const,
-    alignItems: 'center' as const,
-    paddingHorizontal: 32,
-  },
-  modalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 18, 35, 0.55)',
-  },
-  modalOverlayTouch: {
-    flex: 1,
-  },
-  modalSheet: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    paddingTop: 28,
-    paddingBottom: 8,
+    backgroundColor: '#F7F9FC',
     paddingHorizontal: 24,
-    width: '100%' as const,
-    maxWidth: 340,
-    alignItems: 'center' as const,
-    ...(Platform.OS === 'web'
-      ? { boxShadow: '0px 20px 60px rgba(0,0,0,0.18)' }
-      : {
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 20 },
-          shadowOpacity: 0.18,
-          shadowRadius: 30,
-          elevation: 24,
-        }),
   },
-  closeBtn: {
-    position: 'absolute' as const,
-    top: 14,
-    right: 14,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.lightGray,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  sheetEmoji: {
-    fontSize: 36,
-    marginBottom: 12,
-  },
-  sheetTitle: {
-    fontFamily: Fonts.heading,
-    fontSize: 22,
-    color: Colors.navy,
-    textAlign: 'center' as const,
-    marginBottom: 4,
-  },
-  sheetSub: {
-    fontFamily: Fonts.body,
-    fontSize: 14,
-    color: Colors.mediumGray,
-    textAlign: 'center' as const,
-    marginBottom: 24,
-  },
-  sheetOptions: {
-    width: '100%' as const,
-  },
-  sheetOption: {
+  honestyHeader: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    paddingVertical: 14,
-    paddingHorizontal: 14,
-    marginBottom: 6,
-    borderRadius: 14,
-    backgroundColor: Colors.cream,
-  },
-  sheetOptionLast: {
     marginBottom: 12,
   },
-  sheetOptionEmoji: {
-    fontSize: 18,
-    marginRight: 12,
+  backButton: {
+    width: 36,
+    height: 36,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
-  sheetOptionText: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 15,
-    color: Colors.navy,
+  honestyContent: {
     flex: 1,
+    paddingTop: 20,
+  },
+  honestyEyebrow: {
+    fontFamily: Fonts.body,
+    fontSize: 15,
+    color: Colors.mediumGray,
+    marginBottom: 8,
+    letterSpacing: 0.3,
+  },
+  honestyHeadline: {
+    fontFamily: Fonts.heading,
+    fontSize: 28,
+    color: Colors.navy,
+    lineHeight: 36,
+    marginBottom: 36,
+  },
+  honestyOptions: {
+    gap: 12,
+  },
+  honestyOptionCard: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingVertical: 18,
+    paddingHorizontal: 20,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 6,
+    elevation: 1,
+  },
+  honestyOptionCardSelected: {
+    borderColor: Colors.blue,
+    backgroundColor: '#F0F4FA',
+  },
+  honestyOptionLabel: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 16,
+    color: Colors.darkGray,
+    flex: 1,
+  },
+  honestyOptionLabelSelected: {
+    color: Colors.navy,
+  },
+  checkCircle: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: Colors.blue,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
 });
