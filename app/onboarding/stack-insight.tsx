@@ -122,8 +122,10 @@ export default function StackInsightScreen() {
 
         <Animated.View style={[styles.insightSection, fadeSlide(insightAnim)]}>
           <Text style={styles.insightText}>
-            That's a powerful combination.{'\n'}
-            <Text style={styles.insightMuted}>But only if you actually take them.</Text>
+            That's a powerful combination.
+          </Text>
+          <Text style={styles.insightMuted}>
+            But only if you actually take them.
           </Text>
         </Animated.View>
 
@@ -240,14 +242,14 @@ const styles = StyleSheet.create({
   },
   insightText: {
     fontFamily: Fonts.heading,
-    fontSize: 22,
+    fontSize: 20,
     color: Colors.white,
-    lineHeight: 32,
+    lineHeight: 28,
     letterSpacing: -0.2,
   },
   insightMuted: {
     fontFamily: Fonts.heading,
-    fontSize: 22,
+    fontSize: 20,
     color: 'rgba(255,255,255,0.4)',
   },
   questionSection: {
