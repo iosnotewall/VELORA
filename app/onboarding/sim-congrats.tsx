@@ -3,41 +3,81 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Check, ArrowRight } from 'lucide-react-native';
+import { Check } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { useAppState } from '@/hooks/useAppState';
+import { GOALS } from '@/constants/content';
 import PrimaryButton from '@/components/PrimaryButton';
+
+const GOAL_CONGRATS: Record<string, { title: string; body: string; note: string }> = {
+  energy: {
+    title: 'energy logged',
+    body: 'Your energy data is now being tracked. Over time, you\'ll see exactly how your supplements affect your daily vitality.',
+    note: 'consistent tracking reveals patterns\nyou can\'t feel day-to-day.',
+  },
+  sleep: {
+    title: 'sleep logged',
+    body: 'Your sleep quality is now being tracked. Within weeks, you\'ll see how your supplements shift your rest patterns.',
+    note: 'sleep improvements compound quietly —\ntracking makes them visible.',
+  },
+  focus: {
+    title: 'clarity logged',
+    body: 'Your mental clarity is now being tracked. You\'ll start noticing cognitive patterns tied to your supplement consistency.',
+    note: 'your brain responds to consistency\nbefore you consciously notice.',
+  },
+  stress: {
+    title: 'calm logged',
+    body: 'Your stress levels are now being tracked. Over time, you\'ll see your baseline shift as your nervous system recalibrates.',
+    note: 'stress resilience builds invisibly —\ndata makes the shift undeniable.',
+  },
+  metabolism: {
+    title: 'metabolism logged',
+    body: 'Your metabolic signals are now being tracked. You\'ll see how your body responds to consistent supplementation over time.',
+    note: 'metabolic changes are subtle daily\nbut dramatic over 30 days.',
+  },
+  hormones: {
+    title: 'balance logged',
+    body: 'Your hormonal indicators are now being tracked. Patterns across your cycle will reveal what\'s actually changing.',
+    note: 'hormonal shifts need weeks to show —\ntracking captures what you\'d miss.',
+  },
+  sport: {
+    title: 'recovery logged',
+    body: 'Your recovery and performance data is now being tracked. You\'ll see exactly how supplementation affects your training.',
+    note: 'recovery gains compound —\neach day builds on the last.',
+  },
+  immune: {
+    title: 'health logged',
+    body: 'Your immune resilience is now being tracked. Consistent data shows how your body\'s defenses strengthen over time.',
+    note: 'immune strength builds silently —\ntracking proves it\'s working.',
+  },
+};
+
+const DEFAULT_CONGRATS = {
+  title: 'check-in logged',
+  body: 'Your wellness data is now being tracked. Over time, you\'ll see exactly how consistency changes your baseline.',
+  note: 'every check-in is saved to your journal\nto track how your body responds.',
+};
 
 export default function SimCongratsScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { products, goal } = useAppState();
+  const { userName, goal } = useAppState();
+
+  const congratsData = GOAL_CONGRATS[goal] || DEFAULT_CONGRATS;
+  const goalData = GOALS.find(g => g.id === goal);
+  const goalColor = Colors.category[goal] || Colors.blue;
+  const displayName = userName ? userName.split(' ')[0] : '';
 
   const checkAnim = useRef(new Animated.Value(0)).current;
   const checkScale = useRef(new Animated.Value(0.3)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
-  const subAnim = useRef(new Animated.Value(0)).current;
+  const nameAnim = useRef(new Animated.Value(0)).current;
   const cardAnim = useRef(new Animated.Value(0)).current;
+  const cardScale = useRef(new Animated.Value(0.95)).current;
   const noteAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
-
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-  const productName = products?.[0] || 'Daily Stack';
-
-  const goalLabels: Record<string, string> = {
-    energy: 'energy & vitality',
-    sleep: 'sleep & recovery',
-    stress: 'stress management',
-    focus: 'focus & clarity',
-    hormones: 'hormonal balance',
-    metabolism: 'metabolic health',
-    sport: 'performance & recovery',
-    immune: 'immune support',
-  };
-  const goalLabel = goalLabels[goal] || 'your wellness';
+  const ringPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const useNative = Platform.OS !== 'web';
@@ -52,14 +92,24 @@ export default function SimCongratsScreen() {
       ]),
       Animated.delay(300),
       Animated.timing(titleAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
-      Animated.timing(subAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+      Animated.timing(nameAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
       Animated.delay(300),
-      Animated.spring(cardAnim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 120 }),
+      Animated.parallel([
+        Animated.timing(cardAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+        Animated.spring(cardScale, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 120 }),
+      ]),
       Animated.delay(400),
       Animated.timing(noteAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
       Animated.delay(200),
       Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
     ]).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(ringPulse, { toValue: 1, duration: 2000, useNativeDriver: useNative }),
+        Animated.timing(ringPulse, { toValue: 0, duration: 2000, useNativeDriver: useNative }),
+      ])
+    ).start();
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -76,43 +126,52 @@ export default function SimCongratsScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 40, paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.content}>
         <View style={styles.topSection}>
-          <Animated.View style={[styles.checkCircle, { opacity: checkAnim, transform: [{ scale: checkScale }] }]}>
-            <Check size={32} color={Colors.blue} strokeWidth={3} />
-          </Animated.View>
+          <View style={styles.checkArea}>
+            <Animated.View style={[styles.ringOuter, { opacity: ringPulse.interpolate({ inputRange: [0, 1], outputRange: [0.15, 0.35] }), borderColor: goalColor }]} />
+            <Animated.View style={[styles.checkCircle, { opacity: checkAnim, transform: [{ scale: checkScale }], backgroundColor: goalColor + '18', borderColor: goalColor + '30' }]}>
+              <Check size={32} color={goalColor} strokeWidth={3} />
+            </Animated.View>
+          </View>
 
           <Animated.Text style={[styles.title, fadeSlide(titleAnim)]}>
-            congratulations!
+            {congratsData.title}
           </Animated.Text>
 
-          <Animated.Text style={[styles.subtitle, fadeSlide(subAnim)]}>
-            you've completed your first check-in
-          </Animated.Text>
+          {displayName ? (
+            <Animated.Text style={[styles.nameText, fadeSlide(nameAnim)]}>
+              nice work, {displayName.toLowerCase()}
+            </Animated.Text>
+          ) : (
+            <Animated.Text style={[styles.nameText, fadeSlide(nameAnim)]}>
+              your first check-in is done
+            </Animated.Text>
+          )}
         </View>
 
         <View style={styles.middleSection}>
-          <Animated.View style={[styles.logCard, fadeSlide(cardAnim)]}>
-            <View style={styles.logCardHeader}>
-              <View style={styles.logDot} />
-              <Text style={styles.logTitle}>First Check-in</Text>
-              <Text style={styles.logDate}>{dateStr}</Text>
-            </View>
-            <Text style={styles.logBody} numberOfLines={2}>
-              Tracked {goalLabel} — feeling good. Your supplements are building up in your system.
-            </Text>
-            <View style={styles.logFooter}>
-              <Text style={styles.logProduct}>{productName}</Text>
-              <ArrowRight size={16} color={Colors.blue} strokeWidth={2} />
+          <Animated.View style={[styles.bodyCard, { opacity: cardAnim, transform: [{ scale: cardScale }] }]}>
+            <View style={[styles.cardAccent, { backgroundColor: goalColor }]} />
+            <View style={styles.cardContent}>
+              {goalData && (
+                <View style={[styles.goalTag, { backgroundColor: goalColor + '14' }]}>
+                  <View style={[styles.goalDot, { backgroundColor: goalColor }]} />
+                  <Text style={[styles.goalTagText, { color: goalColor }]}>{goalData.label}</Text>
+                </View>
+              )}
+              <Text style={styles.bodyText}>
+                {congratsData.body}
+              </Text>
             </View>
           </Animated.View>
         </View>
 
         <Animated.Text style={[styles.noteText, fadeSlide(noteAnim)]}>
-          every check-in is saved to your journal{'\n'}to track how your body responds over time.
+          {congratsData.note}
         </Animated.Text>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, transform: [{ translateY: btnAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-        <PrimaryButton title="Continue" onPress={handleContinue} />
+        <PrimaryButton title="continue" onPress={handleContinue} />
       </Animated.View>
     </View>
   );
@@ -130,27 +189,41 @@ const styles = StyleSheet.create({
   topSection: {
     alignItems: 'center' as const,
     paddingTop: 32,
-    marginBottom: 48,
+    marginBottom: 36,
+  },
+  checkArea: {
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 24,
+    width: 88,
+    height: 88,
+  },
+  ringOuter: {
+    position: 'absolute' as const,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    borderWidth: 2,
   },
   checkCircle: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: '#E0E8F5',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 24,
+    borderWidth: 1,
   },
   title: {
     fontFamily: Fonts.heading,
     fontSize: 34,
-    color: Colors.blue,
+    color: Colors.navy,
     textAlign: 'center' as const,
-    marginBottom: 10,
+    marginBottom: 8,
+    letterSpacing: -0.5,
   },
-  subtitle: {
+  nameText: {
     fontFamily: Fonts.bodyMedium,
-    fontSize: 16,
+    fontSize: 17,
     color: Colors.mediumGray,
     textAlign: 'center' as const,
   },
@@ -158,10 +231,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center' as const,
   },
-  logCard: {
+  bodyCard: {
     backgroundColor: Colors.white,
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: 20,
+    overflow: 'hidden' as const,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.06,
@@ -170,45 +243,38 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.04)',
   },
-  logCardHeader: {
+  cardAccent: {
+    height: 3,
+    width: '100%',
+  },
+  cardContent: {
+    padding: 22,
+  },
+  goalTag: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    marginBottom: 10,
+    alignSelf: 'flex-start' as const,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    marginBottom: 14,
+    gap: 7,
   },
-  logDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: Colors.blue,
-    marginRight: 10,
+  goalDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
   },
-  logTitle: {
-    fontFamily: Fonts.heading,
-    fontSize: 16,
-    color: Colors.navy,
-    flex: 1,
+  goalTagText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    letterSpacing: 0.3,
   },
-  logDate: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.mediumGray,
-  },
-  logBody: {
+  bodyText: {
     fontFamily: Fonts.body,
     fontSize: 15,
     color: Colors.darkGray,
-    lineHeight: 22,
-    marginBottom: 14,
-  },
-  logFooter: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-  },
-  logProduct: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 13,
-    color: Colors.blue,
+    lineHeight: 23,
   },
   noteText: {
     fontFamily: Fonts.body,
