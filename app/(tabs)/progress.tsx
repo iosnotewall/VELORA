@@ -199,9 +199,9 @@ function MiniBarChart({ scores, metricKey, color, label }: {
                       opacity: barAnims[i]
                         ? barAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0.3, 1] })
                         : 1,
-                      transform: barAnims[i]
-                        ? [{ scaleY: barAnims[i] }]
-                        : [],
+                      maxHeight: barAnims[i]
+                        ? barAnims[i].interpolate({ inputRange: [0, 1], outputRange: [0, height] })
+                        : height,
                     },
                   ]}
                 />
