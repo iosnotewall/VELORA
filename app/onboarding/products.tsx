@@ -177,7 +177,13 @@ export default function ProductsScreen() {
       ctaText="These are mine"
       ctaEnabled={selected.length > 0}
       onCta={() => {
-        updateState({ products: selected });
+        const customProductsData = customSupplements.map(c => ({
+          id: c.id,
+          name: c.name,
+          tagline: c.tagline,
+          color: c.color,
+        }));
+        updateState({ products: selected, customProducts: customProductsData });
         router.push('/onboarding/stack-insight' as any);
       }}
     >

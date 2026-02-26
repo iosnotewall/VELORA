@@ -3,10 +3,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import createContextHook from '@nkzw/create-context-hook';
 
+export interface CustomProduct {
+  id: string;
+  name: string;
+  tagline: string;
+  color: string;
+}
+
 export interface AppState {
   goal: string;
   gapScore: number;
   products: string[];
+  customProducts: CustomProduct[];
   routineTime: string;
   userName: string;
   currentStreak: number;
@@ -28,6 +36,7 @@ const DEFAULT_STATE: AppState = {
   goal: '',
   gapScore: 0,
   products: [],
+  customProducts: [],
   routineTime: '08:00',
   userName: '',
   currentStreak: 0,

@@ -15,9 +15,13 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 export default function StackInsightScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { products, goal, userName } = useAppState();
+  const { products, goal, userName, customProducts } = useAppState();
 
-  const selectedProducts = PRODUCTS.filter(p => products.includes(p.id));
+  const customProductsFull = (customProducts ?? []).map(c => ({ ...c, goals: [] as string[] }));
+  const selectedProducts = [
+    ...PRODUCTS.filter(p => products.includes(p.id)),
+    ...customProductsFull.filter(c => products.includes(c.id)),
+  ];
   const selectedGoal = GOALS.find(g => g.id === goal);
   const productCount = selectedProducts.length;
 
