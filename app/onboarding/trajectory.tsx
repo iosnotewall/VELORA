@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { View, Text, StyleSheet, Animated, Platform, Dimensions, TouchableOpacity, Modal, Pressable } from 'react-native';
+import { X, Zap, Calendar, TrendingUp } from 'lucide-react-native';
+import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Path, Circle, Defs, LinearGradient, Stop, Filter, FeGaussianBlur } from 'react-native-svg';
@@ -124,6 +126,28 @@ export default function TrajectoryScreen() {
 
   const [upDash, setUpDash] = useState<{ length: number; offset: number }>({ length: 0, offset: 0 });
   const [downDash, setDownDash] = useState<{ length: number; offset: number }>({ length: 0, offset: 0 });
+  const [showHowItWorks, setShowHowItWorks] = useState(false);
+  const modalBgAnim = useRef(new Animated.Value(0)).current;
+  const modalCardAnim = useRef(new Animated.Value(0)).current;
+  const modalScaleAnim = useRef(new Animated.Value(0.85)).current;
+
+  const openModal = useCallback(() => {
+    setShowHowItWorks(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    Animated.parallel([
+      Animated.timing(modalBgAnim, { toValue: 1, duration: 300, useNativeDriver: true }),
+      Animated.spring(modalCardAnim, { toValue: 1, useNativeDriver: true, damping: 20, stiffness: 260, mass: 0.8 }),
+      Animated.spring(modalScaleAnim, { toValue: 1, useNativeDriver: true, damping: 20, stiffness: 260, mass: 0.8 }),
+    ]).start();
+  }, [modalBgAnim, modalCardAnim, modalScaleAnim]);
+
+  const closeModal = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(modalBgAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(modalCardAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+      Animated.timing(modalScaleAnim, { toValue: 0.85, duration: 200, useNativeDriver: true }),
+    ]).start(() => setShowHowItWorks(false));
+  }, [modalBgAnim, modalCardAnim, modalScaleAnim]);
 
   const upPath = generateUpwardPath(GRAPH_WIDTH, GRAPH_HEIGHT);
   const downPath = generateBumpyDownwardPath(GRAPH_WIDTH, GRAPH_HEIGHT);
@@ -317,8 +341,71 @@ export default function TrajectoryScreen() {
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, paddingBottom: Math.max(insets.bottom, 20) }]}>
-        <PrimaryButton title="How it works" onPress={() => router.push('/onboarding/placeholder' as any)} variant="white" />
+        <PrimaryButton title="How it works" onPress={openModal} variant="white" />
       </Animated.View>
+
+      {showHowItWorks && (
+        <Animated.View style={[styles.modalOverlay, { opacity: modalBgAnim }]}>
+          <Pressable style={styles.modalBackdrop} onPress={closeModal} />
+          <Animated.View style={[styles.modalCard, { opacity: modalCardAnim, transform: [{ scale: modalScaleAnim }] }]}>
+            <TouchableOpacity style={styles.modalClose} onPress={closeModal} activeOpacity={0.7}>
+              <View style={styles.modalCloseCircle}>
+                <X size={16} color="#999" strokeWidth={2.5} />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.modalIconWrap}>
+              <Zap size={28} color={ACCENT_COLOR} strokeWidth={2} />
+            </View>
+
+            <Text style={styles.modalTitle}>how it works</Text>
+
+            <View style={styles.stepsContainer}>
+              <View style={styles.stepRow}>
+                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
+                  <Text style={styles.stepNumber}>1</Text>
+                </View>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>check in daily</Text>
+                  <Text style={styles.stepSub}>10 seconds. rate your energy, sleep & mood.</Text>
+                </View>
+              </View>
+
+              <View style={styles.stepRow}>
+                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
+                  <Text style={styles.stepNumber}>2</Text>
+                </View>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>stay consistent</Text>
+                  <Text style={styles.stepSub}>smart reminders so you never miss a dose.</Text>
+                </View>
+              </View>
+
+              <View style={styles.stepRow}>
+                <View style={[styles.stepBadge, { backgroundColor: ACCENT_COLOR }]}>
+                  <Text style={styles.stepNumber}>3</Text>
+                </View>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>see real results</Text>
+                  <Text style={styles.stepSub}>proof your supplements work — in 30 days.</Text>
+                </View>
+              </View>
+            </View>
+
+            <Text style={styles.modalFooterText}>
+              your supplements already work.{"\n"}Volera makes sure <Text style={styles.modalFooterBold}>you</Text> do too.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.modalGetStarted}
+              onPress={() => { closeModal(); setTimeout(() => router.push('/onboarding/notification' as any), 300); }}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.modalGetStartedText}>Get Started</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
+      )}
     </View>
   );
 }
@@ -446,5 +533,129 @@ const styles = StyleSheet.create({
   footer: {
     paddingHorizontal: 24,
     paddingTop: 16,
+  },
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
+    zIndex: 100,
+  },
+  modalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  modalCard: {
+    width: SCREEN_WIDTH - 48,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 24,
+    paddingTop: 32,
+    paddingBottom: 28,
+    paddingHorizontal: 28,
+    alignItems: 'center' as const,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 20,
+  },
+  modalClose: {
+    position: 'absolute' as const,
+    top: 14,
+    right: 14,
+    zIndex: 10,
+  },
+  modalCloseCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#F0F0F0',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  modalIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: 'rgba(74,144,217,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(74,144,217,0.2)',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 24,
+    color: '#1A1A1A',
+    letterSpacing: -0.3,
+    marginBottom: 28,
+  },
+  stepsContainer: {
+    width: '100%' as const,
+    gap: 20,
+    marginBottom: 28,
+  },
+  stepRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'flex-start' as const,
+    gap: 14,
+  },
+  stepBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginTop: 1,
+  },
+  stepNumber: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 14,
+    color: '#FFFFFF',
+    fontWeight: '700' as const,
+  },
+  stepTextWrap: {
+    flex: 1,
+  },
+  stepText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 16,
+    color: '#1A1A1A',
+    fontWeight: '600' as const,
+    marginBottom: 2,
+  },
+  stepSub: {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 13,
+    color: '#888',
+    lineHeight: 18,
+  },
+  modalFooterText: {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 14,
+    color: '#AAA',
+    textAlign: 'center' as const,
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  modalFooterBold: {
+    fontFamily: Fonts.bodySemiBold,
+    fontWeight: '600' as const,
+    color: '#888',
+  },
+  modalGetStarted: {
+    width: '100%' as const,
+    height: 52,
+    borderRadius: 100,
+    backgroundColor: ACCENT_COLOR,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  modalGetStartedText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: '600' as const,
+    letterSpacing: 0.2,
   },
 });
