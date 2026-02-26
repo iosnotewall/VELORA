@@ -30,6 +30,7 @@ export default function ProductsScreen() {
   const addRowAnim = useRef(new Animated.Value(1)).current;
   const customFormAnim = useRef(new Animated.Value(0)).current;
   const rowAnims = useRef(PRODUCTS.map(() => new Animated.Value(0))).current;
+  const customAnimsRef = useRef<Record<string, Animated.Value>>({});
 
   useEffect(() => {
     const animations = PRODUCTS.map((_, i) =>
@@ -50,7 +51,7 @@ export default function ProductsScreen() {
       goals: [],
       isCustom: true,
     }));
-    return [...PRODUCTS, ...customs];
+    return [...customs, ...PRODUCTS];
   }, [customSupplements]);
 
   const filtered = useMemo(() => {
@@ -127,9 +128,23 @@ export default function ProductsScreen() {
       isCustom: true,
     };
 
-    setCustomSupplements(prev => [...prev, newSupplement]);
+    const entryAnim = new Animated.Value(0);
+    customAnimsRef.current[newSupplement.id] = entryAnim;
+
+    setCustomSupplements(prev => [newSupplement, ...prev]);
     setSelected(prev => [...prev, newSupplement.id]);
     setQuery('');
+
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(entryAnim, {
+          toValue: 1,
+          duration: 380,
+          easing: Easing.out(Easing.back(1.3)),
+          useNativeDriver: Platform.OS !== 'web',
+        }),
+      ]).start();
+    }, 50);
 
     Animated.parallel([
       Animated.timing(customFormAnim, {
@@ -269,7 +284,7 @@ export default function ProductsScreen() {
         {filtered.map((product, index) => {
           const isSelected = selected.includes(product.id);
           const isCustom = 'isCustom' in product && (product as CustomSupplement).isCustom === true;
-          const animIndex = index < PRODUCTS.length ? index : -1;
+          const animIndex = !isCustom ? index : -1;
 
           const rowContent: React.ReactNode = (
             <TouchableOpacity
@@ -304,14 +319,39 @@ export default function ProductsScreen() {
             </TouchableOpacity>
           );
 
+          if (isCustom) {
+            const entryAnim = customAnimsRef.current[product.id];
+            if (entryAnim) {
+              return (
+                <Animated.View
+                  key={product.id}
+                  style={{
+                    opacity: entryAnim,
+                    transform: [{
+                      translateY: entryAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [-20, 0],
+                      }),
+                    }],
+                  }}
+                >
+                  {rowContent}
+                </Animated.View>
+              );
+            }
+            return <View key={product.id}>{rowContent}</View>;
+          }
+
           if (animIndex >= 0) {
+            const adjustedIndex = index - customSupplements.length;
+            const safeIndex = adjustedIndex >= 0 && adjustedIndex < rowAnims.length ? adjustedIndex : 0;
             return (
               <Animated.View
                 key={product.id}
                 style={{
-                  opacity: rowAnims[animIndex],
+                  opacity: rowAnims[safeIndex],
                   transform: [{
-                    translateY: rowAnims[animIndex].interpolate({
+                    translateY: rowAnims[safeIndex].interpolate({
                       inputRange: [0, 1],
                       outputRange: [16, 0],
                     }),
