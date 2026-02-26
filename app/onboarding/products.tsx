@@ -245,12 +245,12 @@ export default function ProductsScreen() {
         >
           <View style={styles.customFormInner}>
             <View style={styles.customInputRow}>
-              <Pill size={16} color={Colors.blue} strokeWidth={2} />
+              <Pill size={16} color={Colors.deepBlue} strokeWidth={2.5} />
               <TextInput
                 ref={customInputRef}
                 style={styles.customInput}
                 placeholder="e.g. Ashwagandha, Zinc…"
-                placeholderTextColor={Colors.border}
+                placeholderTextColor={Colors.mediumGray}
                 value={customName}
                 onChangeText={setCustomName}
                 autoCapitalize="words"
@@ -426,10 +426,10 @@ const styles = StyleSheet.create({
   addCustomRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: Colors.blueBg,
+    backgroundColor: '#E0E8F5',
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: Colors.blue + '30',
+    borderColor: Colors.blue + '70',
     borderStyle: 'dashed' as const,
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -440,7 +440,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 10,
-    backgroundColor: Colors.blue + '15',
+    backgroundColor: Colors.blue + '20',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
@@ -456,14 +456,14 @@ const styles = StyleSheet.create({
   addSubtitle: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: Colors.blue + '80',
+    color: Colors.deepBlue,
     marginTop: 1,
   },
   addArrow: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: Colors.blue + '12',
+    backgroundColor: Colors.blue + '25',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
@@ -476,11 +476,11 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: Colors.blue,
     overflow: 'hidden' as const,
-    shadowColor: Colors.blue,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
-    elevation: 10,
+    shadowColor: Colors.navy,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    elevation: 12,
   },
   customInputRow: {
     flexDirection: 'row' as const,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     gap: 12,
     borderBottomWidth: 1.5,
-    borderBottomColor: Colors.blue + '25',
+    borderBottomColor: Colors.blue + '40',
     backgroundColor: Colors.white,
   },
   customInput: {
@@ -506,14 +506,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
-    backgroundColor: Colors.blueBg,
+    backgroundColor: '#E0E8F5',
   },
   customCancelBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: Colors.border,
+    borderColor: Colors.navy + '20',
     backgroundColor: Colors.white,
   },
   customCancelText: {
@@ -525,7 +525,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.blue,
+    backgroundColor: Colors.deepBlue,
   },
   customAddBtnDisabled: {
     backgroundColor: Colors.border,
