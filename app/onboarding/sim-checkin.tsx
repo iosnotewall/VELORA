@@ -5,7 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-import { GOAL_METRICS, GOALS } from '@/constants/content';
+import { GOALS } from '@/constants/content';
 import { useAppState } from '@/hooks/useAppState';
 import PrimaryButton from '@/components/PrimaryButton';
 
@@ -26,56 +26,56 @@ const GOAL_CHECKIN_CONFIG: Record<string, MetricConfig> = {
     question: "how's your energy\nright now?",
     lowLabel: 'drained',
     highLabel: 'energized',
-    color: '#D4A853',
+    color: '#C4943E',
     emoji: ['😔', '😐', '🙂', '😊', '⚡'],
   },
   sleep: {
     question: "how did you sleep\nlast night?",
     lowLabel: 'terrible',
     highLabel: 'amazing',
-    color: '#7B8FC4',
+    color: '#6B7DB4',
     emoji: ['😩', '😴', '🙂', '😌', '✨'],
   },
   focus: {
     question: "how clear is your\nthinking today?",
     lowLabel: 'foggy',
     highLabel: 'crystal clear',
-    color: '#8B6BB8',
+    color: '#7B5BA8',
     emoji: ['🌫️', '😶', '🙂', '🧠', '🎯'],
   },
   stress: {
     question: "how calm are you\nfeeling right now?",
     lowLabel: 'overwhelmed',
     highLabel: 'at peace',
-    color: '#7B8FC4',
+    color: '#6B7DB4',
     emoji: ['😰', '😟', '😐', '😌', '🍃'],
   },
   metabolism: {
     question: "how's your body\nfeeling today?",
     lowLabel: 'sluggish',
     highLabel: 'balanced',
-    color: '#D4A853',
+    color: '#C4943E',
     emoji: ['😫', '😐', '🙂', '💪', '🔥'],
   },
   hormones: {
     question: "how stable is your\nmood today?",
     lowLabel: 'all over the place',
     highLabel: 'very stable',
-    color: '#C4857A',
+    color: '#B4756A',
     emoji: ['🎭', '😔', '😐', '😊', '💖'],
   },
   sport: {
     question: "how recovered do\nyou feel?",
     lowLabel: 'sore',
     highLabel: 'fully recovered',
-    color: '#5A8A6F',
+    color: '#4A7A5F',
     emoji: ['🥴', '😤', '🙂', '💪', '🏆'],
   },
   immune: {
     question: "how strong are you\nfeeling today?",
     lowLabel: 'under the weather',
     highLabel: 'strong',
-    color: '#4A90D9',
+    color: '#3A80C9',
     emoji: ['🤒', '😕', '🙂', '😊', '🛡️'],
   },
 };
@@ -84,19 +84,8 @@ const DEFAULT_CONFIG: MetricConfig = {
   question: "how are you\nfeeling today?",
   lowLabel: 'not great',
   highLabel: 'amazing',
-  color: '#4A90D9',
+  color: '#3A80C9',
   emoji: ['😔', '😐', '🙂', '😊', '✨'],
-};
-
-const BG_COLORS: Record<string, string[]> = {
-  energy: ['#2A1F0A', '#1F2210', '#1A2010', '#1E2A0C', '#2A2500'],
-  sleep: ['#1A1428', '#151838', '#0E1A38', '#0A1E3A', '#0B1A40'],
-  focus: ['#1E1428', '#1A1838', '#141A38', '#0E2040', '#0A1842'],
-  stress: ['#0A2018', '#0E2420', '#102820', '#143022', '#103420'],
-  metabolism: ['#2A1F0A', '#241C08', '#1F2010', '#1E2A0C', '#2A2200'],
-  hormones: ['#2A1418', '#281520', '#221828', '#1E1A30', '#1A1835'],
-  sport: ['#0A2014', '#0E2818', '#102A18', '#14301A', '#103418'],
-  immune: ['#0A1428', '#0E1830', '#101C38', '#0A2040', '#081E48'],
 };
 
 export default function SimCheckinScreen() {
@@ -105,10 +94,8 @@ export default function SimCheckinScreen() {
   const { goal, userName } = useAppState();
 
   const config = GOAL_CHECKIN_CONFIG[goal] || DEFAULT_CONFIG;
-  const bgColors = BG_COLORS[goal] || ['#1A1428', '#1A2438', '#0B1A2E', '#142E20', '#0A1842'];
 
   const [selectedScore, setSelectedScore] = useState<number | null>(null);
-  const [autoPlaying, setAutoPlaying] = useState(true);
 
   const greetAnim = useRef(new Animated.Value(0)).current;
   const titleAnim = useRef(new Animated.Value(0)).current;
@@ -116,8 +103,7 @@ export default function SimCheckinScreen() {
   const scoresAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
   const emojiScale = useRef(new Animated.Value(1)).current;
-  const labelAnim = useRef(new Animated.Value(1)).current;
-  const bgColorAnim = useRef(new Animated.Value(2)).current;
+  const labelAnim = useRef(new Animated.Value(0)).current;
 
   const scoreButtonAnims = useRef(SCORE_OPTIONS.map(() => new Animated.Value(0))).current;
   const scoreScaleAnims = useRef(SCORE_OPTIONS.map(() => new Animated.Value(1))).current;
@@ -138,56 +124,43 @@ export default function SimCheckinScreen() {
       ...SCORE_OPTIONS.map((_, i) =>
         Animated.spring(scoreButtonAnims[i], { toValue: 1, useNativeDriver: useNative, damping: 14, stiffness: 180, delay: i * 60 })
       ),
-    ]).start(() => {
-      setTimeout(() => {
-        animateToScore(3);
-        setTimeout(() => {
-          animateToScore(4);
-          setTimeout(() => {
-            setAutoPlaying(false);
-            Animated.spring(btnAnim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 140 }).start();
-          }, 700);
-        }, 700);
-      }, 500);
-    });
+    ]).start();
   }, []);
 
-  const animateToScore = useCallback((score: number) => {
+  const handleSelectScore = useCallback((score: number) => {
+    const wasNull = selectedScore === null;
     setSelectedScore(score);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
     const idx = score - 1;
+    const useNative = Platform.OS !== 'web';
+
     Animated.parallel([
       Animated.sequence([
-        Animated.timing(emojiScale, { toValue: 1.2, duration: 120, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.spring(emojiScale, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 12, stiffness: 200 }),
+        Animated.timing(emojiScale, { toValue: 1.2, duration: 120, useNativeDriver: useNative }),
+        Animated.spring(emojiScale, { toValue: 1, useNativeDriver: useNative, damping: 12, stiffness: 200 }),
       ]),
+      Animated.timing(labelAnim, { toValue: 1, duration: 250, useNativeDriver: useNative }),
       Animated.sequence([
-        Animated.timing(labelAnim, { toValue: 0, duration: 80, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.timing(labelAnim, { toValue: 1, duration: 200, useNativeDriver: Platform.OS !== 'web' }),
-      ]),
-      Animated.timing(bgColorAnim, { toValue: idx, duration: 500, useNativeDriver: false }),
-      Animated.sequence([
-        Animated.timing(scoreScaleAnims[idx], { toValue: 1.15, duration: 100, useNativeDriver: Platform.OS !== 'web' }),
-        Animated.spring(scoreScaleAnims[idx], { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 12, stiffness: 200 }),
+        Animated.timing(scoreScaleAnims[idx], { toValue: 1.15, duration: 100, useNativeDriver: useNative }),
+        Animated.spring(scoreScaleAnims[idx], { toValue: 1, useNativeDriver: useNative, damping: 12, stiffness: 200 }),
       ]),
     ]).start();
-  }, [emojiScale, labelAnim, bgColorAnim, scoreScaleAnims]);
+
+    if (wasNull) {
+      Animated.spring(btnAnim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 140 }).start();
+    }
+  }, [selectedScore, emojiScale, labelAnim, scoreScaleAnims, btnAnim]);
 
   const handleContinue = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/onboarding/sim-congrats' as any);
   }, [router]);
 
-  const currentEmoji = selectedScore !== null ? config.emoji[selectedScore - 1] : config.emoji[2];
+  const currentEmoji = selectedScore !== null ? config.emoji[selectedScore - 1] : '🫶';
   const currentLabel = selectedScore !== null
     ? selectedScore <= 2 ? config.lowLabel : selectedScore >= 4 ? config.highLabel : 'okay'
-    : 'okay';
-
-  const bgColor = bgColorAnim.interpolate({
-    inputRange: [0, 1, 2, 3, 4],
-    outputRange: bgColors,
-  });
+    : 'tap to rate';
 
   const fadeSlide = (anim: Animated.Value, dist = 20) => ({
     opacity: anim,
@@ -197,10 +170,10 @@ export default function SimCheckinScreen() {
   const displayName = userName ? userName.split(' ')[0].toLowerCase() : '';
 
   return (
-    <Animated.View style={[styles.container, { backgroundColor: bgColor, paddingBottom: Math.max(insets.bottom, 20) }]}>
+    <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={[styles.topArea, { paddingTop: insets.top + 50 }]}>
-        <Animated.View style={[styles.simBadge, fadeSlide(greetAnim)]}>
-          <Text style={styles.simBadgeText}>DAILY CHECK-IN</Text>
+        <Animated.View style={[styles.badge, fadeSlide(greetAnim)]}>
+          <Text style={styles.badgeText}>DAILY CHECK-IN</Text>
         </Animated.View>
 
         {displayName ? (
@@ -217,7 +190,7 @@ export default function SimCheckinScreen() {
           <Text style={styles.emoji}>{currentEmoji}</Text>
         </Animated.View>
 
-        <Animated.Text style={[styles.moodLabel, { opacity: labelAnim, color: config.color }]}>
+        <Animated.Text style={[styles.moodLabel, { opacity: labelAnim, color: selectedScore !== null ? config.color : Colors.mediumGray }]}>
           {currentLabel}
         </Animated.Text>
 
@@ -236,7 +209,7 @@ export default function SimCheckinScreen() {
                 }}
               >
                 <TouchableOpacity
-                  onPress={() => !autoPlaying && animateToScore(score)}
+                  onPress={() => handleSelectScore(score)}
                   activeOpacity={0.7}
                   style={[
                     styles.scoreButton,
@@ -262,46 +235,47 @@ export default function SimCheckinScreen() {
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, transform: [{ translateY: btnAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }) }] }]}>
-        <PrimaryButton title="log check-in" onPress={handleContinue} variant="white" />
+        <PrimaryButton title="log check-in" onPress={handleContinue} disabled={selectedScore === null} />
       </Animated.View>
-    </Animated.View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FAF7F2',
   },
   topArea: {
     flex: 1,
     alignItems: 'center' as const,
     paddingHorizontal: 32,
   },
-  simBadge: {
-    backgroundColor: 'rgba(255,255,255,0.08)',
+  badge: {
+    backgroundColor: 'rgba(26,31,60,0.06)',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 5,
     marginBottom: 24,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: 'rgba(26,31,60,0.04)',
   },
-  simBadgeText: {
+  badgeText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(26,31,60,0.35)',
     letterSpacing: 1.5,
   },
   greeting: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 18,
-    color: 'rgba(255,255,255,0.6)',
+    color: Colors.mediumGray,
     marginBottom: 12,
   },
   title: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: '#FFFFFF',
+    color: Colors.navy,
     textAlign: 'center' as const,
     lineHeight: 40,
     marginBottom: 36,
@@ -330,16 +304,16 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(26,31,60,0.04)',
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(26,31,60,0.08)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
   scoreText: {
     fontFamily: Fonts.heading,
     fontSize: 18,
-    color: 'rgba(255,255,255,0.4)',
+    color: 'rgba(26,31,60,0.3)',
   },
   scoreTextActive: {
     color: '#FFFFFF',
@@ -353,7 +327,7 @@ const styles = StyleSheet.create({
   scaleLabelText: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.3)',
+    color: 'rgba(26,31,60,0.25)',
   },
   footer: {
     paddingHorizontal: 28,

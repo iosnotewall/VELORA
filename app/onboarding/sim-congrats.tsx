@@ -128,7 +128,7 @@ export default function SimCongratsScreen() {
         <View style={styles.topSection}>
           <View style={styles.checkArea}>
             <Animated.View style={[styles.ringOuter, { opacity: ringPulse.interpolate({ inputRange: [0, 1], outputRange: [0.15, 0.35] }), borderColor: goalColor }]} />
-            <Animated.View style={[styles.checkCircle, { opacity: checkAnim, transform: [{ scale: checkScale }], backgroundColor: goalColor + '18', borderColor: goalColor + '30' }]}>
+            <Animated.View style={[styles.checkCircle, { opacity: checkAnim, transform: [{ scale: checkScale }], backgroundColor: goalColor + '14', borderColor: goalColor + '25' }]}>
               <Check size={32} color={goalColor} strokeWidth={3} />
             </Animated.View>
           </View>
@@ -153,7 +153,7 @@ export default function SimCongratsScreen() {
             <View style={[styles.cardAccent, { backgroundColor: goalColor }]} />
             <View style={styles.cardContent}>
               {goalData && (
-                <View style={[styles.goalTag, { backgroundColor: goalColor + '14' }]}>
+                <View style={[styles.goalTag, { backgroundColor: goalColor + '10' }]}>
                   <View style={[styles.goalDot, { backgroundColor: goalColor }]} />
                   <Text style={[styles.goalTagText, { color: goalColor }]}>{goalData.label}</Text>
                 </View>
@@ -180,7 +180,7 @@ export default function SimCongratsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#FAF7F2',
     paddingHorizontal: 24,
   },
   content: {
@@ -232,16 +232,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center' as const,
   },
   bodyCard: {
-    backgroundColor: Colors.white,
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     overflow: 'hidden' as const,
-    shadowColor: '#000',
+    shadowColor: '#8A7A68',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.04)',
+    borderColor: 'rgba(138,122,104,0.06)',
   },
   cardAccent: {
     height: 3,

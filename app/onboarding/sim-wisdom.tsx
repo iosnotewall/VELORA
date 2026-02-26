@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { BookOpen } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
@@ -54,6 +55,7 @@ export default function SimWisdomScreen() {
   const { goal } = useAppState();
 
   const insight = INSIGHTS[goal] || DEFAULT_INSIGHT;
+  const goalColor = Colors.category[goal] || Colors.blue;
 
   const badgeAnim = useRef(new Animated.Value(0)).current;
   const cardAnim = useRef(new Animated.Value(0)).current;
@@ -61,7 +63,6 @@ export default function SimWisdomScreen() {
   const quoteAnim = useRef(new Animated.Value(0)).current;
   const sourceAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
-  const glowAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const useNative = Platform.OS !== 'web';
@@ -81,13 +82,6 @@ export default function SimWisdomScreen() {
       Animated.delay(400),
       Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
     ]).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(glowAnim, { toValue: 1, duration: 2500, useNativeDriver: useNative }),
-        Animated.timing(glowAnim, { toValue: 0, duration: 2500, useNativeDriver: useNative }),
-      ])
-    ).start();
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -104,24 +98,30 @@ export default function SimWisdomScreen() {
     <View style={[styles.container, { paddingTop: insets.top + 40, paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.content}>
         <Animated.View style={[styles.badge, fadeSlide(badgeAnim)]}>
-          <Text style={styles.badgeText}>INSIGHT OF THE DAY</Text>
+          <BookOpen size={13} color={goalColor} strokeWidth={2.5} />
+          <Text style={[styles.badgeText, { color: goalColor }]}>INSIGHT OF THE DAY</Text>
         </Animated.View>
 
         <Animated.View style={[styles.card, { opacity: cardAnim, transform: [{ scale: cardScale }] }]}>
-          <Animated.View style={[styles.glowBorder, { opacity: glowAnim.interpolate({ inputRange: [0, 1], outputRange: [0.3, 0.7] }) }]} />
+          <View style={[styles.cardTopBar, { backgroundColor: goalColor }]} />
 
-          <Animated.Text style={[styles.quoteText, fadeSlide(quoteAnim, 12)]}>
-            {insight.quote}
-          </Animated.Text>
+          <View style={styles.cardInner}>
+            <View style={[styles.quoteBar, { backgroundColor: goalColor + '30' }]} />
+            <Animated.Text style={[styles.quoteText, fadeSlide(quoteAnim, 12)]}>
+              {insight.quote}
+            </Animated.Text>
+          </View>
 
-          <Animated.Text style={[styles.sourceText, fadeSlide(sourceAnim, 8)]}>
-            {insight.source}
-          </Animated.Text>
+          <View style={styles.sourceRow}>
+            <Animated.Text style={[styles.sourceText, { color: goalColor }, fadeSlide(sourceAnim, 8)]}>
+              {insight.source}
+            </Animated.Text>
+          </View>
         </Animated.View>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, transform: [{ translateY: btnAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-        <PrimaryButton title="continue" onPress={handleContinue} variant="white" />
+        <PrimaryButton title="continue" onPress={handleContinue} />
       </Animated.View>
     </View>
   );
@@ -130,7 +130,7 @@ export default function SimWisdomScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1A2E',
+    backgroundColor: '#FAF7F2',
   },
   content: {
     flex: 1,
@@ -139,47 +139,65 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   badge: {
-    backgroundColor: 'rgba(74,144,217,0.12)',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    backgroundColor: 'rgba(26,31,60,0.04)',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingVertical: 7,
     marginBottom: 32,
     borderWidth: 1,
-    borderColor: 'rgba(74,144,217,0.2)',
+    borderColor: 'rgba(26,31,60,0.04)',
   },
   badgeText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 11,
-    color: Colors.blue,
     letterSpacing: 2,
   },
   card: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 24,
-    padding: 28,
-    borderWidth: 1,
-    borderColor: 'rgba(74,144,217,0.15)',
-    position: 'relative' as const,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
     overflow: 'hidden' as const,
+    shadowColor: '#8A7A68',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(138,122,104,0.06)',
   },
-  glowBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: 'rgba(74,144,217,0.4)',
+  cardTopBar: {
+    height: 3,
+    width: '100%',
+  },
+  cardInner: {
+    flexDirection: 'row' as const,
+    padding: 24,
+    paddingBottom: 16,
+  },
+  quoteBar: {
+    width: 3,
+    borderRadius: 2,
+    marginRight: 16,
+    minHeight: 40,
   },
   quoteText: {
+    flex: 1,
     fontFamily: Fonts.heading,
-    fontSize: 22,
-    color: '#FFFFFF',
-    lineHeight: 34,
-    marginBottom: 20,
+    fontSize: 20,
+    color: Colors.navy,
+    lineHeight: 30,
+  },
+  sourceRow: {
+    paddingHorizontal: 24,
+    paddingBottom: 22,
+    paddingLeft: 43,
   },
   sourceText: {
     fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
-    color: Colors.blue,
+    fontSize: 13,
     fontStyle: 'italic' as const,
   },
   footer: {

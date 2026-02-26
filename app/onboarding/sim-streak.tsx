@@ -1,13 +1,11 @@
 import React, { useEffect, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, Animated, Platform, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 const WEEK_DAYS = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
 
@@ -26,11 +24,6 @@ export default function SimStreakScreen() {
   const calAnim = useRef(new Animated.Value(0)).current;
   const btnAnim = useRef(new Animated.Value(0)).current;
   const firePulse = useRef(new Animated.Value(1)).current;
-  const fireGlow = useRef(new Animated.Value(0.3)).current;
-
-  const particle1 = useRef(new Animated.Value(0)).current;
-  const particle2 = useRef(new Animated.Value(0)).current;
-  const particle3 = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const useNative = Platform.OS !== 'web';
@@ -55,30 +48,10 @@ export default function SimStreakScreen() {
 
     Animated.loop(
       Animated.sequence([
-        Animated.timing(firePulse, { toValue: 1.08, duration: 1200, useNativeDriver: useNative }),
+        Animated.timing(firePulse, { toValue: 1.06, duration: 1200, useNativeDriver: useNative }),
         Animated.timing(firePulse, { toValue: 1, duration: 1200, useNativeDriver: useNative }),
       ])
     ).start();
-
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(fireGlow, { toValue: 0.6, duration: 1500, useNativeDriver: useNative }),
-        Animated.timing(fireGlow, { toValue: 0.3, duration: 1500, useNativeDriver: useNative }),
-      ])
-    ).start();
-
-    const animateParticle = (p: Animated.Value) => {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(p, { toValue: 1, duration: 1800 + Math.random() * 800, useNativeDriver: useNative }),
-          Animated.timing(p, { toValue: 0, duration: 0, useNativeDriver: useNative }),
-        ])
-      ).start();
-    };
-
-    setTimeout(() => animateParticle(particle1), 0);
-    setTimeout(() => animateParticle(particle2), 600);
-    setTimeout(() => animateParticle(particle3), 1200);
   }, []);
 
   const handleContinue = useCallback(() => {
@@ -91,15 +64,6 @@ export default function SimStreakScreen() {
     transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [dist, 0] }) }],
   });
 
-  const particleStyle = (p: Animated.Value, offsetX: number) => ({
-    opacity: p.interpolate({ inputRange: [0, 0.2, 0.8, 1], outputRange: [0, 0.8, 0.2, 0] }),
-    transform: [
-      { translateY: p.interpolate({ inputRange: [0, 1], outputRange: [0, -60] }) },
-      { translateX: p.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, offsetX, offsetX * 1.5] }) },
-      { scale: p.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.8, 1, 0.3] }) },
-    ],
-  });
-
   const startOfWeek = new Date(today);
   startOfWeek.setDate(today.getDate() - todayDayIndex);
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -108,18 +72,13 @@ export default function SimStreakScreen() {
     return d.getDate();
   });
 
+  const accentColor = '#D4803A';
+
   return (
     <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.content}>
         <View style={styles.fireSection}>
-          <Animated.View style={[styles.fireGlowOuter, { opacity: fireGlow, transform: [{ scale: firePulse }] }]} />
-
-          <View style={styles.particlesContainer}>
-            <Animated.Text style={[styles.particle, particleStyle(particle1, -8)]}>🔥</Animated.Text>
-            <Animated.Text style={[styles.particle, particleStyle(particle2, 12)]}>✨</Animated.Text>
-            <Animated.Text style={[styles.particle, particleStyle(particle3, -4)]}>🔥</Animated.Text>
-          </View>
-
+          <Animated.View style={[styles.fireGlow, { transform: [{ scale: firePulse }] }]} />
           <Animated.View style={{ opacity: fireAnim, transform: [{ scale: fireScale }] }}>
             <Animated.Text style={[styles.fireEmoji, { transform: [{ scale: firePulse }] }]}>
               🔥
@@ -141,28 +100,31 @@ export default function SimStreakScreen() {
 
         <Animated.View style={[styles.calendarCard, fadeSlide(calAnim)]}>
           <View style={styles.calendarDays}>
-            {WEEK_DAYS.map((day, i) => (
-              <View key={day} style={styles.calDayCol}>
-                <Text style={styles.calDayLabel}>{day}</Text>
-                <View style={[
-                  styles.calDateCircle,
-                  i === todayDayIndex && styles.calDateCircleActive,
-                ]}>
-                  <Text style={[
-                    styles.calDateText,
-                    i === todayDayIndex && styles.calDateTextActive,
+            {WEEK_DAYS.map((day, i) => {
+              const isToday = i === todayDayIndex;
+              return (
+                <View key={day} style={styles.calDayCol}>
+                  <Text style={[styles.calDayLabel, isToday && { color: accentColor }]}>{day}</Text>
+                  <View style={[
+                    styles.calDateCircle,
+                    isToday && { backgroundColor: accentColor },
                   ]}>
-                    {weekDates[i]}
-                  </Text>
+                    <Text style={[
+                      styles.calDateText,
+                      isToday && styles.calDateTextActive,
+                    ]}>
+                      {weekDates[i]}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </Animated.View>
       </View>
 
       <Animated.View style={[styles.footer, { opacity: btnAnim, transform: [{ translateY: btnAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] }]}>
-        <PrimaryButton title="continue" onPress={handleContinue} variant="white" />
+        <PrimaryButton title="continue" onPress={handleContinue} />
       </Animated.View>
     </View>
   );
@@ -171,7 +133,7 @@ export default function SimStreakScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1A2E',
+    backgroundColor: '#FAF7F2',
   },
   content: {
     flex: 1,
@@ -182,35 +144,24 @@ const styles = StyleSheet.create({
   fireSection: {
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 20,
+    marginBottom: 16,
     position: 'relative' as const,
   },
-  fireGlowOuter: {
+  fireGlow: {
     position: 'absolute' as const,
-    width: 160,
-    height: 160,
-    borderRadius: 80,
-    backgroundColor: 'rgba(255,120,30,0.12)',
-  },
-  particlesContainer: {
-    position: 'absolute' as const,
-    width: 100,
-    height: 100,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  particle: {
-    position: 'absolute' as const,
-    fontSize: 16,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(212,128,58,0.08)',
   },
   fireEmoji: {
-    fontSize: 80,
+    fontSize: 72,
     textAlign: 'center' as const,
   },
   streakNumber: {
     fontFamily: Fonts.heading,
     fontSize: 72,
-    color: '#FFFFFF',
+    color: Colors.navy,
     letterSpacing: -2,
     lineHeight: 80,
     marginBottom: 4,
@@ -218,25 +169,30 @@ const styles = StyleSheet.create({
   streakLabel: {
     fontFamily: Fonts.heading,
     fontSize: 24,
-    color: '#FFFFFF',
+    color: Colors.navy,
     marginBottom: 10,
   },
   streakSub: {
     fontFamily: Fonts.body,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.5)',
+    color: Colors.mediumGray,
     textAlign: 'center' as const,
     lineHeight: 22,
     marginBottom: 36,
   },
   calendarCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 18,
     paddingVertical: 18,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: 'rgba(138,122,104,0.08)',
     width: '100%',
+    shadowColor: '#8A7A68',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+    elevation: 3,
   },
   calendarDays: {
     flexDirection: 'row' as const,
@@ -249,32 +205,24 @@ const styles = StyleSheet.create({
   calDayLabel: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.35)',
+    color: 'rgba(26,31,60,0.3)',
     textTransform: 'lowercase' as const,
   },
   calDateCircle: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: 'rgba(26,31,60,0.04)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  calDateCircleActive: {
-    backgroundColor: Colors.blue,
-    shadowColor: Colors.blue,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
+  calDateTextActive: {
+    color: '#FFFFFF',
   },
   calDateText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.35)',
-  },
-  calDateTextActive: {
-    color: '#FFFFFF',
+    color: 'rgba(26,31,60,0.3)',
   },
   footer: {
     paddingHorizontal: 28,
