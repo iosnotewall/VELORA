@@ -239,7 +239,6 @@ export default function ProductsScreen() {
           style={[
             styles.customFormWrap,
             {
-              opacity: customFormAnim,
               transform: [{
                 scale: customFormAnim.interpolate({
                   inputRange: [0, 1],
