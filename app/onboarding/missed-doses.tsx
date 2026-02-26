@@ -22,7 +22,7 @@ const OPTIONS = [
     label: '3-4 days a week',
     desc: 'I try but life gets in the way',
     value: 4,
-    pct: 50,
+    pct: 48,
   },
   {
     id: 'five-six' as const,
