@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontFamily: Fonts.bodySemiBold,
     fontSize: 18,
-    color: Colors.navy,
+    color: '#1A1D2B',
     paddingVertical: 0,
   },
   customActions: {
@@ -506,37 +506,35 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
     gap: 10,
-    backgroundColor: '#E0E8F5',
+    backgroundColor: Colors.white,
   },
   customCancelBtn: {
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.navy + '20',
-    backgroundColor: Colors.white,
+    backgroundColor: '#F0F1F4',
   },
   customCancelText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,
-    color: Colors.navy,
+    color: '#1A1D2B',
   },
   customAddBtn: {
     paddingHorizontal: 28,
     paddingVertical: 12,
     borderRadius: 12,
-    backgroundColor: Colors.deepBlue,
+    backgroundColor: '#1A3A6B',
   },
   customAddBtnDisabled: {
-    backgroundColor: Colors.border,
+    backgroundColor: '#C8CCD4',
   },
   customAddText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 16,
-    color: Colors.white,
+    color: '#FFFFFF',
   },
   customAddTextDisabled: {
-    color: Colors.mediumGray,
+    color: '#8A8E99',
   },
   list: {
     flex: 1,
