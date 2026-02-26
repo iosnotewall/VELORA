@@ -1,22 +1,33 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated, Platform, Dimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Flame, CheckCircle, Moon as MoonIcon, Zap, BedDouble, Smile, Shield, ChevronRight } from 'lucide-react-native';
+import {
+  Flame, CheckCircle, Moon, Zap, Smile, Shield, ChevronRight,
+  BatteryLow, Activity, Sunrise, Clock, Brain, Target, Lightbulb,
+  Leaf, Wind, Heart, Thermometer, Sparkles, RotateCcw, Dumbbell,
+  Cookie, Utensils,
+} from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { PRODUCTS } from '@/constants/products';
-import { GOALS, getDayInsight, getVariableReward, SCORE_LABELS } from '@/constants/content';
+import { GOALS, getDayInsight, getVariableReward, GOAL_METRICS, DEFAULT_METRICS, GoalMetric } from '@/constants/content';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const SCORE_COLORS: Record<number, string> = {
-  1: '#E57373',
-  2: '#FFB74D',
-  3: '#FFD54F',
-  4: '#81C784',
-  5: '#4CAF50',
+const ICON_MAP: Record<string, React.ComponentType<{ size: number; color: string; strokeWidth?: number }>> = {
+  Zap, BatteryLow, Activity, Moon, Sunrise, Clock, Brain, Target, Lightbulb,
+  Leaf, Wind, Shield, Heart, Thermometer, Sparkles, RotateCcw, Dumbbell,
+  Cookie, Utensils, Smile, Flame,
+};
+
+const SCORE_EMOJIS: Record<number, string> = {
+  1: '😣',
+  2: '😕',
+  3: '😐',
+  4: '🙂',
+  5: '😊',
 };
 
 function ConfettiParticle({ delay, color, startX }: { delay: number; color: string; startX: number }) {
@@ -56,62 +67,89 @@ function ConfettiParticle({ delay, color, startX }: { delay: number; color: stri
   );
 }
 
-function ScoreSelector({
-  label,
-  icon,
+function MetricCard({
+  metric,
   value,
   onChange,
-  accentColor,
+  index,
 }: {
-  label: string;
-  icon: React.ReactNode;
+  metric: GoalMetric;
   value: number;
   onChange: (v: number) => void;
-  accentColor: string;
+  index: number;
 }) {
   const scaleAnims = useRef([1, 2, 3, 4, 5].map(() => new Animated.Value(1))).current;
+  const enterAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.spring(enterAnim, {
+      toValue: 1,
+      useNativeDriver: Platform.OS !== 'web',
+      damping: 22,
+      stiffness: 160,
+      delay: index * 80,
+    }).start();
+  }, [enterAnim, index]);
 
   const handleSelect = useCallback((score: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Animated.sequence([
-      Animated.spring(scaleAnims[score - 1], { toValue: 1.3, useNativeDriver: Platform.OS !== 'web', speed: 80, bounciness: 0 }),
+      Animated.spring(scaleAnims[score - 1], { toValue: 1.25, useNativeDriver: Platform.OS !== 'web', speed: 80, bounciness: 0 }),
       Animated.spring(scaleAnims[score - 1], { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 10, stiffness: 200 }),
     ]).start();
     onChange(score);
   }, [onChange, scaleAnims]);
 
+  const IconComponent = ICON_MAP[metric.icon];
+
   return (
-    <View style={scoreStyles.container}>
-      <View style={scoreStyles.labelRow}>
-        {icon}
-        <Text style={scoreStyles.label}>{label}</Text>
+    <Animated.View
+      style={[
+        metricStyles.card,
+        {
+          opacity: enterAnim,
+          transform: [{
+            translateY: enterAnim.interpolate({ inputRange: [0, 1], outputRange: [24, 0] }),
+          }],
+        },
+      ]}
+    >
+      <View style={metricStyles.cardHeader}>
+        <View style={[metricStyles.iconBubble, { backgroundColor: metric.color + '18' }]}>
+          {IconComponent && <IconComponent size={18} color={metric.color} strokeWidth={2} />}
+        </View>
+        <View style={metricStyles.cardHeaderText}>
+          <Text style={metricStyles.question}>{metric.question}</Text>
+        </View>
         {value > 0 && (
-          <Text style={[scoreStyles.valueText, { color: SCORE_COLORS[value] }]}>
-            {SCORE_LABELS[value]}
-          </Text>
+          <Text style={metricStyles.emoji}>{SCORE_EMOJIS[value]}</Text>
         )}
       </View>
-      <View style={scoreStyles.dotsRow}>
+
+      <View style={metricStyles.scaleRow}>
         {[1, 2, 3, 4, 5].map((score) => {
-          const isSelected = value >= score;
+          const isSelected = value === score;
+          const isFilled = value >= score;
           return (
             <TouchableOpacity
               key={score}
               onPress={() => handleSelect(score)}
               activeOpacity={0.7}
-              testID={`score-${label.toLowerCase()}-${score}`}
+              style={metricStyles.scaleTouchable}
+              testID={`metric-${metric.id}-${score}`}
             >
               <Animated.View
                 style={[
-                  scoreStyles.dot,
-                  {
-                    backgroundColor: isSelected ? (SCORE_COLORS[score]) : Colors.lightGray,
-                    borderColor: isSelected ? SCORE_COLORS[score] : Colors.border,
-                    transform: [{ scale: scaleAnims[score - 1] }],
-                  },
+                  metricStyles.scaleCircle,
+                  isFilled && { backgroundColor: metric.color, borderColor: metric.color },
+                  isSelected && { backgroundColor: metric.color, borderColor: metric.color },
+                  { transform: [{ scale: scaleAnims[score - 1] }] },
                 ]}
               >
-                <Text style={[scoreStyles.dotText, isSelected && scoreStyles.dotTextActive]}>
+                <Text style={[
+                  metricStyles.scaleNumber,
+                  isFilled && { color: '#FFF' },
+                ]}>
                   {score}
                 </Text>
               </Animated.View>
@@ -119,50 +157,141 @@ function ScoreSelector({
           );
         })}
       </View>
-    </View>
+
+      <View style={metricStyles.labelRow}>
+        <Text style={metricStyles.lowLabel}>{metric.lowLabel}</Text>
+        <Text style={metricStyles.highLabel}>{metric.highLabel}</Text>
+      </View>
+    </Animated.View>
   );
 }
 
-const scoreStyles = StyleSheet.create({
-  container: {
-    marginBottom: 20,
+const metricStyles = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 10,
+    shadowColor: '#1A1F3C',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  labelRow: {
+  cardHeader: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 8,
-    marginBottom: 12,
+    marginBottom: 16,
+    gap: 10,
   },
-  label: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 15,
-    color: Colors.navy,
-    flex: 1,
-  },
-  valueText: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 13,
-  },
-  dotsRow: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-    gap: 8,
-  },
-  dot: {
-    width: 52,
-    height: 52,
-    borderRadius: 14,
-    borderWidth: 1.5,
+  iconBubble: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  dotText: {
+  cardHeaderText: {
+    flex: 1,
+  },
+  question: {
+    fontFamily: Fonts.dmSemiBold,
+    fontSize: 15,
+    color: Colors.navy,
+    lineHeight: 20,
+  },
+  emoji: {
+    fontSize: 22,
+  },
+  scaleRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    gap: 6,
+  },
+  scaleTouchable: {
+    flex: 1,
+    alignItems: 'center' as const,
+  },
+  scaleCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.border,
+    backgroundColor: Colors.cream,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  scaleNumber: {
     fontFamily: Fonts.dmSemiBold,
     fontSize: 16,
     color: Colors.mediumGray,
   },
-  dotTextActive: {
-    color: Colors.white,
+  labelRow: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  lowLabel: {
+    fontFamily: Fonts.dmRegular,
+    fontSize: 11,
+    color: Colors.mediumGray,
+  },
+  highLabel: {
+    fontFamily: Fonts.dmRegular,
+    fontSize: 11,
+    color: Colors.mediumGray,
+  },
+});
+
+function ScoreSummaryRow({ metric, value }: { metric: GoalMetric; value: number }) {
+  const IconComponent = ICON_MAP[metric.icon];
+  return (
+    <View style={summaryStyles.row}>
+      <View style={[summaryStyles.iconDot, { backgroundColor: metric.color + '18' }]}>
+        {IconComponent && <IconComponent size={14} color={metric.color} strokeWidth={2} />}
+      </View>
+      <Text style={summaryStyles.label}>{metric.label}</Text>
+      <View style={summaryStyles.scoreContainer}>
+        <Text style={[summaryStyles.score, { color: metric.color }]}>{value}/5</Text>
+        <Text style={summaryStyles.emoji}>{SCORE_EMOJIS[value] ?? ''}</Text>
+      </View>
+    </View>
+  );
+}
+
+const summaryStyles = StyleSheet.create({
+  row: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingVertical: 10,
+    gap: 10,
+  },
+  iconDot: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  label: {
+    fontFamily: Fonts.dmRegular,
+    fontSize: 14,
+    color: Colors.darkGray,
+    flex: 1,
+  },
+  scoreContainer: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 6,
+  },
+  score: {
+    fontFamily: Fonts.dmSemiBold,
+    fontSize: 15,
+  },
+  emoji: {
+    fontSize: 16,
   },
 });
 
@@ -170,20 +299,16 @@ export default function TodayScreen() {
   const insets = useSafeAreaInsets();
   const { goal, products, customProducts, currentStreak, currentDay, isCheckedInToday, checkIn, userName, dailyScores, streakShieldAvailable } = useAppState();
   const [showConfetti, setShowConfetti] = useState(false);
-  const [showScoring, setShowScoring] = useState(false);
-  const [energyScore, setEnergyScore] = useState(0);
-  const [sleepScore, setSleepScore] = useState(0);
-  const [moodScore, setMoodScore] = useState(0);
+  const [scores, setScores] = useState<Record<string, number>>({});
 
-  const checkAnim = useRef(new Animated.Value(0)).current;
-  const buttonScaleAnim = useRef(new Animated.Value(1)).current;
-  const insightAnim = useRef(new Animated.Value(0)).current;
   const streakBounce = useRef(new Animated.Value(1)).current;
-  const scoringAnim = useRef(new Animated.Value(0)).current;
+  const insightAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const ringProgress = useRef(new Animated.Value(0)).current;
 
   const goalData = GOALS.find(g => g.id === goal);
+  const metrics = useMemo(() => GOAL_METRICS[goal] || DEFAULT_METRICS, [goal]);
+  const goalColor = useMemo(() => Colors.category[goal] || Colors.navy, [goal]);
+
   const userProducts = PRODUCTS.filter(p => products.includes(p.id));
   const allProducts = useMemo(() => {
     const custom = (customProducts || []).map(cp => ({
@@ -203,71 +328,59 @@ export default function TodayScreen() {
 
   const getGreeting = useCallback(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+    if (hour < 12) return 'good morning';
+    if (hour < 18) return 'good afternoon';
+    return 'good evening';
   }, []);
 
   useEffect(() => {
     if (isCheckedInToday) {
-      checkAnim.setValue(1);
-      ringProgress.setValue(1);
+      insightAnim.setValue(1);
     }
-  }, [isCheckedInToday, checkAnim, ringProgress]);
+  }, [isCheckedInToday, insightAnim]);
 
   useEffect(() => {
     if (!isCheckedInToday) {
       Animated.loop(
         Animated.sequence([
-          Animated.timing(pulseAnim, { toValue: 1.04, duration: 1800, useNativeDriver: Platform.OS !== 'web' }),
-          Animated.timing(pulseAnim, { toValue: 1, duration: 1800, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(pulseAnim, { toValue: 1.03, duration: 2000, useNativeDriver: Platform.OS !== 'web' }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 2000, useNativeDriver: Platform.OS !== 'web' }),
         ])
       ).start();
     }
   }, [isCheckedInToday, pulseAnim]);
 
-  const handleCheckInPress = useCallback(() => {
-    if (isCheckedInToday) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+  const allMetricsSet = useMemo(() => {
+    return metrics.every(m => (scores[m.id] ?? 0) > 0);
+  }, [metrics, scores]);
 
-    Animated.sequence([
-      Animated.spring(buttonScaleAnim, { toValue: 0.94, useNativeDriver: Platform.OS !== 'web', speed: 50, bounciness: 0 }),
-      Animated.spring(buttonScaleAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 15, stiffness: 200 }),
-    ]).start();
+  const filledCount = useMemo(() => {
+    return metrics.filter(m => (scores[m.id] ?? 0) > 0).length;
+  }, [metrics, scores]);
 
-    setShowScoring(true);
-    Animated.spring(scoringAnim, {
-      toValue: 1,
-      useNativeDriver: Platform.OS !== 'web',
-      damping: 20,
-      stiffness: 180,
-    }).start();
-  }, [isCheckedInToday, buttonScaleAnim, scoringAnim]);
+  const handleScoreChange = useCallback((metricId: string, value: number) => {
+    setScores(prev => ({ ...prev, [metricId]: value }));
+  }, []);
 
   const handleConfirmCheckIn = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
+    const metricScores = metrics.reduce((acc, m) => {
+      acc[m.id] = scores[m.id] ?? 3;
+      return acc;
+    }, {} as Record<string, number>);
+
+    const avgScore = Math.round(
+      Object.values(metricScores).reduce((a, b) => a + b, 0) / Object.values(metricScores).length
+    );
+
     checkIn({
-      energy: energyScore || 3,
-      sleep: sleepScore || 3,
-      mood: moodScore || 3,
+      energy: metricScores[metrics[0]?.id] ?? avgScore,
+      sleep: metricScores[metrics[1]?.id] ?? avgScore,
+      mood: metricScores[metrics[2]?.id] ?? avgScore,
     });
 
     setShowConfetti(true);
-    setShowScoring(false);
-
-    Animated.spring(checkAnim, {
-      toValue: 1,
-      useNativeDriver: Platform.OS !== 'web',
-      damping: 18,
-      stiffness: 200,
-    }).start();
-
-    Animated.timing(ringProgress, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: Platform.OS !== 'web',
-    }).start();
 
     Animated.sequence([
       Animated.spring(streakBounce, { toValue: 1.35, useNativeDriver: Platform.OS !== 'web', speed: 50, bounciness: 0 }),
@@ -279,30 +392,12 @@ export default function TodayScreen() {
       useNativeDriver: Platform.OS !== 'web',
       damping: 18,
       stiffness: 150,
-      delay: 500,
+      delay: 400,
     }).start();
 
     setTimeout(() => setShowConfetti(false), 2500);
-  }, [energyScore, sleepScore, moodScore, checkIn, checkAnim, ringProgress, streakBounce, insightAnim]);
+  }, [scores, metrics, checkIn, streakBounce, insightAnim]);
 
-  const handleSkipScoring = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    checkIn({ energy: 3, sleep: 3, mood: 3 });
-    setShowConfetti(true);
-    setShowScoring(false);
-
-    Animated.spring(checkAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 200 }).start();
-    Animated.timing(ringProgress, { toValue: 1, duration: 800, useNativeDriver: Platform.OS !== 'web' }).start();
-    Animated.sequence([
-      Animated.spring(streakBounce, { toValue: 1.35, useNativeDriver: Platform.OS !== 'web', speed: 50, bounciness: 0 }),
-      Animated.spring(streakBounce, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 10, stiffness: 180 }),
-    ]).start();
-    Animated.spring(insightAnim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 150, delay: 500 }).start();
-
-    setTimeout(() => setShowConfetti(false), 2500);
-  }, [checkIn, checkAnim, ringProgress, streakBounce, insightAnim]);
-
-  const allScoresSet = energyScore > 0 && sleepScore > 0 && moodScore > 0;
   const confettiColors = ['#1A1F3C', '#4A90D9', '#D4A853', '#2E7D52', '#C4857A', '#7B8FC4'];
   const rewardMessage = getVariableReward(currentDay);
 
@@ -323,174 +418,128 @@ export default function TodayScreen() {
         {streakShieldAvailable && currentStreak >= 3 && !isCheckedInToday && (
           <View style={styles.shieldBanner}>
             <Shield size={16} color={Colors.deepBlue} strokeWidth={2} />
-            <Text style={styles.shieldText}>Streak shield available — miss a day without losing your streak</Text>
+            <Text style={styles.shieldText}>Streak shield active — miss a day without losing your streak</Text>
           </View>
         )}
 
-        <View style={styles.heroCard}>
-          {showConfetti && (
-            <View style={styles.confettiContainer}>
-              {Array.from({ length: 20 }).map((_, i) => (
-                <ConfettiParticle
-                  key={i}
-                  delay={i * 30}
-                  color={confettiColors[i % confettiColors.length]}
-                  startX={(SCREEN_WIDTH - 40) / 2 + (Math.random() - 0.5) * 60}
+        {showConfetti && (
+          <View style={styles.confettiContainer}>
+            {Array.from({ length: 20 }).map((_, i) => (
+              <ConfettiParticle
+                key={i}
+                delay={i * 30}
+                color={confettiColors[i % confettiColors.length]}
+                startX={SCREEN_WIDTH / 2 + (Math.random() - 0.5) * 60}
+              />
+            ))}
+          </View>
+        )}
+
+        {!isCheckedInToday ? (
+          <>
+            <View style={[styles.goalBanner, { backgroundColor: goalColor + '12', borderColor: goalColor + '25' }]}>
+              <View style={[styles.goalIconBubble, { backgroundColor: goalColor + '20' }]}>
+                {goalData && ICON_MAP[goalData.icon] && React.createElement(ICON_MAP[goalData.icon], { size: 18, color: goalColor, strokeWidth: 2 })}
+              </View>
+              <View style={styles.goalBannerText}>
+                <Text style={[styles.goalBannerTitle, { color: goalColor }]}>{goalData?.label ?? 'Daily'} Check-in</Text>
+                <Text style={styles.goalBannerSub}>{filledCount}/{metrics.length} answered</Text>
+              </View>
+            </View>
+
+            <View style={styles.metricsSection}>
+              {metrics.map((metric, index) => (
+                <MetricCard
+                  key={metric.id}
+                  metric={metric}
+                  value={scores[metric.id] ?? 0}
+                  onChange={(v) => handleScoreChange(metric.id, v)}
+                  index={index}
                 />
               ))}
             </View>
-          )}
 
-          {!showScoring ? (
-            <>
-              <Animated.View style={[
-                styles.statusRing,
-                isCheckedInToday && styles.statusRingDone,
-                !isCheckedInToday && { transform: [{ scale: pulseAnim }] },
-              ]}>
-                <View style={[
-                  styles.statusCircleInner,
-                  isCheckedInToday && styles.statusCircleInnerDone,
-                ]}>
-                  {isCheckedInToday ? (
-                    <Animated.View style={{ opacity: checkAnim }}>
-                      <CheckCircle size={44} color={Colors.white} strokeWidth={1.5} />
-                    </Animated.View>
-                  ) : (
-                    <Text style={styles.tapText}>Tap</Text>
-                  )}
-                </View>
+            <View style={styles.checkInSection}>
+              <Animated.View style={!allMetricsSet ? { transform: [{ scale: pulseAnim }] } : undefined}>
+                <TouchableOpacity
+                  onPress={handleConfirmCheckIn}
+                  style={[
+                    styles.checkInButton,
+                    allMetricsSet && styles.checkInButtonActive,
+                  ]}
+                  activeOpacity={0.85}
+                  testID="confirm-check-in"
+                  disabled={!allMetricsSet}
+                >
+                  <Text style={[
+                    styles.checkInButtonText,
+                    allMetricsSet && styles.checkInButtonTextActive,
+                  ]}>
+                    {allMetricsSet ? 'Log & check in' : `Answer all ${metrics.length} to continue`}
+                  </Text>
+                  {allMetricsSet && <ChevronRight size={18} color={Colors.white} strokeWidth={2.5} />}
+                </TouchableOpacity>
               </Animated.View>
-
-              <Text style={[styles.statusText, isCheckedInToday && styles.statusTextDone]}>
-                {isCheckedInToday ? 'Done for today ✓' : 'Did you take your supplements?'}
-              </Text>
-
-              {!isCheckedInToday ? (
-                <Animated.View style={{ transform: [{ scale: buttonScaleAnim }], width: '100%' }}>
-                  <TouchableOpacity
-                    onPress={handleCheckInPress}
-                    style={styles.checkInButton}
-                    activeOpacity={0.85}
-                    testID="check-in-button"
-                  >
-                    <Text style={styles.checkInButtonText}>I took my supplements</Text>
-                  </TouchableOpacity>
-                </Animated.View>
-              ) : (
-                <View style={styles.doneSection}>
-                  <MoonIcon size={18} color={Colors.mediumGray} strokeWidth={1.5} />
-                  <Text style={styles.doneText}>See you tomorrow</Text>
-                </View>
-              )}
-            </>
-          ) : (
-            <Animated.View style={[
-              styles.scoringSection,
-              {
-                opacity: scoringAnim,
-                transform: [{
-                  translateY: scoringAnim.interpolate({ inputRange: [0, 1], outputRange: [30, 0] }),
-                }],
-              },
-            ]}>
-              <Text style={styles.scoringTitle}>How are you feeling?</Text>
-              <Text style={styles.scoringSub}>Quick check-in — takes 3 taps</Text>
-
-              <View style={styles.scoringDivider} />
-
-              <ScoreSelector
-                label="Energy"
-                icon={<Zap size={18} color="#FFB74D" strokeWidth={2} />}
-                value={energyScore}
-                onChange={setEnergyScore}
-                accentColor="#FFB74D"
-              />
-              <ScoreSelector
-                label="Sleep"
-                icon={<BedDouble size={18} color="#7B8FC4" strokeWidth={2} />}
-                value={sleepScore}
-                onChange={setSleepScore}
-                accentColor="#7B8FC4"
-              />
-              <ScoreSelector
-                label="Mood"
-                icon={<Smile size={18} color="#81C784" strokeWidth={2} />}
-                value={moodScore}
-                onChange={setMoodScore}
-                accentColor="#81C784"
-              />
-
-              <TouchableOpacity
-                onPress={handleConfirmCheckIn}
-                style={[styles.confirmButton, allScoresSet && styles.confirmButtonActive]}
-                activeOpacity={0.85}
-                testID="confirm-check-in"
-              >
-                <Text style={[styles.confirmButtonText, allScoresSet && styles.confirmButtonTextActive]}>
-                  {allScoresSet ? 'Log & check in' : 'Rate all three to continue'}
-                </Text>
-                {allScoresSet && <ChevronRight size={18} color={Colors.white} strokeWidth={2.5} />}
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={handleSkipScoring} style={styles.skipButton} testID="skip-scoring">
-                <Text style={styles.skipText}>Skip scoring</Text>
-              </TouchableOpacity>
-            </Animated.View>
-          )}
-        </View>
-
-        {isCheckedInToday && (
-          <Animated.View
-            style={[
-              styles.rewardCard,
-              {
-                opacity: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
-                transform: [{
-                  translateY: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }),
-                }],
-              },
-            ]}
-          >
-            <Text style={styles.rewardEmoji}>✨</Text>
-            <Text style={styles.rewardText}>{rewardMessage}</Text>
-          </Animated.View>
-        )}
-
-        {isCheckedInToday && todayScores && (
-          <View style={styles.todayScoresCard}>
-            <Text style={styles.todayScoresTitle}>TODAY'S CHECK-IN</Text>
-            <View style={styles.todayScoresRow}>
-              {[
-                { label: 'Energy', value: todayScores.energy, icon: <Zap size={16} color="#FFB74D" strokeWidth={2} /> },
-                { label: 'Sleep', value: todayScores.sleep, icon: <BedDouble size={16} color="#7B8FC4" strokeWidth={2} /> },
-                { label: 'Mood', value: todayScores.mood, icon: <Smile size={16} color="#81C784" strokeWidth={2} /> },
-              ].map((item) => (
-                <View key={item.label} style={styles.todayScoreItem}>
-                  {item.icon}
-                  <Text style={styles.todayScoreValue}>{item.value}/5</Text>
-                  <Text style={styles.todayScoreLabel}>{item.label}</Text>
-                </View>
-              ))}
             </View>
-          </View>
-        )}
+          </>
+        ) : (
+          <>
+            <View style={styles.doneCard}>
+              <View style={styles.doneIconContainer}>
+                <CheckCircle size={48} color={Colors.success} strokeWidth={1.5} />
+              </View>
+              <Text style={styles.doneTitle}>All done for today</Text>
+              <Text style={styles.doneSub}>Your {goalData?.label?.toLowerCase() ?? 'daily'} check-in is logged</Text>
+            </View>
 
-        {isCheckedInToday && (
-          <Animated.View
-            style={[
-              styles.insightCard,
-              {
-                opacity: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] }),
-                transform: [{
-                  translateY: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }),
-                }],
-              },
-            ]}
-          >
-            <Text style={styles.insightLabel}>DAY {currentDay} INSIGHT</Text>
-            <Text style={styles.insightText}>{getDayInsight(currentDay)}</Text>
-          </Animated.View>
+            {todayScores && (
+              <View style={styles.summaryCard}>
+                <Text style={styles.summaryTitle}>TODAY'S CHECK-IN</Text>
+                {metrics.map((metric, i) => {
+                  const scoreKeys = ['energy', 'sleep', 'mood'] as const;
+                  const val = todayScores.goalScores?.[metric.id]
+                    ?? todayScores[scoreKeys[i] ?? 'energy']
+                    ?? 3;
+                  return (
+                    <React.Fragment key={metric.id}>
+                      <ScoreSummaryRow metric={metric} value={val} />
+                      {i < metrics.length - 1 && <View style={styles.summaryDivider} />}
+                    </React.Fragment>
+                  );
+                })}
+              </View>
+            )}
+
+            <Animated.View
+              style={[
+                styles.rewardCard,
+                {
+                  opacity: insightAnim,
+                  transform: [{
+                    translateY: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }),
+                  }],
+                },
+              ]}
+            >
+              <Text style={styles.rewardEmoji}>✨</Text>
+              <Text style={styles.rewardText}>{rewardMessage}</Text>
+            </Animated.View>
+
+            <Animated.View
+              style={[
+                styles.insightCard,
+                {
+                  opacity: insightAnim,
+                  transform: [{
+                    translateY: insightAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] }),
+                  }],
+                },
+              ]}
+            >
+              <Text style={styles.insightLabel}>DAY {currentDay} INSIGHT</Text>
+              <Text style={styles.insightText}>{getDayInsight(currentDay)}</Text>
+            </Animated.View>
+          </>
         )}
 
         {allProducts.length > 0 && (
@@ -508,14 +557,6 @@ export default function TodayScreen() {
                 )}
               </View>
             ))}
-          </View>
-        )}
-
-        {goalData && (
-          <View style={styles.goalCard}>
-            <Text style={styles.goalCardLabel}>YOUR GOAL</Text>
-            <Text style={styles.goalCardTitle}>{goalData.label}</Text>
-            <Text style={styles.goalCardSub}>{goalData.sub}</Text>
           </View>
         )}
       </ScrollView>
@@ -575,7 +616,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     backgroundColor: Colors.blueBg,
     marginHorizontal: 20,
-    marginBottom: 12,
+    marginBottom: 8,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -588,154 +629,126 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 16,
   },
-  heroCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 24,
-    marginHorizontal: 20,
-    padding: 28,
-    alignItems: 'center' as const,
-    shadowColor: '#1A1F3C',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    elevation: 4,
-    overflow: 'hidden' as const,
-  },
   confettiContainer: {
     position: 'absolute' as const,
-    top: 20,
+    top: 100,
     left: 0,
     right: 0,
     height: 220,
     zIndex: 10,
   },
-  statusRing: {
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-    borderWidth: 3,
-    borderColor: Colors.lightGray,
-    borderStyle: 'dashed' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginBottom: 18,
-  },
-  statusRingDone: {
-    borderWidth: 0,
-  },
-  statusCircleInner: {
-    width: 118,
-    height: 118,
-    borderRadius: 59,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    backgroundColor: Colors.cream,
-  },
-  statusCircleInnerDone: {
-    backgroundColor: Colors.navy,
-    width: 130,
-    height: 130,
-    borderRadius: 65,
-  },
-  tapText: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 20,
-    color: Colors.navy,
-    letterSpacing: 1,
-  },
-  statusText: {
-    fontFamily: Fonts.dmRegular,
-    fontSize: 14,
-    color: Colors.mediumGray,
-    textAlign: 'center' as const,
-    marginBottom: 20,
-  },
-  statusTextDone: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 17,
-    color: Colors.navy,
-  },
-  checkInButton: {
-    backgroundColor: Colors.navy,
-    height: 56,
-    borderRadius: 100,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  checkInButtonText: {
-    fontFamily: Fonts.dmBold,
-    fontSize: 17,
-    color: Colors.white,
-  },
-  doneSection: {
+  goalBanner: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 8,
+    marginHorizontal: 20,
+    marginTop: 8,
+    marginBottom: 16,
+    borderRadius: 16,
+    padding: 14,
+    borderWidth: 1,
+    gap: 12,
   },
-  doneText: {
+  goalIconBubble: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  goalBannerText: {
+    flex: 1,
+  },
+  goalBannerTitle: {
+    fontFamily: Fonts.dmSemiBold,
+    fontSize: 16,
+  },
+  goalBannerSub: {
     fontFamily: Fonts.dmRegular,
-    fontSize: 15,
+    fontSize: 12,
     color: Colors.mediumGray,
+    marginTop: 1,
   },
-  scoringSection: {
-    width: '100%',
+  metricsSection: {
+    paddingHorizontal: 20,
   },
-  scoringTitle: {
-    fontFamily: Fonts.playfairBold,
-    fontSize: 22,
-    color: Colors.navy,
-    textAlign: 'center' as const,
+  checkInSection: {
+    paddingHorizontal: 20,
+    marginTop: 6,
+    marginBottom: 8,
   },
-  scoringSub: {
-    fontFamily: Fonts.dmRegular,
-    fontSize: 13,
-    color: Colors.mediumGray,
-    textAlign: 'center' as const,
-    marginTop: 4,
-  },
-  scoringDivider: {
-    height: 1,
+  checkInButton: {
     backgroundColor: Colors.lightGray,
-    marginVertical: 20,
-  },
-  confirmButton: {
-    backgroundColor: Colors.lightGray,
-    height: 54,
+    height: 56,
     borderRadius: 100,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     flexDirection: 'row' as const,
     gap: 6,
-    marginTop: 4,
   },
-  confirmButtonActive: {
+  checkInButtonActive: {
     backgroundColor: Colors.navy,
   },
-  confirmButtonText: {
+  checkInButtonText: {
     fontFamily: Fonts.dmSemiBold,
     fontSize: 16,
     color: Colors.mediumGray,
   },
-  confirmButtonTextActive: {
+  checkInButtonTextActive: {
     color: Colors.white,
   },
-  skipButton: {
+  doneCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 24,
+    marginHorizontal: 20,
+    marginTop: 8,
+    padding: 32,
     alignItems: 'center' as const,
-    paddingVertical: 14,
-    marginTop: 2,
+    shadowColor: '#1A1F3C',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 20,
+    elevation: 3,
   },
-  skipText: {
+  doneIconContainer: {
+    marginBottom: 16,
+  },
+  doneTitle: {
+    fontFamily: Fonts.playfairBold,
+    fontSize: 22,
+    color: Colors.navy,
+    textAlign: 'center' as const,
+  },
+  doneSub: {
     fontFamily: Fonts.dmRegular,
-    fontSize: 13,
+    fontSize: 14,
     color: Colors.mediumGray,
-    textDecorationLine: 'underline' as const,
+    marginTop: 4,
+    textAlign: 'center' as const,
+  },
+  summaryCard: {
+    backgroundColor: Colors.white,
+    borderRadius: 20,
+    marginHorizontal: 20,
+    marginTop: 12,
+    padding: 18,
+  },
+  summaryTitle: {
+    fontFamily: Fonts.dmSemiBold,
+    fontSize: 11,
+    color: Colors.mediumGray,
+    letterSpacing: 0.8,
+    marginBottom: 6,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: Colors.lightGray,
   },
   rewardCard: {
     backgroundColor: '#FFF8F0',
     borderRadius: 16,
     marginHorizontal: 20,
-    marginTop: 16,
-    padding: 20,
+    marginTop: 12,
+    padding: 18,
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     gap: 12,
@@ -752,44 +765,12 @@ const styles = StyleSheet.create({
     flex: 1,
     lineHeight: 22,
   },
-  todayScoresCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginTop: 12,
-    padding: 20,
-  },
-  todayScoresTitle: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 11,
-    color: Colors.mediumGray,
-    letterSpacing: 0.8,
-    marginBottom: 14,
-  },
-  todayScoresRow: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-around' as const,
-  },
-  todayScoreItem: {
-    alignItems: 'center' as const,
-    gap: 6,
-  },
-  todayScoreValue: {
-    fontFamily: Fonts.dmBold,
-    fontSize: 20,
-    color: Colors.navy,
-  },
-  todayScoreLabel: {
-    fontFamily: Fonts.dmRegular,
-    fontSize: 12,
-    color: Colors.mediumGray,
-  },
   insightCard: {
     backgroundColor: Colors.white,
     borderRadius: 16,
     marginHorizontal: 20,
     marginTop: 12,
-    padding: 20,
+    padding: 18,
   },
   insightLabel: {
     fontFamily: Fonts.dmSemiBold,
@@ -842,30 +823,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.mediumGray,
     marginTop: 1,
-  },
-  goalCard: {
-    backgroundColor: Colors.blueBg,
-    borderRadius: 16,
-    marginHorizontal: 20,
-    marginTop: 16,
-    padding: 18,
-  },
-  goalCardLabel: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 11,
-    color: Colors.deepBlue,
-    letterSpacing: 0.8,
-    marginBottom: 4,
-  },
-  goalCardTitle: {
-    fontFamily: Fonts.dmSemiBold,
-    fontSize: 16,
-    color: Colors.navy,
-  },
-  goalCardSub: {
-    fontFamily: Fonts.dmRegular,
-    fontSize: 13,
-    color: Colors.mediumGray,
-    marginTop: 2,
   },
 });

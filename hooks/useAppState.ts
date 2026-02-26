@@ -15,6 +15,7 @@ export interface DailyScore {
   energy: number;
   sleep: number;
   mood: number;
+  goalScores?: Record<string, number>;
 }
 
 export type NotificationMode = 'specific' | 'random' | 'hourly';

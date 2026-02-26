@@ -1,12 +1,12 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, Animated, Platform, TouchableOpacity, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Flame, CheckCircle, Circle, Zap, BedDouble, Smile, Award, Share2, TrendingUp, Calendar } from 'lucide-react-native';
+import { Flame, CheckCircle, Circle, Zap, BedDouble, Smile, Award, Share2, TrendingUp, Calendar, Moon, Sunrise, Clock, Brain, Target, Lightbulb, Leaf, Wind, Shield, Heart, Thermometer, Sparkles, RotateCcw, Dumbbell, Activity, BatteryLow, Cookie, Utensils } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppState, DailyScore } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-import { MILESTONES, SCORE_LABELS } from '@/constants/content';
+import { MILESTONES, SCORE_LABELS, GOAL_METRICS, DEFAULT_METRICS } from '@/constants/content';
 
 const DAYS_OF_WEEK = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
@@ -431,6 +431,8 @@ export default function ProgressScreen() {
   const insets = useSafeAreaInsets();
   const { currentStreak, longestStreak, totalDaysTaken, checkInHistory, goal, currentDay, dailyScores, userName } = useAppState();
 
+  const goalMetrics = useMemo(() => GOAL_METRICS[goal] || DEFAULT_METRICS, [goal]);
+
   const milestoneData = MILESTONES[goal] || MILESTONES.energy;
 
   const thisMonthCount = useMemo(() => {
@@ -528,9 +530,9 @@ export default function ProgressScreen() {
             <TrendingUp size={16} color={Colors.navy} strokeWidth={2} />
             <Text style={styles.sectionTitle}>SCORE TRENDS</Text>
           </View>
-          <MiniBarChart scores={scores} metricKey="energy" color="#FFB74D" label="Energy" />
-          <MiniBarChart scores={scores} metricKey="sleep" color="#7B8FC4" label="Sleep" />
-          <MiniBarChart scores={scores} metricKey="mood" color="#81C784" label="Mood" />
+          <MiniBarChart scores={scores} metricKey="energy" color={goalMetrics[0]?.color ?? '#FFB74D'} label={goalMetrics[0]?.label ?? 'Energy'} />
+          <MiniBarChart scores={scores} metricKey="sleep" color={goalMetrics[1]?.color ?? '#7B8FC4'} label={goalMetrics[1]?.label ?? 'Sleep'} />
+          <MiniBarChart scores={scores} metricKey="mood" color={goalMetrics[2]?.color ?? '#81C784'} label={goalMetrics[2]?.label ?? 'Mood'} />
         </View>
 
         <View style={styles.section}>

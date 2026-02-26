@@ -214,6 +214,65 @@ export const SCORE_LABELS: Record<number, string> = {
   5: 'Great',
 };
 
+export interface GoalMetric {
+  id: string;
+  label: string;
+  question: string;
+  lowLabel: string;
+  highLabel: string;
+  icon: string;
+  color: string;
+}
+
+export const GOAL_METRICS: Record<string, GoalMetric[]> = {
+  energy: [
+    { id: 'energy_level', label: 'Energy level', question: 'How is your energy right now?', lowLabel: 'Drained', highLabel: 'Energized', icon: 'Zap', color: '#FFB74D' },
+    { id: 'afternoon_crash', label: 'Afternoon crash', question: 'Any mid-day crash today?', lowLabel: 'Crashed hard', highLabel: 'No crash', icon: 'BatteryLow', color: '#E57373' },
+    { id: 'stamina', label: 'Physical stamina', question: 'How\'s your physical endurance?', lowLabel: 'Exhausted', highLabel: 'Strong', icon: 'Activity', color: '#81C784' },
+  ],
+  sleep: [
+    { id: 'sleep_quality', label: 'Sleep quality', question: 'How did you sleep last night?', lowLabel: 'Terrible', highLabel: 'Amazing', icon: 'Moon', color: '#7B8FC4' },
+    { id: 'morning_freshness', label: 'Morning freshness', question: 'How fresh did you wake up?', lowLabel: 'Groggy', highLabel: 'Refreshed', icon: 'Sunrise', color: '#FFB74D' },
+    { id: 'fell_asleep', label: 'Falling asleep', question: 'How easily did you fall asleep?', lowLabel: 'Took forever', highLabel: 'Instantly', icon: 'Clock', color: '#81C784' },
+  ],
+  focus: [
+    { id: 'mental_clarity', label: 'Mental clarity', question: 'How clear is your thinking?', lowLabel: 'Foggy', highLabel: 'Crystal clear', icon: 'Brain', color: '#8B6BB8' },
+    { id: 'concentration', label: 'Concentration', question: 'Can you focus on tasks?', lowLabel: 'Scattered', highLabel: 'Laser focused', icon: 'Target', color: '#4A90D9' },
+    { id: 'memory', label: 'Memory', question: 'How\'s your recall today?', lowLabel: 'Forgetful', highLabel: 'Sharp', icon: 'Lightbulb', color: '#FFB74D' },
+  ],
+  stress: [
+    { id: 'stress_level', label: 'Stress level', question: 'How stressed are you feeling?', lowLabel: 'Overwhelmed', highLabel: 'Calm', icon: 'Leaf', color: '#81C784' },
+    { id: 'anxiety', label: 'Anxiety', question: 'Any anxious feelings today?', lowLabel: 'Very anxious', highLabel: 'At peace', icon: 'Wind', color: '#7B8FC4' },
+    { id: 'reactivity', label: 'Emotional reactivity', question: 'How reactive are you feeling?', lowLabel: 'Very reactive', highLabel: 'Grounded', icon: 'Shield', color: '#5A8A6F' },
+  ],
+  metabolism: [
+    { id: 'cravings', label: 'Cravings', question: 'How are your cravings today?', lowLabel: 'Intense', highLabel: 'None', icon: 'Cookie', color: '#D4A853' },
+    { id: 'post_meal', label: 'Post-meal energy', question: 'Energy after eating?', lowLabel: 'Crashed', highLabel: 'Stable', icon: 'Utensils', color: '#FFB74D' },
+    { id: 'digestion', label: 'Digestion', question: 'How\'s your digestion?', lowLabel: 'Uncomfortable', highLabel: 'Great', icon: 'Activity', color: '#81C784' },
+  ],
+  hormones: [
+    { id: 'mood_stability', label: 'Mood stability', question: 'How stable is your mood?', lowLabel: 'All over', highLabel: 'Very stable', icon: 'Heart', color: '#C4857A' },
+    { id: 'cycle_symptoms', label: 'Cycle symptoms', question: 'Any hormonal symptoms?', lowLabel: 'Severe', highLabel: 'None', icon: 'Thermometer', color: '#E57373' },
+    { id: 'skin_clarity', label: 'Skin clarity', question: 'How\'s your skin today?', lowLabel: 'Breaking out', highLabel: 'Clear', icon: 'Sparkles', color: '#FFB74D' },
+  ],
+  sport: [
+    { id: 'recovery', label: 'Recovery', question: 'How recovered do you feel?', lowLabel: 'Sore', highLabel: 'Fully recovered', icon: 'RotateCcw', color: '#5A8A6F' },
+    { id: 'performance', label: 'Performance', question: 'How was your workout?', lowLabel: 'Struggled', highLabel: 'Peak', icon: 'Dumbbell', color: '#4A90D9' },
+    { id: 'soreness', label: 'Muscle soreness', question: 'Any muscle soreness?', lowLabel: 'Very sore', highLabel: 'None', icon: 'Activity', color: '#FFB74D' },
+  ],
+  immune: [
+    { id: 'overall_health', label: 'Overall health', question: 'How healthy do you feel?', lowLabel: 'Under the weather', highLabel: 'Strong', icon: 'Shield', color: '#4A90D9' },
+    { id: 'inflammation', label: 'Inflammation', question: 'Any inflammation or pain?', lowLabel: 'Significant', highLabel: 'None', icon: 'Flame', color: '#E57373' },
+    { id: 'resilience', label: 'Resilience', question: 'Feel resilient today?', lowLabel: 'Fragile', highLabel: 'Robust', icon: 'Heart', color: '#81C784' },
+  ],
+};
+
+export const DEFAULT_METRICS: GoalMetric[] = [
+  { id: 'energy', label: 'Energy', question: 'How is your energy today?', lowLabel: 'Low', highLabel: 'High', icon: 'Zap', color: '#FFB74D' },
+  { id: 'sleep', label: 'Sleep', question: 'How did you sleep?', lowLabel: 'Poorly', highLabel: 'Great', icon: 'Moon', color: '#7B8FC4' },
+  { id: 'mood', label: 'Mood', question: 'How\'s your mood?', lowLabel: 'Low', highLabel: 'Great', icon: 'Smile', color: '#81C784' },
+];
+
 export const NOTIFICATION_MODE_OPTIONS = [
   { id: 'specific' as const, label: 'Set times', sub: 'Choose exact times for reminders', icon: 'Clock' as const },
   { id: 'random' as const, label: 'Random daily', sub: 'One surprise reminder per day', icon: 'Shuffle' as const },
