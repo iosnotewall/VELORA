@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, Platform, Dimensions, TouchableOpacity, Modal, Pressable } from 'react-native';
-import { X, CheckCircle, Bell, BarChart3 } from 'lucide-react-native';
+import { X } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -359,43 +359,34 @@ export default function TrajectoryScreen() {
 
             <View style={styles.stepsContainer}>
               <View style={styles.stepRow}>
-                <View style={styles.stepIconWrap}>
-                  <CheckCircle size={20} color={ACCENT_COLOR} strokeWidth={2} />
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>1</Text>
                 </View>
-                <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>Check in daily</Text>
-                  <Text style={styles.stepSub}>10 seconds. Rate your energy, sleep & mood — that's it.</Text>
-                </View>
+                <Text style={styles.stepText}>Check in daily</Text>
               </View>
 
               <View style={styles.stepDivider} />
 
               <View style={styles.stepRow}>
-                <View style={styles.stepIconWrap}>
-                  <Bell size={20} color={ACCENT_COLOR} strokeWidth={2} />
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>2</Text>
                 </View>
-                <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>Stay on track</Text>
-                  <Text style={styles.stepSub}>Smart reminders built around your routine. No spam, just timing.</Text>
-                </View>
+                <Text style={styles.stepText}>Stay on track</Text>
               </View>
 
               <View style={styles.stepDivider} />
 
               <View style={styles.stepRow}>
-                <View style={styles.stepIconWrap}>
-                  <BarChart3 size={20} color={ACCENT_COLOR} strokeWidth={2} />
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>3</Text>
                 </View>
-                <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>See proof in 30 days</Text>
-                  <Text style={styles.stepSub}>Your personal data proves your supplements are working.</Text>
-                </View>
+                <Text style={styles.stepText}>See proof in 30 days</Text>
               </View>
             </View>
 
             <View style={styles.modalFooterWrap}>
               <Text style={styles.modalFooterText}>
-                Your supplements already work.{"\n"}Volera makes sure <Text style={styles.modalFooterBold}>you</Text> do too.
+                You don't need better supplements.{"\n"}You need <Text style={styles.modalFooterBold}>fewer missed days.</Text>
               </Text>
             </View>
 
@@ -548,12 +539,12 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
   },
   modalCard: {
-    width: SCREEN_WIDTH - 40,
+    width: SCREEN_WIDTH - 56,
     backgroundColor: '#0F2340',
-    borderRadius: 28,
-    paddingTop: 40,
-    paddingBottom: 32,
-    paddingHorizontal: 28,
+    borderRadius: 24,
+    paddingTop: 36,
+    paddingBottom: 28,
+    paddingHorizontal: 24,
     borderWidth: 1,
     borderColor: 'rgba(74,144,217,0.15)',
     shadowColor: '#000',
@@ -588,63 +579,57 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 26,
+    fontSize: 24,
     color: '#FFFFFF',
     letterSpacing: -0.5,
-    lineHeight: 34,
-    marginBottom: 32,
+    lineHeight: 32,
+    marginBottom: 24,
   },
   stepsContainer: {
     width: '100%' as const,
-    marginBottom: 28,
+    marginBottom: 24,
   },
   stepRow: {
     flexDirection: 'row' as const,
-    alignItems: 'flex-start' as const,
-    gap: 16,
-    paddingVertical: 4,
+    alignItems: 'center' as const,
+    gap: 14,
+    paddingVertical: 2,
   },
-  stepIconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+  stepNumber: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     backgroundColor: 'rgba(74,144,217,0.12)',
     borderWidth: 1,
     borderColor: 'rgba(74,144,217,0.2)',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginTop: 2,
+  },
+  stepNumberText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 14,
+    color: ACCENT_COLOR,
+    fontWeight: '600' as const,
   },
   stepDivider: {
     height: 1,
     backgroundColor: 'rgba(255,255,255,0.06)',
-    marginVertical: 16,
-    marginLeft: 56,
-  },
-  stepTextWrap: {
-    flex: 1,
-    paddingTop: 2,
+    marginVertical: 12,
+    marginLeft: 46,
   },
   stepText: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 16,
+    fontSize: 15,
     color: '#FFFFFF',
     fontWeight: '600' as const,
-    marginBottom: 4,
-  },
-  stepSub: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 13,
-    color: 'rgba(255,255,255,0.45)',
-    lineHeight: 19,
   },
   modalFooterWrap: {
     width: '100%' as const,
     backgroundColor: 'rgba(255,255,255,0.04)',
-    borderRadius: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.06)',
   },
@@ -662,7 +647,7 @@ const styles = StyleSheet.create({
   },
   modalGetStarted: {
     width: '100%' as const,
-    height: 54,
+    height: 50,
     borderRadius: 100,
     backgroundColor: '#FFFFFF',
     alignItems: 'center' as const,
