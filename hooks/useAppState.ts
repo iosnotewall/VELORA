@@ -10,6 +10,15 @@ export interface CustomProduct {
   color: string;
 }
 
+export interface DailyScore {
+  date: string;
+  energy: number;
+  sleep: number;
+  mood: number;
+}
+
+export type NotificationMode = 'specific' | 'random' | 'hourly';
+
 export interface AppState {
   goal: string;
   gapScore: number;
@@ -30,6 +39,11 @@ export interface AppState {
   commitmentLevel: string;
   missedDoses: number;
   missedDosesPct: number;
+  dailyScores: DailyScore[];
+  streakShieldAvailable: boolean;
+  streakShieldUsedDate: string | null;
+  notificationMode: NotificationMode;
+  notificationTimes: string[];
 }
 
 const DEFAULT_STATE: AppState = {
@@ -52,6 +66,11 @@ const DEFAULT_STATE: AppState = {
   commitmentLevel: '',
   missedDoses: 0,
   missedDosesPct: 0,
+  dailyScores: [],
+  streakShieldAvailable: true,
+  streakShieldUsedDate: null,
+  notificationMode: 'specific',
+  notificationTimes: ['08:00'],
 };
 
 const STORAGE_KEY = 'ivb_app_state';
@@ -98,7 +117,7 @@ export const [AppStateProvider, useAppState] = createContextHook(() => {
     });
   }, [saveMutation]);
 
-  const checkIn = useCallback(() => {
+  const checkIn = useCallback((scores?: { energy: number; sleep: number; mood: number }) => {
     const today = new Date().toISOString().split('T')[0];
     setState(prev => {
       if (prev.lastCheckedIn === today) return prev;
@@ -111,6 +130,10 @@ export const [AppStateProvider, useAppState] = createContextHook(() => {
       const newStreak = isConsecutive ? prev.currentStreak + 1 : 1;
       const newLongest = Math.max(prev.longestStreak, newStreak);
 
+      const newDailyScores = scores
+        ? [...prev.dailyScores, { date: today, ...scores }]
+        : prev.dailyScores;
+
       const next: AppState = {
         ...prev,
         lastCheckedIn: today,
@@ -118,6 +141,7 @@ export const [AppStateProvider, useAppState] = createContextHook(() => {
         currentStreak: newStreak,
         longestStreak: newLongest,
         totalDaysTaken: prev.totalDaysTaken + 1,
+        dailyScores: newDailyScores,
       };
       saveMutation.mutate(next);
       return next;

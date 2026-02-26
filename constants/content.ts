@@ -120,6 +120,106 @@ export function getDayInsight(day: number): string {
   return `Day ${day}. You're close. Don't stop when it starts working.`;
 }
 
+export const VARIABLE_REWARDS: string[] = [
+  "Your future self just said thank you.",
+  "That's biology working in your favor.",
+  "Consistency compounds. You're proving it.",
+  "Most people quit by now. You didn't.",
+  "Your cells are celebrating right now.",
+  "One more day of building something real.",
+  "This is what discipline looks like.",
+  "Small act. Massive ripple effect.",
+  "You're rewriting your baseline.",
+  "Your body remembers every single day you show up.",
+  "The compound effect is real. You're living it.",
+  "Another deposit in your health bank.",
+  "You chose yourself today. That matters.",
+  "Quiet consistency beats loud motivation.",
+  "This streak isn't just numbers. It's who you're becoming.",
+  "Your mitochondria approve this message.",
+  "The gap between wanting and doing just got smaller.",
+  "You're not just taking supplements. You're building identity.",
+  "Day by day, cell by cell. You're transforming.",
+  "The hardest part was starting. You've already won that.",
+];
+
+export function getVariableReward(day: number): string {
+  return VARIABLE_REWARDS[day % VARIABLE_REWARDS.length];
+}
+
+export const CURIOSITY_NOTIFICATIONS: Record<string, string[]> = {
+  energy: [
+    "Low energy today? There's a reason for that. 🌿",
+    "Your mitochondria called. They need something.",
+    "That afternoon crash? It's preventable.",
+    "3pm slump incoming. You know what to do.",
+    "Energy isn't random. It's a choice you make at 8am.",
+  ],
+  sleep: [
+    "Tonight's sleep starts with what you do right now.",
+    "Your melatonin production needs a head start.",
+    "Deep sleep doesn't happen by accident.",
+    "Tossing and turning? There's a compound for that.",
+    "Your nervous system is asking for help winding down.",
+  ],
+  stress: [
+    "Busy day ahead? Your nervous system needs this.",
+    "Cortisol is up. Let's bring it back down.",
+    "Feeling reactive? There's a biological reason.",
+    "Stress depletes magnesium. Magnesium handles stress.",
+    "Your calm isn't gone. It just needs fuel.",
+  ],
+  focus: [
+    "Your brain's best hours are ahead. Don't leave them behind.",
+    "Mental fog? Your acetylcholine levels might be low.",
+    "Sharp focus requires specific fuel. Daily.",
+    "That scattered feeling has a biological fix.",
+    "Cognitive clarity isn't luck. It's nutrition.",
+  ],
+  hormones: [
+    "Your hormones need consistency. Today matters.",
+    "Hormonal balance isn't automatic. It's built daily.",
+    "Your cycle depends on what you do between cycles.",
+    "Balance starts with showing up. Even today.",
+    "Your endocrine system is listening.",
+  ],
+  metabolism: [
+    "Your metabolism is listening. Give it what it needs.",
+    "Blood sugar stability starts before breakfast.",
+    "That post-meal crash? It's optional.",
+    "Your insulin sensitivity improves with every day.",
+    "Metabolic health is built in the boring moments.",
+  ],
+  sport: [
+    "Recovery starts now. Your muscles are waiting.",
+    "Performance is built between sessions.",
+    "Your VO2 max has opinions about today.",
+    "Inflammation slows recovery. You can fix that.",
+    "Today's supplement is tomorrow's PR.",
+  ],
+  immune: [
+    "Your immune system runs on what you give it today.",
+    "70% of immunity lives in your gut. Feed it.",
+    "Vitamin D levels drop fast without daily intake.",
+    "Your white blood cells need reinforcements.",
+    "Prevention beats cure. Every single time.",
+  ],
+};
+
+export const SCORE_LABELS: Record<number, string> = {
+  1: 'Rough',
+  2: 'Low',
+  3: 'Okay',
+  4: 'Good',
+  5: 'Great',
+};
+
+export const NOTIFICATION_MODE_OPTIONS = [
+  { id: 'specific' as const, label: 'Set times', sub: 'Choose exact times for reminders', icon: 'Clock' as const },
+  { id: 'random' as const, label: 'Random daily', sub: 'One surprise reminder per day', icon: 'Shuffle' as const },
+  { id: 'hourly' as const, label: 'Random hourly', sub: 'Gentle nudges throughout the day', icon: 'Timer' as const },
+];
+
 export const FREQUENCY_OPTIONS = [
   { id: 'rarely', label: 'Almost never', sub: '0–1 days per week', value: 1, icon: 'XCircle' as const },
   { id: 'sometimes', label: 'Sometimes', sub: '2–3 days per week', value: 3, icon: 'CircleDot' as const },
