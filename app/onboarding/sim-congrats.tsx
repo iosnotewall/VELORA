@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
-import { Check } from 'lucide-react-native';
+import { Check, ArrowRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { useAppState } from '@/hooks/useAppState';
@@ -150,17 +150,23 @@ export default function SimCongratsScreen() {
 
         <View style={styles.middleSection}>
           <Animated.View style={[styles.bodyCard, { opacity: cardAnim, transform: [{ scale: cardScale }] }]}>
-            <View style={[styles.cardAccent, { backgroundColor: goalColor }]} />
             <View style={styles.cardContent}>
-              {goalData && (
-                <View style={[styles.goalTag, { backgroundColor: goalColor + '10' }]}>
+              <View style={styles.cardHeader}>
+                <View style={styles.cardTitleRow}>
                   <View style={[styles.goalDot, { backgroundColor: goalColor }]} />
-                  <Text style={[styles.goalTagText, { color: goalColor }]}>{goalData.label}</Text>
+                  <Text style={styles.cardTitle}>First Check-In</Text>
                 </View>
-              )}
-              <Text style={styles.bodyText}>
+                <Text style={styles.cardDate}>{new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</Text>
+              </View>
+              <Text style={styles.bodyText} numberOfLines={2}>
                 {congratsData.body}
               </Text>
+              <View style={styles.cardFooter}>
+                {goalData && (
+                  <Text style={[styles.goalTagText, { color: goalColor }]}>{goalData.label}</Text>
+                )}
+                <ArrowRight size={18} color={goalColor} />
+              </View>
             </View>
           </Animated.View>
         </View>
@@ -236,45 +242,59 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden' as const,
     shadowColor: '#8A7A68',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 6,
     borderWidth: 1,
     borderColor: 'rgba(138,122,104,0.06)',
-  },
-  cardAccent: {
-    height: 3,
-    width: '100%',
   },
   cardContent: {
     padding: 22,
   },
-  goalTag: {
+  cardHeader: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
+    marginBottom: 14,
+  },
+  cardTitleRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    alignSelf: 'flex-start' as const,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-    marginBottom: 14,
-    gap: 7,
+    gap: 10,
+  },
+  cardTitle: {
+    fontFamily: Fonts.heading,
+    fontSize: 18,
+    color: Colors.navy,
+    letterSpacing: -0.2,
+  },
+  cardDate: {
+    fontFamily: Fonts.body,
+    fontSize: 14,
+    color: Colors.mediumGray,
   },
   goalDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
+    width: 9,
+    height: 9,
+    borderRadius: 5,
   },
   goalTagText: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    letterSpacing: 0.3,
+    fontSize: 13,
+    letterSpacing: 0.2,
   },
   bodyText: {
     fontFamily: Fonts.body,
     fontSize: 15,
     color: Colors.darkGray,
     lineHeight: 23,
+    marginBottom: 16,
+  },
+  cardFooter: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    alignItems: 'center' as const,
   },
   noteText: {
     fontFamily: Fonts.body,
