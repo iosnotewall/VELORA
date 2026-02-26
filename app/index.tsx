@@ -19,9 +19,8 @@ export default function IndexScreen() {
     return <Redirect href={"/(tabs)/today" as any} />;
   }
 
-  // DEBUG: Skip to trajectory page directly
-  console.log('Index: Redirecting to onboarding/trajectory');
-  return <Redirect href={"/onboarding/trajectory" as any} />;
+  console.log('Index: Redirecting to onboarding');
+  return <Redirect href={"/onboarding/welcome" as any} />;
 }
 
 const styles = StyleSheet.create({
