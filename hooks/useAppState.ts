@@ -83,18 +83,22 @@ export const [AppStateProvider, useAppState] = createContextHook(() => {
   const stateQuery = useQuery({
     queryKey: ['appState'],
     queryFn: async () => {
+      console.log('[AppState] Loading from AsyncStorage...');
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          return { ...DEFAULT_STATE, ...JSON.parse(stored) } as AppState;
-        } catch {
+          const parsed = { ...DEFAULT_STATE, ...JSON.parse(stored) } as AppState;
+          console.log('[AppState] Loaded state, onboardingComplete:', parsed.onboardingComplete);
+          return parsed;
+        } catch (e) {
+          console.log('[AppState] Failed to parse stored state:', e);
           return DEFAULT_STATE;
         }
       }
+      console.log('[AppState] No stored state found, using defaults');
       return DEFAULT_STATE;
     },
     staleTime: Infinity,
-    initialData: DEFAULT_STATE,
   });
 
   const saveMutation = useMutation({
