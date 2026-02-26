@@ -1,19 +1,65 @@
-import React, { useState, useCallback, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Animated, Easing, Platform, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Check, Search } from 'lucide-react-native';
+import { Check, Search, Plus, X, Pill } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
-import { PRODUCTS } from '@/constants/products';
+import { PRODUCTS, Product } from '@/constants/products';
+
+interface CustomSupplement {
+  id: string;
+  name: string;
+  tagline: string;
+  color: string;
+  isCustom: boolean;
+}
 
 export default function ProductsScreen() {
   const router = useRouter();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string[]>([]);
   const [query, setQuery] = useState('');
+  const [customSupplements, setCustomSupplements] = useState<CustomSupplement[]>([]);
+  const [isAddingCustom, setIsAddingCustom] = useState(false);
+  const [customName, setCustomName] = useState('');
+  const customInputRef = useRef<TextInput>(null);
+
+  const addRowAnim = useRef(new Animated.Value(1)).current;
+  const customFormAnim = useRef(new Animated.Value(0)).current;
+  const rowAnims = useRef(PRODUCTS.map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    const animations = PRODUCTS.map((_, i) =>
+      Animated.timing(rowAnims[i], {
+        toValue: 1,
+        duration: 350,
+        delay: i * 40,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: Platform.OS !== 'web',
+      })
+    );
+    Animated.parallel(animations).start();
+  }, []);
+
+  const allProducts = useMemo(() => {
+    const customs: (Product & { isCustom?: boolean })[] = customSupplements.map(c => ({
+      ...c,
+      goals: [],
+      isCustom: true,
+    }));
+    return [...PRODUCTS, ...customs];
+  }, [customSupplements]);
+
+  const filtered = useMemo(() => {
+    if (query.trim().length === 0) return allProducts;
+    return allProducts.filter(p =>
+      p.name.toLowerCase().includes(query.toLowerCase()) ||
+      p.tagline.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [query, allProducts]);
 
   const toggleProduct = useCallback((id: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -22,14 +68,92 @@ export default function ProductsScreen() {
     );
   }, []);
 
-  const filtered = useMemo(() =>
-    query.trim().length === 0
-      ? PRODUCTS
-      : PRODUCTS.filter(p =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.tagline.toLowerCase().includes(query.toLowerCase())
-        ),
-  [query]);
+  const showCustomForm = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setIsAddingCustom(true);
+    setCustomName(query.trim());
+
+    Animated.parallel([
+      Animated.timing(addRowAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(customFormAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.back(1.1)),
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      customInputRef.current?.focus();
+    });
+  }, [query, addRowAnim, customFormAnim]);
+
+  const hideCustomForm = useCallback(() => {
+    Keyboard.dismiss();
+    Animated.parallel([
+      Animated.timing(customFormAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(addRowAnim, {
+        toValue: 1,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      setIsAddingCustom(false);
+      setCustomName('');
+    });
+  }, [customFormAnim, addRowAnim]);
+
+  const addCustomSupplement = useCallback(() => {
+    const trimmed = customName.trim();
+    if (!trimmed) return;
+
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
+    const customColors = ['#7B8FC4', '#D4A853', '#C4857A', '#5A8A6F', '#8B6BB8', '#4A90D9'];
+    const colorIndex = customSupplements.length % customColors.length;
+
+    const newSupplement: CustomSupplement = {
+      id: `custom_${Date.now()}`,
+      name: trimmed,
+      tagline: 'Custom supplement',
+      color: customColors[colorIndex],
+      isCustom: true,
+    };
+
+    setCustomSupplements(prev => [...prev, newSupplement]);
+    setSelected(prev => [...prev, newSupplement.id]);
+    setQuery('');
+
+    Animated.parallel([
+      Animated.timing(customFormAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(addRowAnim, {
+        toValue: 1,
+        duration: 250,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+    ]).start(() => {
+      setIsAddingCustom(false);
+      setCustomName('');
+    });
+  }, [customName, customSupplements, customFormAnim, addRowAnim]);
+
+  const removeCustom = useCallback((id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setCustomSupplements(prev => prev.filter(c => c.id !== id));
+    setSelected(prev => prev.filter(s => s !== id));
+  }, []);
 
   return (
     <OnboardingScreen
@@ -42,7 +166,7 @@ export default function ProductsScreen() {
         router.push('/onboarding/stack-insight' as any);
       }}
     >
-      <Text style={styles.headline}>Which supplements do you take?</Text>
+      <Text style={styles.headline}>Which supplements{'\n'}do you take?</Text>
 
       <View style={styles.searchWrap}>
         <Search size={16} color={Colors.mediumGray} strokeWidth={2} />
@@ -65,10 +189,89 @@ export default function ProductsScreen() {
         )}
       </View>
 
-      <ScrollView style={styles.list} showsVerticalScrollIndicator={false}>
+      {!isAddingCustom && (
+        <Animated.View style={{ opacity: addRowAnim, transform: [{ scale: addRowAnim }] }}>
+          <TouchableOpacity
+            onPress={showCustomForm}
+            style={styles.addCustomRow}
+            activeOpacity={0.7}
+            testID="add-custom-supplement"
+          >
+            <View style={styles.addIconWrap}>
+              <Plus size={16} color={Colors.blue} strokeWidth={2.5} />
+            </View>
+            <View style={styles.addTextWrap}>
+              <Text style={styles.addTitle}>
+                {query.trim() ? `Add "${query.trim()}"` : 'Add custom supplement'}
+              </Text>
+              <Text style={styles.addSubtitle}>Not on the list? Add yours</Text>
+            </View>
+            <View style={styles.addArrow}>
+              <Plus size={14} color={Colors.blue} strokeWidth={2} />
+            </View>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {isAddingCustom && (
+        <Animated.View
+          style={[
+            styles.customFormWrap,
+            {
+              opacity: customFormAnim,
+              transform: [{
+                scale: customFormAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.95, 1],
+                }),
+              }],
+            },
+          ]}
+        >
+          <View style={styles.customFormInner}>
+            <View style={styles.customInputRow}>
+              <Pill size={16} color={Colors.blue} strokeWidth={2} />
+              <TextInput
+                ref={customInputRef}
+                style={styles.customInput}
+                placeholder="e.g. Ashwagandha, Zinc…"
+                placeholderTextColor={Colors.border}
+                value={customName}
+                onChangeText={setCustomName}
+                autoCapitalize="words"
+                returnKeyType="done"
+                onSubmitEditing={addCustomSupplement}
+                testID="custom-supplement-input"
+              />
+            </View>
+            <View style={styles.customActions}>
+              <TouchableOpacity onPress={hideCustomForm} style={styles.customCancelBtn} activeOpacity={0.7}>
+                <Text style={styles.customCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={addCustomSupplement}
+                style={[styles.customAddBtn, !customName.trim() && styles.customAddBtnDisabled]}
+                activeOpacity={0.7}
+                disabled={!customName.trim()}
+              >
+                <Text style={[styles.customAddText, !customName.trim() && styles.customAddTextDisabled]}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Animated.View>
+      )}
+
+      <ScrollView
+        style={styles.list}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {filtered.map((product, index) => {
           const isSelected = selected.includes(product.id);
-          return (
+          const isCustom = 'isCustom' in product && (product as CustomSupplement).isCustom === true;
+          const animIndex = index < PRODUCTS.length ? index : -1;
+
+          const rowContent: React.ReactNode = (
             <TouchableOpacity
               key={product.id}
               onPress={() => toggleProduct(product.id)}
@@ -76,28 +279,77 @@ export default function ProductsScreen() {
               activeOpacity={0.7}
               testID={`product-${product.id}`}
             >
-              <View style={[styles.productDot, { backgroundColor: product.color }]} />
+              <View style={[styles.productDot, { backgroundColor: product.color }]}>
+                {isCustom ? <Pill size={8} color={Colors.white} strokeWidth={2.5} /> : null}
+              </View>
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
-                <Text style={styles.productTagline}>{product.tagline}</Text>
+                <Text style={styles.productTagline}>
+                  {product.tagline}
+                  {isCustom ? ' · Custom' : ''}
+                </Text>
               </View>
+              {isCustom ? (
+                <TouchableOpacity
+                  onPress={() => removeCustom(product.id)}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={styles.removeBtn}
+                >
+                  <X size={12} color={Colors.mediumGray} strokeWidth={2.5} />
+                </TouchableOpacity>
+              ) : null}
               <View style={[styles.checkbox, isSelected && styles.checkboxSelected]}>
                 {isSelected && <Check size={14} color={Colors.white} strokeWidth={2.5} />}
               </View>
             </TouchableOpacity>
           );
+
+          if (animIndex >= 0) {
+            return (
+              <Animated.View
+                key={product.id}
+                style={{
+                  opacity: rowAnims[animIndex],
+                  transform: [{
+                    translateY: rowAnims[animIndex].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [16, 0],
+                    }),
+                  }],
+                }}
+              >
+                {rowContent}
+              </Animated.View>
+            );
+          }
+
+          return <View key={product.id}>{rowContent}</View>;
         })}
-        {filtered.length === 0 && (
+
+        {filtered.length === 0 && !isAddingCustom && (
           <View style={styles.emptyWrap}>
-            <Text style={styles.emptyText}>No supplements found</Text>
+            <Text style={styles.emptyEmoji}>🔍</Text>
+            <Text style={styles.emptyText}>No match found</Text>
+            <Text style={styles.emptyHint}>Tap the button above to add it</Text>
           </View>
         )}
+
+        <View style={{ height: 24 }} />
       </ScrollView>
     </OnboardingScreen>
   );
 }
 
 const styles = StyleSheet.create({
+  headline: {
+    fontFamily: Fonts.heading,
+    fontSize: 28,
+    color: Colors.navy,
+    lineHeight: 36,
+    marginTop: 8,
+    marginBottom: 16,
+    letterSpacing: -0.3,
+  },
   searchWrap: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -107,7 +359,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    marginBottom: 16,
+    marginBottom: 12,
     gap: 10,
   },
   searchInput: {
@@ -131,22 +383,110 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.bodySemiBold,
     lineHeight: 11,
   },
-  emptyWrap: {
-    paddingVertical: 32,
+  addCustomRow: {
+    flexDirection: 'row' as const,
     alignItems: 'center' as const,
+    backgroundColor: Colors.blueBg,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.blue + '30',
+    borderStyle: 'dashed' as const,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 14,
+    gap: 12,
   },
-  emptyText: {
+  addIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: Colors.blue + '15',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  addTextWrap: {
+    flex: 1,
+  },
+  addTitle: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 14,
+    color: Colors.blue,
+    lineHeight: 18,
+  },
+  addSubtitle: {
     fontFamily: Fonts.body,
+    fontSize: 12,
+    color: Colors.blue + '80',
+    marginTop: 1,
+  },
+  addArrow: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    backgroundColor: Colors.blue + '12',
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  customFormWrap: {
+    marginBottom: 14,
+  },
+  customFormInner: {
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: Colors.blue,
+    overflow: 'hidden' as const,
+  },
+  customInputRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    gap: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+  },
+  customInput: {
+    flex: 1,
+    fontFamily: Fonts.bodySemiBold,
     fontSize: 15,
+    color: Colors.navy,
+    paddingVertical: 0,
+  },
+  customActions: {
+    flexDirection: 'row' as const,
+    justifyContent: 'flex-end' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    gap: 8,
+  },
+  customCancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 8,
+  },
+  customCancelText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 13,
     color: Colors.mediumGray,
   },
-  headline: {
-    fontFamily: Fonts.heading,
-    fontSize: 26,
-    color: Colors.navy,
-    lineHeight: 34,
-    marginTop: 8,
-    marginBottom: 16,
+  customAddBtn: {
+    paddingHorizontal: 18,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: Colors.navy,
+  },
+  customAddBtnDisabled: {
+    backgroundColor: Colors.lightGray,
+  },
+  customAddText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 13,
+    color: Colors.white,
+  },
+  customAddTextDisabled: {
+    color: Colors.mediumGray,
   },
   list: {
     flex: 1,
@@ -154,23 +494,25 @@ const styles = StyleSheet.create({
   productRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    paddingVertical: 16,
-    gap: 14,
+    paddingVertical: 14,
+    gap: 12,
   },
   productBorder: {
     borderBottomWidth: 1,
     borderBottomColor: Colors.lightGray,
   },
   productDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 28,
+    height: 28,
+    borderRadius: 9,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   productInfo: {
     flex: 1,
   },
   productName: {
-    fontFamily: Fonts.bodySemiBold,
+    fontFamily: Fonts.headingSemiBold,
     fontSize: 15,
     color: Colors.navy,
   },
@@ -178,7 +520,15 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.body,
     fontSize: 13,
     color: Colors.mediumGray,
-    marginTop: 2,
+    marginTop: 1,
+  },
+  removeBtn: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: Colors.lightGray,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   checkbox: {
     width: 24,
@@ -192,5 +542,24 @@ const styles = StyleSheet.create({
   checkboxSelected: {
     backgroundColor: Colors.navy,
     borderColor: Colors.navy,
+  },
+  emptyWrap: {
+    paddingVertical: 40,
+    alignItems: 'center' as const,
+    gap: 4,
+  },
+  emptyEmoji: {
+    fontSize: 28,
+    marginBottom: 8,
+  },
+  emptyText: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 15,
+    color: Colors.navy,
+  },
+  emptyHint: {
+    fontFamily: Fonts.body,
+    fontSize: 13,
+    color: Colors.mediumGray,
   },
 });

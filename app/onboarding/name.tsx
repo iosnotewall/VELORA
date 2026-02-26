@@ -29,12 +29,11 @@ export default function NameScreen() {
 
   useEffect(() => {
     Animated.sequence([
-      Animated.delay(200),
-      Animated.timing(titleAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
       Animated.delay(100),
-      Animated.timing(inputAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(titleAnim, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(inputAnim, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
     ]).start(() => {
-      setTimeout(() => inputRef.current?.focus(), 100);
+      setTimeout(() => inputRef.current?.focus(), 50);
     });
   }, []);
 
