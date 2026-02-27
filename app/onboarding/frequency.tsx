@@ -2,11 +2,19 @@ import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { XCircle, CircleDot, TrendingUp, Star } from 'lucide-react-native';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { FREQUENCY_OPTIONS } from '@/constants/content';
+
+const ICONS: Record<string, React.ComponentType<{ size: number; color: string; strokeWidth: number }>> = {
+  XCircle,
+  CircleDot,
+  TrendingUp,
+  Star,
+};
 
 export default function FrequencyScreen() {
   const router = useRouter();
@@ -43,6 +51,16 @@ export default function FrequencyScreen() {
                 style={[styles.optionCard, isSelected && styles.optionSelected]}
                 activeOpacity={0.7}
               >
+                {(() => {
+                  const IconComp = ICONS[option.icon];
+                  return IconComp ? (
+                    <IconComp
+                      size={22}
+                      color={isSelected ? Colors.navy : Colors.mediumGray}
+                      strokeWidth={1.75}
+                    />
+                  ) : null;
+                })()}
                 <View style={styles.optionText}>
                   <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>{option.label}</Text>
                   <Text style={[styles.optionSub, isSelected && styles.optionSubSelected]}>{option.sub}</Text>
@@ -75,6 +93,9 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     paddingVertical: 14,
     paddingHorizontal: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
   },
   optionSelected: {
     borderColor: Colors.navy,
@@ -84,6 +105,7 @@ const styles = StyleSheet.create({
 
   optionText: {
     flex: 1,
+    flexDirection: 'column',
   },
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
