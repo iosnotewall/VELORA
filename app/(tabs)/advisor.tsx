@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Send, Sparkles, RotateCcw, Plus, ChevronLeft, Trash2, MessageSquare } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppState } from '@/hooks/useAppState';
-import { sendChatStreaming, hasApiKey } from '@/services/openai';
+import { sendChatStreaming, hasApiKey, trimHistory } from '@/services/openai';
 import type { ChatMessage } from '@/services/openai';
 import {
   getSessionIndex, loadSession, saveSession, deleteSession,
@@ -378,10 +378,10 @@ export default function AdvisorScreen() {
 
     const contextToUse = userContext;
 
-    const fullMessages: ChatMessage[] = [
+    const fullMessages = trimHistory([
       { role: 'system', content: SYSTEM_PROMPT + '\n\n' + contextToUse },
       ...chatHistoryRef.current,
-    ];
+    ]);
 
     console.log('[Advisor] Sending', fullMessages.length, 'messages (system + history). Context length:', contextToUse.length);
 

@@ -53,8 +53,22 @@ export async function hasApiKey(): Promise<boolean> {
 }
 
 export const OPENAI_MODEL = 'gpt-4o-mini';
-export const OPENAI_MAX_TOKENS = 600;
+export const OPENAI_MAX_TOKENS = 400;
 export const OPENAI_TEMPERATURE = 0.7;
+export const MAX_HISTORY_MESSAGES = 12;
+
+export function trimHistory(messages: ChatMessage[]): ChatMessage[] {
+  const systemMsgs = messages.filter(m => m.role === 'system');
+  const nonSystem = messages.filter(m => m.role !== 'system');
+
+  if (nonSystem.length <= MAX_HISTORY_MESSAGES) {
+    return [...systemMsgs, ...nonSystem];
+  }
+
+  const trimmed = nonSystem.slice(-MAX_HISTORY_MESSAGES);
+  console.log('[OpenAI] Trimmed history from', nonSystem.length, 'to', trimmed.length, 'messages');
+  return [...systemMsgs, ...trimmed];
+}
 
 export async function sendChat(messages: ChatMessage[]): Promise<string> {
   const key = await getApiKey();
