@@ -21,7 +21,7 @@ const OPTIONS: GenderOption[] = [
   { id: 'skip',   label: 'Prefer not to say', sub: "No worries — we'll keep advice universal",  icon: HelpCircle },
 ];
 
-const STAGGER = 120;
+const STAGGER = 140;
 
 export default function GenderScreen() {
   const router = useRouter();
@@ -46,32 +46,32 @@ export default function GenderScreen() {
   useEffect(() => {
     const easing = Easing.out(Easing.cubic);
     const sequence = [
-      Animated.delay(200),
+      Animated.delay(400),
       Animated.timing(titleAnim, {
         toValue: 1,
-        duration: 700,
+        duration: 1100,
         easing,
         useNativeDriver: Platform.OS !== 'web',
       }),
-      Animated.delay(150),
+      Animated.delay(500),
       Animated.stagger(
-        200,
+        350,
         subLineAnims.map(anim =>
           Animated.timing(anim, {
             toValue: 1,
-            duration: 500,
+            duration: 650,
             easing,
             useNativeDriver: Platform.OS !== 'web',
           })
         )
       ),
-      Animated.delay(100),
+      Animated.delay(300),
       Animated.stagger(
         STAGGER,
         optionAnims.map(anim =>
           Animated.timing(anim, {
             toValue: 1,
-            duration: 380,
+            duration: 420,
             easing,
             useNativeDriver: Platform.OS !== 'web',
           })
@@ -185,12 +185,9 @@ export default function GenderScreen() {
                     color={isSelected ? Colors.navy : Colors.mediumGray}
                     strokeWidth={1.6}
                   />
-                  <View style={styles.optionText}>
-                    <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
-                      {option.label}
-                    </Text>
-                    <Text style={styles.optionSub}>{option.sub}</Text>
-                  </View>
+                  <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
+                    {option.label}
+                  </Text>
                 </View>
               </TouchableOpacity>
             </Animated.View>
@@ -203,7 +200,7 @@ export default function GenderScreen() {
 
 const styles = StyleSheet.create({
   topSpacer: {
-    height: 32,
+    height: 72,
   },
   headline: {
     fontFamily: Fonts.heading,
@@ -229,24 +226,20 @@ const styles = StyleSheet.create({
   optionRow: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 16,
+    gap: 14,
   },
   optionCard: {
     backgroundColor: Colors.white,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    paddingVertical: 16,
+    paddingVertical: 15,
     paddingHorizontal: 18,
   },
   optionSelected: {
     borderColor: Colors.navy,
     borderWidth: 2,
     backgroundColor: Colors.softBlue,
-  },
-  optionText: {
-    flex: 1,
-    gap: 2,
   },
   optionLabel: {
     fontFamily: Fonts.bodySemiBold,
@@ -255,11 +248,5 @@ const styles = StyleSheet.create({
   },
   optionLabelSelected: {
     color: Colors.navy,
-  },
-  optionSub: {
-    fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.mediumGray,
-    lineHeight: 18,
   },
 });
