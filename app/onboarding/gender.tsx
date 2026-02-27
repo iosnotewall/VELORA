@@ -93,6 +93,7 @@ export default function GenderScreen() {
       ctaText="Continue"
       ctaEnabled={!!selected}
       onCta={handleContinue}
+      hideHeader
     >
       <Animated.Text
         style={[
@@ -103,7 +104,7 @@ export default function GenderScreen() {
           },
         ]}
       >
-        Your biology is{'\n'}your edge.
+        Let's personalize{"\n"}your plan
       </Animated.Text>
 
       <Animated.Text
@@ -115,7 +116,7 @@ export default function GenderScreen() {
           },
         ]}
       >
-        The same supplement hits differently depending on your biology. We calibrate every recommendation to match.
+        Your body processes supplements differently based on biology. This helps us dial in the right doses and timing.
       </Animated.Text>
 
       <View style={styles.options}>
