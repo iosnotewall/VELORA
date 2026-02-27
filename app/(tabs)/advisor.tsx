@@ -2,10 +2,10 @@ import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
   FlatList, KeyboardAvoidingView, Platform, Animated,
-  ActivityIndicator,
+  ActivityIndicator, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Send, Sparkles, RotateCcw, Plus, ChevronLeft, Trash2, MessageSquare } from 'lucide-react-native';
+import { Send, Sparkles, Plus, ChevronLeft, Trash2, Clock, ChevronRight } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import { useAppState } from '@/hooks/useAppState';
 import { sendChatStreaming, hasApiKey, trimHistory } from '@/services/openai';
@@ -24,7 +24,7 @@ interface DisplayMessage extends SessionMessage {
   isStreaming?: boolean;
 }
 
-type ScreenView = 'history' | 'chat';
+type ScreenView = 'welcome' | 'chat' | 'history';
 
 function buildUserContext(state: {
   goal: string;
@@ -231,7 +231,7 @@ export default function AdvisorScreen() {
   const insets = useSafeAreaInsets();
   const appState = useAppState();
 
-  const [view, setView] = useState<ScreenView>('history');
+  const [view, setView] = useState<ScreenView>('welcome');
   const [sessions, setSessions] = useState<SessionSummary[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
 
@@ -243,6 +243,9 @@ export default function AdvisorScreen() {
   const flatListRef = useRef<FlatList<DisplayMessage>>(null);
   const inputRef = useRef<TextInput>(null);
   const chatHistoryRef = useRef<ChatMessage[]>([]);
+
+  const welcomeFade = useRef(new Animated.Value(1)).current;
+  const welcomeSlide = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     (async () => {
@@ -333,7 +336,7 @@ export default function AdvisorScreen() {
     console.log('[Advisor] Opened session:', sessionId, 'with', session.messages.length, 'messages + fresh context');
   }, [userContext]);
 
-  const goBackToHistory = useCallback(async () => {
+  const goBackToWelcome = useCallback(async () => {
     if (activeSession && activeSession.messages.length > 0) {
       await saveSession(activeSession);
     }
@@ -342,8 +345,17 @@ export default function AdvisorScreen() {
     chatHistoryRef.current = [];
     setInput('');
     await loadSessions();
-    setView('history');
+    setView('welcome');
   }, [activeSession, loadSessions]);
+
+  const goToHistory = useCallback(async () => {
+    await loadSessions();
+    setView('history');
+  }, [loadSessions]);
+
+  const goBackFromHistory = useCallback(() => {
+    setView('welcome');
+  }, []);
 
   const handleDeleteSession = useCallback(async (sessionId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -365,9 +377,27 @@ export default function AdvisorScreen() {
 
   const handleSend = useCallback(async (text?: string) => {
     const messageText = (text ?? input).trim();
-    if (!messageText || isStreaming || !activeSession) return;
+    if (!messageText || isStreaming) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    let currentSession = activeSession;
+    if (!currentSession) {
+      const sessionId = createSessionId();
+      const now = Date.now();
+      currentSession = {
+        id: sessionId,
+        title: 'New conversation',
+        createdAt: now,
+        updatedAt: now,
+        messages: [],
+        contextSnapshot: userContext,
+      };
+      setActiveSession(currentSession);
+      chatHistoryRef.current = [];
+      setView('chat');
+      console.log('[Advisor] Auto-created new chat from welcome, session:', sessionId);
+    }
 
     const userMsg: SessionMessage = {
       id: `user-${Date.now()}`,
@@ -383,7 +413,7 @@ export default function AdvisorScreen() {
 
     chatHistoryRef.current.push({ role: 'user', content: messageText });
 
-    let currentSession = persistMessage(activeSession, userMsg);
+    currentSession = persistMessage(currentSession, userMsg);
 
     const streamingId = `assistant-${Date.now()}`;
     const streamingDisplay: DisplayMessage = {
@@ -470,25 +500,16 @@ export default function AdvisorScreen() {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
         <View style={styles.historyHeader}>
-          <View style={styles.historyHeaderLeft}>
-            <View style={styles.headerIcon}>
-              <Sparkles size={18} color={Colors.navy} strokeWidth={2} />
-            </View>
-            <View style={styles.headerTextContainer}>
-              <Text style={styles.headerTitle}>Velora</Text>
-              <Text style={styles.headerSub}>
-                {goalData ? `${goalData.label} advisor` : 'Wellness advisor'}
-              </Text>
-            </View>
-          </View>
           <TouchableOpacity
-            onPress={startNewChat}
-            style={styles.newChatButton}
+            onPress={goBackFromHistory}
+            style={styles.backButton}
             activeOpacity={0.7}
-            testID="new-chat-button"
+            testID="history-back-button"
           >
-            <Plus size={18} color={Colors.white} strokeWidth={2.5} />
+            <ChevronLeft size={20} color={Colors.navy} strokeWidth={2} />
           </TouchableOpacity>
+          <Text style={styles.historyHeaderTitle}>Previous Chats</Text>
+          <View style={{ width: 36 }} />
         </View>
 
         {sessionsLoading ? (
@@ -498,20 +519,12 @@ export default function AdvisorScreen() {
         ) : sessions.length === 0 ? (
           <View style={styles.emptyHistory}>
             <View style={styles.emptyHistoryIcon}>
-              <MessageSquare size={32} color={Colors.mediumGray} strokeWidth={1.5} />
+              <Clock size={28} color={Colors.mediumGray} strokeWidth={1.5} />
             </View>
             <Text style={styles.emptyHistoryTitle}>No conversations yet</Text>
             <Text style={styles.emptyHistoryBody}>
-              Start a new conversation and Velora will use your latest tracking data to give personalized advice.
+              Your previous conversations with Velora will appear here.
             </Text>
-            <TouchableOpacity
-              onPress={startNewChat}
-              style={styles.startChatButton}
-              activeOpacity={0.7}
-            >
-              <Sparkles size={16} color={Colors.white} strokeWidth={2} />
-              <Text style={styles.startChatText}>Start conversation</Text>
-            </TouchableOpacity>
           </View>
         ) : (
           <FlatList
@@ -553,11 +566,133 @@ export default function AdvisorScreen() {
     );
   }
 
+  if (view === 'welcome') {
+    return (
+      <View style={[styles.container, { paddingTop: insets.top }]}>
+        <View style={styles.welcomeHeader}>
+          <View style={styles.welcomeHeaderLeft}>
+            <View style={styles.headerIcon}>
+              <Sparkles size={18} color={Colors.navy} strokeWidth={2} />
+            </View>
+            <View style={styles.headerTextContainer}>
+              <Text style={styles.headerTitle}>Velora</Text>
+              <Text style={styles.headerSub}>Fresh context loaded</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            onPress={startNewChat}
+            style={styles.newChatIconButton}
+            activeOpacity={0.7}
+            testID="new-chat-button"
+          >
+            <Plus size={18} color={Colors.mediumGray} strokeWidth={2.5} />
+          </TouchableOpacity>
+        </View>
+
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+        >
+          <ScrollView
+            contentContainerStyle={styles.welcomeScroll}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={styles.welcomeIconWrap}>
+              <View style={styles.welcomeIconCircle}>
+                <Sparkles size={30} color={Colors.navy} strokeWidth={1.5} />
+              </View>
+            </View>
+
+            <Text style={styles.welcomeTitle}>
+              {appState.userName ? `Hi ${appState.userName}` : 'Hi there'}
+            </Text>
+
+            <Text style={styles.welcomeBody}>
+              I have your latest tracking data loaded. Ask me anything about your {goalData?.label?.toLowerCase() ?? 'wellness'} goals.
+            </Text>
+
+            <View style={styles.contextBadge}>
+              <Text style={styles.contextBadgeText}>
+                {appState.totalDaysTaken > 0
+                  ? `${appState.totalDaysTaken} days tracked \u00B7 ${appState.currentStreak} day streak`
+                  : 'No check-ins yet \u00B7 ready to help you start'}
+              </Text>
+            </View>
+
+            <View style={styles.suggestionsContainer}>
+              {SUGGESTED_PROMPTS.map((prompt, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.suggestionPill}
+                  onPress={() => handleSuggestion(prompt)}
+                  activeOpacity={0.7}
+                  testID={`suggestion-${i}`}
+                >
+                  <Text style={styles.suggestionText}>{prompt}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {sessions.length > 0 && (
+              <TouchableOpacity
+                style={styles.historyLink}
+                onPress={goToHistory}
+                activeOpacity={0.7}
+                testID="view-history-button"
+              >
+                <Clock size={16} color={Colors.mediumGray} strokeWidth={2} />
+                <Text style={styles.historyLinkText}>
+                  {sessions.length} previous {sessions.length === 1 ? 'chat' : 'chats'}
+                </Text>
+                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
+              </TouchableOpacity>
+            )}
+          </ScrollView>
+
+          <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+            <View style={styles.inputRow}>
+              <TextInput
+                ref={inputRef}
+                style={styles.textInput}
+                value={input}
+                onChangeText={setInput}
+                placeholder="Ask about your supplements..."
+                placeholderTextColor={Colors.mediumGray}
+                multiline
+                maxLength={500}
+                returnKeyType="default"
+                testID="chat-input"
+              />
+              <TouchableOpacity
+                onPress={() => handleSend()}
+                disabled={!input.trim() || isStreaming}
+                style={[
+                  styles.sendButton,
+                  (input.trim() && !isStreaming) && styles.sendButtonActive,
+                ]}
+                activeOpacity={0.7}
+                testID="send-button"
+              >
+                <Send
+                  size={18}
+                  color={(input.trim() && !isStreaming) ? Colors.white : Colors.mediumGray}
+                  strokeWidth={2}
+                />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
+
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
+      <View style={styles.chatHeader}>
         <TouchableOpacity
-          onPress={goBackToHistory}
+          onPress={goBackToWelcome}
           style={styles.backButton}
           activeOpacity={0.7}
           testID="back-button"
@@ -575,7 +710,7 @@ export default function AdvisorScreen() {
         </View>
         <TouchableOpacity
           onPress={() => {
-            goBackToHistory().then(() => startNewChat());
+            goBackToWelcome().then(() => startNewChat());
           }}
           style={styles.resetButton}
           testID="new-chat-inline"
@@ -590,32 +725,21 @@ export default function AdvisorScreen() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         {messages.length === 0 ? (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIconContainer}>
-              <Sparkles size={32} color={Colors.navy} strokeWidth={1.5} />
+          <View style={styles.emptyChatState}>
+            <View style={styles.emptyChatIconWrap}>
+              <Sparkles size={28} color={Colors.navy} strokeWidth={1.5} />
             </View>
-            <Text style={styles.emptyTitle}>
-              {appState.userName ? `Hi ${appState.userName}` : 'Hi there'}
+            <Text style={styles.emptyChatTitle}>New conversation</Text>
+            <Text style={styles.emptyChatBody}>
+              Ask me anything about your supplements and wellness goals.
             </Text>
-            <Text style={styles.emptyBody}>
-              I have your latest tracking data loaded. Ask me anything about your {goalData?.label?.toLowerCase() ?? 'wellness'} goals.
-            </Text>
-            <View style={styles.contextBadge}>
-              <Text style={styles.contextBadgeText}>
-                {appState.totalDaysTaken > 0
-                  ? `${appState.totalDaysTaken} days tracked \u00B7 ${appState.currentStreak} day streak`
-                  : 'No check-ins yet \u00B7 ready to help you start'}
-              </Text>
-            </View>
-
-            <View style={styles.suggestionsContainer}>
+            <View style={styles.chatSuggestionsWrap}>
               {SUGGESTED_PROMPTS.map((prompt, i) => (
                 <TouchableOpacity
                   key={i}
                   style={styles.suggestionPill}
                   onPress={() => handleSuggestion(prompt)}
                   activeOpacity={0.7}
-                  testID={`suggestion-${i}`}
                 >
                   <Text style={styles.suggestionText}>{prompt}</Text>
                 </TouchableOpacity>
@@ -746,6 +870,30 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.cream,
   },
+  welcomeHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'space-between' as const,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+    backgroundColor: Colors.cream,
+  },
+  welcomeHeaderLeft: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    flex: 1,
+  },
+  chatHeader: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightGray,
+    backgroundColor: Colors.cream,
+  },
   historyHeader: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
@@ -756,19 +904,10 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.lightGray,
     backgroundColor: Colors.cream,
   },
-  historyHeaderLeft: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.lightGray,
-    backgroundColor: Colors.cream,
+  historyHeaderTitle: {
+    fontFamily: Fonts.playfairBold,
+    fontSize: 18,
+    color: Colors.navy,
   },
   backButton: {
     width: 36,
@@ -802,11 +941,11 @@ const styles = StyleSheet.create({
     color: Colors.mediumGray,
     marginTop: 1,
   },
-  newChatButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.navy,
+  newChatIconButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    backgroundColor: Colors.lightGray,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
@@ -817,6 +956,88 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.lightGray,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+  },
+  welcomeScroll: {
+    paddingHorizontal: 28,
+    paddingTop: 36,
+    paddingBottom: 20,
+    alignItems: 'center' as const,
+  },
+  welcomeIconWrap: {
+    marginBottom: 20,
+  },
+  welcomeIconCircle: {
+    width: 68,
+    height: 68,
+    borderRadius: 22,
+    backgroundColor: Colors.softBlue,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  welcomeTitle: {
+    fontFamily: Fonts.playfairBold,
+    fontSize: 26,
+    color: Colors.navy,
+    textAlign: 'center' as const,
+    marginBottom: 10,
+  },
+  welcomeBody: {
+    fontFamily: Fonts.dmRegular,
+    fontSize: 15,
+    color: Colors.mediumGray,
+    textAlign: 'center' as const,
+    lineHeight: 22,
+    marginBottom: 14,
+    paddingHorizontal: 8,
+  },
+  contextBadge: {
+    backgroundColor: Colors.successBg,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    marginBottom: 28,
+  },
+  contextBadgeText: {
+    fontFamily: Fonts.dmMedium,
+    fontSize: 12,
+    color: Colors.success,
+  },
+  suggestionsContainer: {
+    width: '100%' as const,
+    gap: 8,
+  },
+  suggestionPill: {
+    backgroundColor: Colors.white,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  suggestionText: {
+    fontFamily: Fonts.dmMedium,
+    fontSize: 14,
+    color: Colors.navy,
+  },
+  historyLink: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    marginTop: 24,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    backgroundColor: Colors.white,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    gap: 8,
+    width: '100%' as const,
+  },
+  historyLinkText: {
+    fontFamily: Fonts.dmMedium,
+    fontSize: 14,
+    color: Colors.mediumGray,
+    flex: 1,
   },
   loadingContainer: {
     flex: 1,
@@ -830,9 +1051,9 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
   },
   emptyHistoryIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 18,
     backgroundColor: Colors.lightGray,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
@@ -850,21 +1071,6 @@ const styles = StyleSheet.create({
     color: Colors.mediumGray,
     textAlign: 'center' as const,
     lineHeight: 21,
-    marginBottom: 28,
-  },
-  startChatButton: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    backgroundColor: Colors.navy,
-    borderRadius: 24,
-    paddingHorizontal: 24,
-    paddingVertical: 14,
-    gap: 8,
-  },
-  startChatText: {
-    fontFamily: Fonts.dmMedium,
-    fontSize: 15,
-    color: Colors.white,
   },
   sessionsList: {
     paddingHorizontal: 16,
@@ -922,64 +1128,39 @@ const styles = StyleSheet.create({
   chatArea: {
     flex: 1,
   },
-  emptyState: {
+  emptyChatState: {
     flex: 1,
-    paddingHorizontal: 32,
-    paddingTop: 48,
+    paddingHorizontal: 28,
+    paddingTop: 36,
     alignItems: 'center' as const,
   },
-  emptyIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+  emptyChatIconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     backgroundColor: Colors.softBlue,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 20,
+    marginBottom: 16,
   },
-  emptyTitle: {
+  emptyChatTitle: {
     fontFamily: Fonts.playfairBold,
-    fontSize: 24,
+    fontSize: 20,
     color: Colors.navy,
     textAlign: 'center' as const,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-  emptyBody: {
+  emptyChatBody: {
     fontFamily: Fonts.dmRegular,
-    fontSize: 15,
+    fontSize: 14,
     color: Colors.mediumGray,
     textAlign: 'center' as const,
-    lineHeight: 22,
-    marginBottom: 12,
+    lineHeight: 21,
+    marginBottom: 24,
   },
-  contextBadge: {
-    backgroundColor: Colors.successBg,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    marginBottom: 28,
-  },
-  contextBadgeText: {
-    fontFamily: Fonts.dmMedium,
-    fontSize: 12,
-    color: Colors.success,
-  },
-  suggestionsContainer: {
+  chatSuggestionsWrap: {
     width: '100%' as const,
     gap: 8,
-  },
-  suggestionPill: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  suggestionText: {
-    fontFamily: Fonts.dmMedium,
-    fontSize: 14,
-    color: Colors.navy,
   },
   messagesList: {
     paddingTop: 16,
