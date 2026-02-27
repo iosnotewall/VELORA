@@ -1,14 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, TextInput, TouchableOpacity,
-  FlatList, KeyboardAvoidingView, Platform, Animated, ActivityIndicator,
+  FlatList, KeyboardAvoidingView, Platform, Animated,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Send, Sparkles, AlertCircle, RotateCcw } from 'lucide-react-native';
+import { Send, Sparkles, RotateCcw } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
-import { useMutation } from '@tanstack/react-query';
 import { useAppState } from '@/hooks/useAppState';
-import { sendChat, hasApiKey, setApiKey } from '@/services/openai';
+import { sendChatStreaming, hasApiKey } from '@/services/openai';
 import type { ChatMessage } from '@/services/openai';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
@@ -20,17 +19,16 @@ interface DisplayMessage {
   content: string;
   timestamp: number;
   isError?: boolean;
+  isStreaming?: boolean;
 }
 
-
-
-function buildSystemPrompt(state: {
+function buildUserContext(state: {
   goal: string;
   userName: string;
   currentStreak: number;
   totalDaysTaken: number;
   products: string[];
-  dailyScores: Array<{ date: string; energy: number; sleep: number; mood: number }>;
+  dailyScores: Array<{ date: string; energy: number; sleep: number; mood: number; goalScores?: Record<string, number> }>;
   frequency: number;
   friction: string;
   commitmentLevel: string;
@@ -41,68 +39,106 @@ function buildSystemPrompt(state: {
   const milestones = MILESTONES[state.goal];
 
   const recentScores = state.dailyScores.slice(-7);
-  const scoresSummary = recentScores.length > 0
-    ? recentScores.map(s => `${s.date}: energy=${s.energy}/5, sleep=${s.sleep}/5, mood=${s.mood}/5`).join('\n')
-    : 'No check-in data yet.';
 
-  const metricNames = metrics.map(m => m.label).join(', ');
+  let dataBlock = 'No check-in data yet.';
+  if (recentScores.length > 0) {
+    const lines = recentScores.map(s => {
+      let line = `${s.date}: energy=${s.energy}/5, sleep=${s.sleep}/5, mood=${s.mood}/5`;
+      if (s.goalScores) {
+        const extras = Object.entries(s.goalScores)
+          .map(([k, v]) => `${k}=${v}`)
+          .join(', ');
+        if (extras) line += ` | ${extras}`;
+      }
+      return line;
+    });
+    dataBlock = lines.join('\n');
+  }
 
-  return `You are Velora — a warm, science-grounded supplement wellness advisor inside a health tracking app. You speak with quiet authority, like a knowledgeable friend who also happens to read clinical studies.
+  const trendNote = buildTrendNote(recentScores);
 
-PERSONALITY:
-- Empathetic but not saccharine. Direct but not cold.
-- Reference specific science (cite mechanisms, not just "studies show")
-- When the user is struggling, acknowledge it genuinely before advising
-- Keep responses concise — 2-4 short paragraphs max. Mobile-friendly.
-- Use occasional line breaks for readability. No markdown headers or bullet lists unless asked.
+  return `USER PROFILE:
+Name: ${state.userName || 'User'}
+Goal: ${goalData?.label ?? 'General wellness'} — ${goalData?.sub ?? ''}
+Streak: ${state.currentStreak} days | Total tracked: ${state.totalDaysTaken} days
+Supplements: ${state.products.join(', ') || 'Not specified'}
+Pre-app consistency: ${state.frequency}/7 days per week
+Main barrier: ${state.friction || 'Not specified'}
+Commitment: ${state.commitmentLevel || 'Not specified'}
+Tracked metrics: ${metrics.map(m => m.label).join(', ')}
 
-USER CONTEXT:
-- Name: ${state.userName || 'there'}
-- Goal: ${goalData?.label ?? 'General wellness'} — "${goalData?.sub ?? ''}"
-- Current streak: ${state.currentStreak} days
-- Total days tracked: ${state.totalDaysTaken}
-- Supplements: ${state.products.join(', ') || 'Not specified'}
-- Consistency level before app: ${state.frequency}/7 days per week
-- Main friction: ${state.friction || 'Not specified'}
-- Commitment: ${state.commitmentLevel || 'Not specified'}
-- They track these metrics daily: ${metricNames}
+LAST 7 DAYS:
+${dataBlock}
+${trendNote}
 
-RECENT CHECK-IN DATA (last 7 days):
-${scoresSummary}
+SCIENCE (for their goal):
+${science?.text ?? 'General supplement consistency.'}
+Key compounds: ${science?.ingredients?.join(', ') ?? 'Various'}
 
-SCIENCE CONTEXT FOR THEIR GOAL:
-${science?.text ?? 'General supplement consistency and bioavailability.'}
-Key ingredients: ${science?.ingredients?.join(', ') ?? 'Various'}
-
-MILESTONE EXPECTATIONS:
-Day 7: ${milestones?.d7 ?? 'Initial absorption phase'}
-Day 21: ${milestones?.d21 ?? 'Tissue saturation begins'}
-Day 30: ${milestones?.d30 ?? 'Baseline shift expected'}
-
-RULES:
-- Always ground advice in biology/science. Cite mechanisms (e.g., "magnesium is a cofactor for 300+ enzymatic reactions").
-- If they report declining scores, investigate — ask about sleep, stress, diet changes.
-- If they're doing well, reinforce with WHY it's working biologically.
-- Never diagnose or replace medical advice. Say "consider discussing with your doctor" for serious concerns.
-- If asked about something outside supplements/wellness, gently redirect.
-- Reference their actual data when relevant ("your sleep scores have been trending down this week").
-- Be encouraging about streaks but honest about science timelines.`;
+MILESTONES:
+Day 7: ${milestones?.d7 ?? 'Initial absorption'}
+Day 21: ${milestones?.d21 ?? 'Tissue saturation'}
+Day 30: ${milestones?.d30 ?? 'Baseline shift'}`;
 }
 
+function buildTrendNote(scores: Array<{ energy: number; sleep: number; mood: number }>): string {
+  if (scores.length < 3) return '';
+
+  const recent3 = scores.slice(-3);
+  const older = scores.slice(0, -3);
+  if (older.length === 0) return '';
+
+  const avgRecent = (key: 'energy' | 'sleep' | 'mood') =>
+    recent3.reduce((sum, s) => sum + s[key], 0) / recent3.length;
+  const avgOlder = (key: 'energy' | 'sleep' | 'mood') =>
+    older.reduce((sum, s) => sum + s[key], 0) / older.length;
+
+  const trends: string[] = [];
+  const keys: Array<'energy' | 'sleep' | 'mood'> = ['energy', 'sleep', 'mood'];
+  for (const key of keys) {
+    const diff = avgRecent(key) - avgOlder(key);
+    if (diff > 0.5) trends.push(`${key} trending UP`);
+    else if (diff < -0.5) trends.push(`${key} trending DOWN`);
+  }
+
+  return trends.length > 0 ? `\nTRENDS: ${trends.join(', ')}` : '';
+}
+
+const SYSTEM_PROMPT = `You are Velora — a sharp, warm supplement wellness advisor inside a health app. You have access to the user's real tracking data below.
+
+VOICE:
+- Talk like a knowledgeable friend, not a textbook. Short sentences. Conversational.
+- Reference their ACTUAL data when relevant — specific numbers, trends, streak length.
+- When they're struggling, acknowledge it in one sentence, then give one clear action.
+- When they're doing well, tell them WHY it's working biologically in one sentence.
+
+FORMAT RULES (critical):
+- MAX 3-4 sentences per response. Never more unless they explicitly ask for detail.
+- No markdown headers. No bullet lists. No asterisks. Just clean, flowing text.
+- One paragraph usually. Two if needed. Never three.
+- Be specific: "your sleep dropped from 4.2 to 3.0 this week" not "your sleep seems worse"
+
+KNOWLEDGE:
+- Ground advice in mechanisms (e.g. "magnesium is a GABA agonist — it literally quiets neurons")
+- Reference timelines honestly ("most people feel magnesium benefits around day 14-21")
+- If their data shows a clear pattern, call it out directly
+- Never diagnose. For serious concerns, one sentence: "worth mentioning to your doctor"
+- Stay in your lane: supplements, consistency, wellness habits.`;
+
 const SUGGESTED_PROMPTS = [
-  "Why aren't I feeling results yet?",
-  "My sleep has been getting worse",
-  "When should I take my supplements?",
-  "I keep forgetting to take them",
+  "Why don't I feel results yet?",
+  "My sleep got worse this week",
+  "Best time to take my stack?",
+  "I keep skipping days",
 ];
 
-function MessageBubble({ message, isLast }: { message: DisplayMessage; isLast: boolean }) {
+function MessageBubble({ message }: { message: DisplayMessage }) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(8)).current;
+  const slideAnim = useRef(new Animated.Value(6)).current;
 
   useEffect(() => {
     Animated.parallel([
-      Animated.timing(fadeAnim, { toValue: 1, duration: 300, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: Platform.OS !== 'web' }),
       Animated.spring(slideAnim, { toValue: 0, useNativeDriver: Platform.OS !== 'web', damping: 20, stiffness: 200 }),
     ]).start();
   }, [fadeAnim, slideAnim]);
@@ -135,20 +171,28 @@ function MessageBubble({ message, isLast }: { message: DisplayMessage; isLast: b
           message.isError && msgStyles.textError,
         ]}>
           {message.content}
+          {message.isStreaming && <Text style={msgStyles.cursor}>|</Text>}
         </Text>
       </View>
     </Animated.View>
   );
 }
 
+const MemoizedBubble = React.memo(MessageBubble, (prev, next) => {
+  return prev.message.content === next.message.content &&
+    prev.message.isStreaming === next.message.isStreaming;
+});
+
 export default function AdvisorScreen() {
   const insets = useSafeAreaInsets();
   const appState = useAppState();
   const [messages, setMessages] = useState<DisplayMessage[]>([]);
   const [input, setInput] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const [keyReady, setKeyReady] = useState(false);
   const flatListRef = useRef<FlatList<DisplayMessage>>(null);
   const inputRef = useRef<TextInput>(null);
+  const chatHistory = useRef<ChatMessage[]>([]);
 
   useEffect(() => {
     (async () => {
@@ -158,9 +202,7 @@ export default function AdvisorScreen() {
     })();
   }, []);
 
-  const chatHistory = useRef<ChatMessage[]>([]);
-
-  const systemPrompt = useMemo(() => buildSystemPrompt({
+  const userContext = useMemo(() => buildUserContext({
     goal: appState.goal,
     userName: appState.userName,
     currentStreak: appState.currentStreak,
@@ -176,28 +218,15 @@ export default function AdvisorScreen() {
     appState.frequency, appState.friction, appState.commitmentLevel,
   ]);
 
-  const sendMutation = useMutation({
-    mutationFn: async (userMessage: string) => {
-      chatHistory.current.push({ role: 'user', content: userMessage });
+  const scrollToEnd = useCallback(() => {
+    setTimeout(() => {
+      flatListRef.current?.scrollToEnd({ animated: true });
+    }, 50);
+  }, []);
 
-      const fullMessages: ChatMessage[] = [
-        { role: 'system', content: systemPrompt },
-        ...chatHistory.current,
-      ];
-
-      const response = await sendChat(fullMessages);
-      chatHistory.current.push({ role: 'assistant', content: response });
-      return response;
-    },
-    onError: (error: Error) => {
-      console.log('[Advisor] Send error:', error.message);
-      chatHistory.current.pop();
-    },
-  });
-
-  const handleSend = useCallback((text?: string) => {
+  const handleSend = useCallback(async (text?: string) => {
     const messageText = (text ?? input).trim();
-    if (!messageText || sendMutation.isPending) return;
+    if (!messageText || isStreaming) return;
 
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
@@ -210,39 +239,65 @@ export default function AdvisorScreen() {
 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
+    setIsStreaming(true);
 
-    sendMutation.mutate(messageText, {
-      onSuccess: (response) => {
-        const assistantMsg: DisplayMessage = {
-          id: `assistant-${Date.now()}`,
-          role: 'assistant',
-          content: response,
-          timestamp: Date.now(),
-        };
-        setMessages(prev => [...prev, assistantMsg]);
-      },
-      onError: (error: Error) => {
-        const errorMsg: DisplayMessage = {
-          id: `error-${Date.now()}`,
-          role: 'assistant',
-          content: error.message,
-          timestamp: Date.now(),
-          isError: true,
-        };
-        setMessages(prev => [...prev, errorMsg]);
-      },
-    });
-  }, [input, sendMutation, systemPrompt]);
+    chatHistory.current.push({ role: 'user', content: messageText });
+
+    const streamingId = `assistant-${Date.now()}`;
+    const streamingMsg: DisplayMessage = {
+      id: streamingId,
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      isStreaming: true,
+    };
+
+    setMessages(prev => [...prev, streamingMsg]);
+
+    const fullMessages: ChatMessage[] = [
+      { role: 'system', content: SYSTEM_PROMPT + '\n\n' + userContext },
+      ...chatHistory.current,
+    ];
+
+    try {
+      const finalText = await sendChatStreaming(fullMessages, (partialText) => {
+        setMessages(prev =>
+          prev.map(m => m.id === streamingId
+            ? { ...m, content: partialText }
+            : m
+          )
+        );
+        scrollToEnd();
+      });
+
+      setMessages(prev =>
+        prev.map(m => m.id === streamingId
+          ? { ...m, content: finalText, isStreaming: false }
+          : m
+        )
+      );
+
+      chatHistory.current.push({ role: 'assistant', content: finalText });
+    } catch (error: unknown) {
+      const errMsg = error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+      console.log('[Advisor] Error:', errMsg);
+
+      chatHistory.current.pop();
+
+      setMessages(prev =>
+        prev.map(m => m.id === streamingId
+          ? { ...m, content: errMsg, isStreaming: false, isError: true }
+          : m
+        )
+      );
+    } finally {
+      setIsStreaming(false);
+    }
+  }, [input, isStreaming, userContext, scrollToEnd]);
 
   const handleSuggestion = useCallback((prompt: string) => {
     handleSend(prompt);
   }, [handleSend]);
-
-  const scrollToEnd = useCallback(() => {
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true });
-    }, 100);
-  }, []);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -250,9 +305,9 @@ export default function AdvisorScreen() {
     }
   }, [messages.length, scrollToEnd]);
 
-  const renderMessage = useCallback(({ item, index }: { item: DisplayMessage; index: number }) => (
-    <MessageBubble message={item} isLast={index === messages.length - 1} />
-  ), [messages.length]);
+  const renderMessage = useCallback(({ item }: { item: DisplayMessage }) => (
+    <MemoizedBubble message={item} />
+  ), []);
 
   const keyExtractor = useCallback((item: DisplayMessage) => item.id, []);
 
@@ -299,7 +354,7 @@ export default function AdvisorScreen() {
               {appState.userName ? `Hi ${appState.userName}` : 'Hi there'}
             </Text>
             <Text style={styles.emptyBody}>
-              I'm your personal supplement advisor. I can see your tracking data and help with science-backed guidance for your {goalData?.label?.toLowerCase() ?? 'wellness'} goals.
+              I can see your tracking data and give you specific, science-backed advice for your {goalData?.label?.toLowerCase() ?? 'wellness'} goals.
             </Text>
 
             <View style={styles.suggestionsContainer}>
@@ -328,18 +383,6 @@ export default function AdvisorScreen() {
           />
         )}
 
-        {sendMutation.isPending && (
-          <View style={styles.typingIndicator}>
-            <View style={msgStyles.avatar}>
-              <Sparkles size={12} color={Colors.navy} strokeWidth={2} />
-            </View>
-            <View style={styles.typingDots}>
-              <ActivityIndicator size="small" color={Colors.mediumGray} />
-              <Text style={styles.typingText}>Thinking...</Text>
-            </View>
-          </View>
-        )}
-
         <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
           <View style={styles.inputRow}>
             <TextInput
@@ -356,17 +399,17 @@ export default function AdvisorScreen() {
             />
             <TouchableOpacity
               onPress={() => handleSend()}
-              disabled={!input.trim() || sendMutation.isPending}
+              disabled={!input.trim() || isStreaming}
               style={[
                 styles.sendButton,
-                (input.trim() && !sendMutation.isPending) && styles.sendButtonActive,
+                (input.trim() && !isStreaming) && styles.sendButtonActive,
               ]}
               activeOpacity={0.7}
               testID="send-button"
             >
               <Send
                 size={18}
-                color={(input.trim() && !sendMutation.isPending) ? Colors.white : Colors.mediumGray}
+                color={(input.trim() && !isStreaming) ? Colors.white : Colors.mediumGray}
                 strokeWidth={2}
               />
             </TouchableOpacity>
@@ -440,6 +483,10 @@ const msgStyles = StyleSheet.create({
   textError: {
     color: Colors.warning,
     fontFamily: Fonts.dmRegular,
+  },
+  cursor: {
+    color: Colors.mediumGray,
+    fontWeight: '300' as const,
   },
 });
 
@@ -541,27 +588,6 @@ const styles = StyleSheet.create({
   messagesList: {
     paddingTop: 16,
     paddingBottom: 8,
-  },
-  typingIndicator: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 8,
-  },
-  typingDots: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 6,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  typingText: {
-    fontFamily: Fonts.dmRegular,
-    fontSize: 13,
-    color: Colors.mediumGray,
   },
   inputContainer: {
     paddingHorizontal: 16,
