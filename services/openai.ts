@@ -52,13 +52,17 @@ export async function hasApiKey(): Promise<boolean> {
   return !!key && key.length > 10;
 }
 
+export const OPENAI_MODEL = 'gpt-4o-mini';
+export const OPENAI_MAX_TOKENS = 600;
+export const OPENAI_TEMPERATURE = 0.7;
+
 export async function sendChat(messages: ChatMessage[]): Promise<string> {
   const key = await getApiKey();
   if (!key) {
     throw new Error('No OpenAI API key configured. Please add your key in Profile settings.');
   }
 
-  console.log('[OpenAI] Sending chat request with', messages.length, 'messages');
+  console.log('[OpenAI] Sending chat request with', messages.length, 'messages, model:', OPENAI_MODEL);
 
   let response: Response;
   try {
@@ -69,10 +73,10 @@ export async function sendChat(messages: ChatMessage[]): Promise<string> {
         'Authorization': `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODEL,
         messages,
-        temperature: 0.7,
-        max_tokens: 300,
+        temperature: OPENAI_TEMPERATURE,
+        max_tokens: OPENAI_MAX_TOKENS,
       }),
     });
   } catch (networkError: unknown) {
@@ -121,10 +125,10 @@ export async function sendChatStreaming(
         'Authorization': `Bearer ${key}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: OPENAI_MODEL,
         messages,
-        temperature: 0.7,
-        max_tokens: 300,
+        temperature: OPENAI_TEMPERATURE,
+        max_tokens: OPENAI_MAX_TOKENS,
         stream: true,
       }),
     });
