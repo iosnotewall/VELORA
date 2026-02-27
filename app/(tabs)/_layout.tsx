@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Sun, TrendingUp, User } from 'lucide-react-native';
+import { Sun, TrendingUp, User, Sparkles } from 'lucide-react-native';
 import React from 'react';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
@@ -27,6 +27,13 @@ export default function TabLayout() {
         options={{
           title: 'Today',
           tabBarIcon: ({ color, size }) => <Sun size={size} color={color} strokeWidth={1.5} />,
+        }}
+      />
+      <Tabs.Screen
+        name="advisor"
+        options={{
+          title: 'Advisor',
+          tabBarIcon: ({ color, size }) => <Sparkles size={size} color={color} strokeWidth={1.5} />,
         }}
       />
       <Tabs.Screen
