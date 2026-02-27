@@ -106,11 +106,7 @@ export default function StackInsightScreen() {
                 <Text style={styles.pillLabel} numberOfLines={1}>{product.name}</Text>
               </Animated.View>
             ))}
-            {selectedProducts.length > 6 && (
-              <View style={styles.pill}>
-                <Text style={styles.pillMore}>+{selectedProducts.length - 6} more</Text>
-              </View>
-            )}
+
           </View>
         </Animated.View>
 
