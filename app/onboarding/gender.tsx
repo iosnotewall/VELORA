@@ -84,20 +84,22 @@ export default function GenderScreen() {
   const handleSelect = useCallback((id: string, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setSelected(id);
-    Animated.sequence([
-      Animated.spring(scaleAnims[index], {
-        toValue: 0.96,
-        useNativeDriver: Platform.OS !== 'web',
-        speed: 50,
-        bounciness: 0,
-      }),
-      Animated.spring(scaleAnims[index], {
-        toValue: 1,
-        useNativeDriver: Platform.OS !== 'web',
-        damping: 15,
-        stiffness: 200,
-      }),
-    ]).start();
+    if (Platform.OS !== 'web') {
+      Animated.sequence([
+        Animated.spring(scaleAnims[index], {
+          toValue: 0.96,
+          useNativeDriver: true,
+          speed: 50,
+          bounciness: 0,
+        }),
+        Animated.spring(scaleAnims[index], {
+          toValue: 1,
+          useNativeDriver: true,
+          damping: 15,
+          stiffness: 200,
+        }),
+      ]).start();
+    }
   }, [scaleAnims]);
 
   const handleContinue = useCallback(() => {
