@@ -53,7 +53,7 @@ export default function GenderScreen() {
         easing,
         useNativeDriver: Platform.OS !== 'web',
       }),
-      Animated.delay(0),
+      Animated.delay(500),
       Animated.stagger(
         350,
         subLineAnims.map(anim =>
