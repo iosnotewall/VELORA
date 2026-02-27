@@ -13,6 +13,7 @@ interface OnboardingScreenProps {
   children: React.ReactNode;
   ctaText: string;
   ctaEnabled?: boolean;
+  ctaVisible?: boolean;
   onCta: () => void;
   showBack?: boolean;
   hideHeader?: boolean;
@@ -25,6 +26,7 @@ export default function OnboardingScreen({
   children,
   ctaText,
   ctaEnabled = true,
+  ctaVisible = true,
   onCta,
   showBack = true,
   hideHeader = false,
@@ -34,6 +36,8 @@ export default function OnboardingScreen({
   const insets = useSafeAreaInsets();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const contentAnim = useRef(new Animated.Value(0)).current;
+  const footerAnim = useRef(new Animated.Value(ctaVisible ? 1 : 0)).current;
+  const footerTargetRef = useRef(ctaVisible ? 1 : 0);
 
   useEffect(() => {
     Animated.timing(progressAnim, {
@@ -48,6 +52,18 @@ export default function OnboardingScreen({
       useNativeDriver: Platform.OS !== 'web',
     }).start();
   }, [step, totalSteps, progressAnim, contentAnim]);
+
+  useEffect(() => {
+    const target = ctaVisible ? 1 : 0;
+    if (target !== footerTargetRef.current) {
+      footerTargetRef.current = target;
+      Animated.timing(footerAnim, {
+        toValue: target,
+        duration: 350,
+        useNativeDriver: Platform.OS !== 'web',
+      }).start();
+    }
+  }, [ctaVisible, footerAnim]);
 
   const progressWidth = progressAnim.interpolate({
     inputRange: [0, 1],
@@ -89,7 +105,7 @@ export default function OnboardingScreen({
         {children}
       </Animated.View>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
+      <Animated.View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20), opacity: footerAnim }]}>
         <PrimaryButton
           title={ctaText}
           onPress={onCta}
@@ -100,7 +116,7 @@ export default function OnboardingScreen({
             <Text style={styles.secondaryText}>{secondaryAction.text}</Text>
           </TouchableOpacity>
         )}
-      </View>
+      </Animated.View>
     </View>
   );
 }

@@ -27,6 +27,7 @@ export default function GenderScreen() {
   const router = useRouter();
   const { updateState, userName } = useAppState();
   const [selected, setSelected] = useState<string>('');
+  const [ctaVisible, setCtaVisible] = useState<boolean>(false);
 
   const titleAnim   = useRef(new Animated.Value(0)).current;
   const subLineAnims = useRef([
@@ -78,7 +79,9 @@ export default function GenderScreen() {
         )
       ),
     ];
-    Animated.sequence(sequence).start();
+    Animated.sequence(sequence).start(() => {
+      setCtaVisible(true);
+    });
   }, []);
 
   const handleSelect = useCallback((id: string, index: number) => {
@@ -115,6 +118,7 @@ export default function GenderScreen() {
       totalSteps={9}
       ctaText="Continue"
       ctaEnabled={!!selected}
+      ctaVisible={ctaVisible}
       onCta={handleContinue}
       hideHeader
     >
