@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
-import { User, UserRound, Users, EyeOff } from 'lucide-react-native';
+import { User, UserRound, EyeOff } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
@@ -16,9 +16,8 @@ interface GenderOption {
 }
 
 const OPTIONS: GenderOption[] = [
-  { id: 'male',   label: 'Male',             sub: 'Optimize for male biology',        icon: User },
-  { id: 'female', label: 'Female',           sub: 'Optimize for female biology',      icon: UserRound },
-  { id: 'other',  label: 'Non-binary / Other', sub: 'We\'ll personalize accordingly', icon: Users },
+  { id: 'male',   label: 'Male',             sub: 'Optimize for male biology',           icon: User },
+  { id: 'female', label: 'Female',           sub: 'Optimize for female biology',         icon: UserRound },
   { id: 'skip',   label: 'Prefer not to say', sub: 'No worries, we\'ll keep it general', icon: EyeOff },
 ];
 
