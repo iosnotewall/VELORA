@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
 import { User, UserRound, EyeOff } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -16,17 +16,48 @@ interface GenderOption {
 }
 
 const OPTIONS: GenderOption[] = [
-  { id: 'male',   label: 'Male',             sub: 'Optimize for male biology',           icon: User },
-  { id: 'female', label: 'Female',           sub: 'Optimize for female biology',         icon: UserRound },
-  { id: 'skip',   label: 'Prefer not to say', sub: 'No worries, we\'ll keep it general', icon: EyeOff },
+  { id: 'male',   label: 'Male',              sub: 'Tune recommendations to male physiology',  icon: User },
+  { id: 'female', label: 'Female',            sub: 'Tune recommendations to female physiology', icon: UserRound },
+  { id: 'skip',   label: 'Prefer not to say', sub: "No worries — we'll keep advice universal",  icon: EyeOff },
 ];
+
+const STAGGER = 80;
 
 export default function GenderScreen() {
   const router = useRouter();
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string>('');
 
-  const scaleAnims = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
+  const titleAnim   = useRef(new Animated.Value(0)).current;
+  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const optionAnims = useRef(OPTIONS.map(() => new Animated.Value(0))).current;
+  const scaleAnims  = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
+
+  useEffect(() => {
+    const sequence = [
+      Animated.timing(titleAnim, {
+        toValue: 1,
+        duration: 380,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.timing(subtitleAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: Platform.OS !== 'web',
+      }),
+      Animated.stagger(
+        STAGGER,
+        optionAnims.map(anim =>
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 280,
+            useNativeDriver: Platform.OS !== 'web',
+          })
+        )
+      ),
+    ];
+    Animated.sequence(sequence).start();
+  }, []);
 
   const handleSelect = useCallback((id: string, index: number) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -52,6 +83,9 @@ export default function GenderScreen() {
     router.push('/onboarding/consider' as any);
   }, [selected, updateState, router]);
 
+  const titleTranslate    = titleAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] });
+  const subtitleTranslate = subtitleAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] });
+
   return (
     <OnboardingScreen
       step={3}
@@ -60,16 +94,50 @@ export default function GenderScreen() {
       ctaEnabled={!!selected}
       onCta={handleContinue}
     >
-      <Text style={styles.headline}>How should we{'\n'}personalize for you?</Text>
-      <Text style={styles.subtitle}>This helps us tailor supplement advice to your biology.</Text>
+      <Animated.Text
+        style={[
+          styles.headline,
+          {
+            opacity: titleAnim,
+            transform: [{ translateY: titleTranslate }],
+          },
+        ]}
+      >
+        Your biology is{'\n'}your edge.
+      </Animated.Text>
+
+      <Animated.Text
+        style={[
+          styles.subtitle,
+          {
+            opacity: subtitleAnim,
+            transform: [{ translateY: subtitleTranslate }],
+          },
+        ]}
+      >
+        The same supplement hits differently depending on your biology. We calibrate every recommendation to match.
+      </Animated.Text>
 
       <View style={styles.options}>
         {OPTIONS.map((option, index) => {
           const isSelected = selected === option.id;
           const IconComponent = option.icon;
+          const optTranslate = optionAnims[index].interpolate({
+            inputRange: [0, 1],
+            outputRange: [14, 0],
+          });
 
           return (
-            <Animated.View key={option.id} style={{ transform: [{ scale: scaleAnims[index] }] }}>
+            <Animated.View
+              key={option.id}
+              style={{
+                opacity: optionAnims[index],
+                transform: [
+                  { translateY: optTranslate },
+                  { scale: scaleAnims[index] },
+                ],
+              }}
+            >
               <TouchableOpacity
                 onPress={() => handleSelect(option.id, index)}
                 style={[styles.optionCard, isSelected && styles.optionSelected]}
@@ -79,8 +147,8 @@ export default function GenderScreen() {
                 <View style={styles.optionRow}>
                   <IconComponent
                     size={22}
-                    color={isSelected ? Colors.blue : Colors.mediumGray}
-                    strokeWidth={1.8}
+                    color={isSelected ? Colors.navy : Colors.mediumGray}
+                    strokeWidth={1.6}
                   />
                   <View style={styles.optionText}>
                     <Text style={[styles.optionLabel, isSelected && styles.optionLabelSelected]}>
@@ -101,19 +169,19 @@ export default function GenderScreen() {
 const styles = StyleSheet.create({
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 28,
+    fontSize: 30,
     color: Colors.navy,
-    lineHeight: 36,
+    lineHeight: 38,
     marginTop: 8,
-    marginBottom: 8,
-    letterSpacing: -0.3,
+    marginBottom: 10,
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontFamily: Fonts.body,
     fontSize: 15,
     color: Colors.mediumGray,
-    lineHeight: 22,
-    marginBottom: 28,
+    lineHeight: 23,
+    marginBottom: 32,
   },
   options: {
     gap: 12,
