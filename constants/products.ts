@@ -16,5 +16,4 @@ export const PRODUCTS: Product[] = [
   { id: 'memory_focus', name: 'Memory & Focus', tagline: 'Focus & concentration', color: '#8B6BB8', goals: ['focus'] },
   { id: 'anti_inflammatory', name: 'Anti-Inflammatory (PEA)', tagline: 'Pain & inflammation relief', color: '#5A8A6F', goals: ['sleep'] },
   { id: 'fertility', name: 'Fertility Support', tagline: 'Fertility & reproductive health', color: '#C4857A', goals: ['hormones'] },
-  { id: 'other', name: 'Other supplement', tagline: 'General', color: '#8A8A8A', goals: [] },
 ];

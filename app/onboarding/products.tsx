@@ -227,9 +227,6 @@ export default function ProductsScreen() {
               </Text>
               <Text style={styles.addSubtitle}>Not on the list? Add yours</Text>
             </View>
-            <View style={styles.addArrow}>
-              <Plus size={14} color={Colors.blue} strokeWidth={2} />
-            </View>
           </TouchableOpacity>
         </Animated.View>
       )}
