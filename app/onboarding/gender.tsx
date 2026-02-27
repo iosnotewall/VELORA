@@ -167,10 +167,9 @@ export default function GenderScreen() {
               key={option.id}
               style={{
                 opacity: optionAnims[index],
-                transform: [
-                  { translateY: optTranslate },
-                  { scale: scaleAnims[index] },
-                ],
+                transform: Platform.OS !== 'web'
+                  ? [{ translateY: optTranslate }, { scale: scaleAnims[index] }]
+                  : [{ translateY: optTranslate }],
               }}
             >
               <TouchableOpacity
