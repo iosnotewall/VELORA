@@ -236,133 +236,146 @@ export interface GoalMetric {
 
 export const GOAL_METRICS: Record<string, GoalMetric[]> = {
   energy: [
-    { id: 'energy_level', label: 'Energy level', question: 'How\'s your energy right now?', type: 'score', lowLabel: 'Drained', highLabel: 'Energized', icon: 'Zap', color: '#D4A853' },
-    { id: 'afternoon_crash', label: 'Afternoon crash', question: 'Did you experience an energy dip today?', type: 'choice', icon: 'BatteryLow', color: '#E57373', options: [
-      { value: 'none', label: 'No crash', emoji: '✨' },
-      { value: 'mild', label: 'Mild dip', emoji: '😐' },
-      { value: 'noticeable', label: 'Noticeable crash', emoji: '😮‍💨' },
-      { value: 'severe', label: 'Severe crash', emoji: '😵' },
+    { id: 'wake_energy', label: 'Wake-up energy', question: 'How did you feel within 30 minutes of waking?', type: 'score', lowLabel: 'Could barely get up', highLabel: 'Alert immediately', icon: 'Sunrise', color: '#D4A853' },
+    { id: 'afternoon_crash', label: 'Mitochondrial dip', question: 'When did your energy drop today?', type: 'choice', icon: 'BatteryLow', color: '#E57373', options: [
+      { value: 'none', label: 'No noticeable drop', emoji: '✨' },
+      { value: 'late_morning', label: '10am–12pm', emoji: '🕙' },
+      { value: 'early_afternoon', label: '1pm–3pm', emoji: '🕐' },
+      { value: 'late_afternoon', label: 'After 4pm', emoji: '🕓' },
     ] },
-    { id: 'caffeine', label: 'Caffeine intake', question: 'How much caffeine today?', type: 'choice', icon: 'Coffee', color: '#8B6914', options: [
-      { value: '0', label: 'None', emoji: '🚫' },
-      { value: '1', label: '1 cup', emoji: '☕' },
-      { value: '2', label: '2 cups', emoji: '☕☕' },
-      { value: '3+', label: '3+ cups', emoji: '⚡' },
+    { id: 'sustained_output', label: 'Sustained output', question: 'Could you maintain focus and physical energy for 2+ hours straight?', type: 'score', lowLabel: 'Needed frequent breaks', highLabel: 'Sustained easily', icon: 'Activity', color: '#5A8A6F' },
+    { id: 'caffeine_dependency', label: 'Caffeine dependency', question: 'How many caffeinated drinks did you need to function?', type: 'choice', icon: 'Coffee', color: '#8B6914', options: [
+      { value: '0', label: 'None needed', emoji: '💪' },
+      { value: '1', label: '1 (by choice)', emoji: '☕' },
+      { value: '2', label: '2 (needed them)', emoji: '😬' },
+      { value: '3+', label: '3+ (survival mode)', emoji: '🆘' },
     ] },
-    { id: 'stamina', label: 'Physical stamina', question: 'Could you sustain physical activity?', type: 'score', lowLabel: 'Exhausted', highLabel: 'Strong', icon: 'Activity', color: '#5A8A6F' },
   ],
   sleep: [
-    { id: 'sleep_hours', label: 'Hours slept', question: 'How many hours did you sleep?', type: 'choice', icon: 'Clock', color: '#7B8FC4', options: [
-      { value: '<5', label: 'Under 5h', emoji: '😴' },
-      { value: '5-6', label: '5–6 hours', emoji: '😕' },
-      { value: '6-7', label: '6–7 hours', emoji: '🙂' },
-      { value: '7-8', label: '7–8 hours', emoji: '😊' },
-      { value: '8+', label: '8+ hours', emoji: '🌟' },
+    { id: 'sleep_onset', label: 'Sleep onset', question: 'How long did it take you to fall asleep?', type: 'choice', icon: 'Clock', color: '#7B8FC4', options: [
+      { value: '<10', label: 'Under 10 min', emoji: '😴' },
+      { value: '10-20', label: '10–20 min', emoji: '🙂' },
+      { value: '20-45', label: '20–45 min', emoji: '😕' },
+      { value: '45+', label: 'Over 45 min', emoji: '😩' },
     ] },
-    { id: 'sleep_quality', label: 'Sleep quality', question: 'How would you rate your sleep?', type: 'score', lowLabel: 'Terrible', highLabel: 'Deeply restful', icon: 'Moon', color: '#7B8FC4' },
-    { id: 'night_wakings', label: 'Night wakings', question: 'Did you wake up during the night?', type: 'choice', icon: 'Eye', color: '#C4857A', options: [
-      { value: 'no', label: 'Slept through', emoji: '😴' },
-      { value: 'once', label: 'Once', emoji: '👁️' },
+    { id: 'sleep_continuity', label: 'Sleep continuity', question: 'How many times did you wake during the night?', type: 'choice', icon: 'Eye', color: '#C4857A', options: [
+      { value: '0', label: 'Slept through completely', emoji: '😴' },
+      { value: '1', label: 'Once (fell back quickly)', emoji: '👁️' },
       { value: '2-3', label: '2–3 times', emoji: '😣' },
-      { value: 'many', label: 'Many times', emoji: '😵' },
+      { value: '4+', label: '4+ times or long waking', emoji: '😵' },
     ] },
-    { id: 'morning_freshness', label: 'Morning freshness', question: 'How rested do you feel this morning?', type: 'score', lowLabel: 'Groggy', highLabel: 'Refreshed', icon: 'Sunrise', color: '#FFB74D' },
+    { id: 'sleep_depth', label: 'Perceived depth', question: 'Rate how deep and restorative your sleep felt', type: 'score', lowLabel: 'Light & restless', highLabel: 'Deep & restorative', icon: 'Moon', color: '#7B8FC4' },
+    { id: 'morning_readiness', label: 'Morning readiness', question: 'Could you function immediately upon waking — no brain fog?', type: 'score', lowLabel: 'Groggy for hours', highLabel: 'Clear from the start', icon: 'Sunrise', color: '#FFB74D' },
   ],
   focus: [
-    { id: 'mental_clarity', label: 'Mental clarity', question: 'How clear is your thinking today?', type: 'score', lowLabel: 'Foggy', highLabel: 'Crystal clear', icon: 'Brain', color: '#8B6BB8' },
-    { id: 'focus_duration', label: 'Focus span', question: 'How long could you focus without distraction?', type: 'choice', icon: 'Target', color: '#4A90D9', options: [
+    { id: 'deep_work', label: 'Deep work capacity', question: 'What was your longest uninterrupted focus block today?', type: 'choice', icon: 'Target', color: '#4A90D9', options: [
       { value: '<15', label: 'Under 15 min', emoji: '😵‍💫' },
       { value: '15-30', label: '15–30 min', emoji: '😐' },
       { value: '30-60', label: '30–60 min', emoji: '🙂' },
-      { value: '60+', label: '1 hour+', emoji: '🎯' },
+      { value: '60-90', label: '60–90 min', emoji: '🎯' },
+      { value: '90+', label: '90+ min (flow state)', emoji: '🔥' },
     ] },
-    { id: 'brain_fog', label: 'Brain fog', question: 'Any brain fog today?', type: 'choice', icon: 'Cloud', color: '#8A8A8A', options: [
-      { value: 'none', label: 'None', emoji: '✨' },
-      { value: 'mild', label: 'Mild', emoji: '🌥️' },
-      { value: 'moderate', label: 'Moderate', emoji: '☁️' },
-      { value: 'heavy', label: 'Heavy', emoji: '🌫️' },
+    { id: 'task_switching', label: 'Task switching cost', question: 'How hard was it to switch between tasks without losing your train of thought?', type: 'score', lowLabel: 'Lost track constantly', highLabel: 'Seamless transitions', icon: 'Brain', color: '#8B6BB8' },
+    { id: 'word_retrieval', label: 'Word retrieval', question: 'Did you struggle to find the right words or recall names today?', type: 'choice', icon: 'Lightbulb', color: '#FFB74D', options: [
+      { value: 'none', label: 'No — sharp recall', emoji: '✨' },
+      { value: 'once', label: 'Once or twice', emoji: '🤔' },
+      { value: 'several', label: 'Several moments', emoji: '😶‍🌫️' },
+      { value: 'frequent', label: 'Frequently', emoji: '🌫️' },
     ] },
-    { id: 'memory', label: 'Memory & recall', question: 'How\'s your recall and memory?', type: 'score', lowLabel: 'Forgetful', highLabel: 'Sharp', icon: 'Lightbulb', color: '#FFB74D' },
+    { id: 'afternoon_cognition', label: 'PM clarity', question: 'Was your thinking as sharp at 4pm as it was at 10am?', type: 'score', lowLabel: 'Significantly worse', highLabel: 'Just as sharp', icon: 'Cloud', color: '#8A8A8A' },
   ],
   stress: [
-    { id: 'stress_level', label: 'Stress level', question: 'How stressed are you feeling right now?', type: 'score', lowLabel: 'Overwhelmed', highLabel: 'Calm', icon: 'Leaf', color: '#7B8FC4' },
-    { id: 'anxiety_moments', label: 'Anxious moments', question: 'Any anxious moments today?', type: 'choice', icon: 'Wind', color: '#8B6BB8', options: [
-      { value: 'none', label: 'None at all', emoji: '😌' },
-      { value: 'few', label: 'A few moments', emoji: '😟' },
-      { value: 'several', label: 'Several', emoji: '😰' },
-      { value: 'constant', label: 'Constant', emoji: '😣' },
+    { id: 'baseline_tension', label: 'Baseline tension', question: 'Rate your resting tension level — jaw, shoulders, chest', type: 'score', lowLabel: 'Tight & clenched', highLabel: 'Fully relaxed', icon: 'Leaf', color: '#7B8FC4' },
+    { id: 'stress_triggers', label: 'Trigger response', question: 'When something stressful happened, how quickly did you recover?', type: 'choice', icon: 'Wind', color: '#8B6BB8', options: [
+      { value: 'fast', label: 'Recovered in minutes', emoji: '😌' },
+      { value: 'moderate', label: 'Took 30+ min', emoji: '😟' },
+      { value: 'slow', label: 'Lingered for hours', emoji: '😰' },
+      { value: 'none', label: 'No stressful events', emoji: '✨' },
     ] },
-    { id: 'breathing', label: 'Breathing quality', question: 'How does your breathing feel?', type: 'choice', icon: 'Wind', color: '#5A8A6F', options: [
-      { value: 'tight', label: 'Shallow & tight', emoji: '😤' },
-      { value: 'normal', label: 'Normal', emoji: '😐' },
-      { value: 'relaxed', label: 'Deep & relaxed', emoji: '😌' },
+    { id: 'sleep_anxiety', label: 'Pre-sleep mind', question: 'Could you quiet your mind before bed, or did thoughts race?', type: 'choice', icon: 'Moon', color: '#5A8A6F', options: [
+      { value: 'quiet', label: 'Mind was calm', emoji: '😌' },
+      { value: 'some', label: 'Some thoughts, manageable', emoji: '😐' },
+      { value: 'racing', label: 'Racing thoughts', emoji: '🌀' },
+      { value: 'couldnt', label: 'Couldn\'t stop thinking', emoji: '😣' },
     ] },
-    { id: 'reactivity', label: 'Emotional reactivity', question: 'How reactive are you emotionally?', type: 'score', lowLabel: 'Very reactive', highLabel: 'Grounded', icon: 'Shield', color: '#5A8A6F' },
+    { id: 'emotional_regulation', label: 'Emotional regulation', question: 'Did you overreact to something that normally wouldn\'t bother you?', type: 'score', lowLabel: 'Multiple overreactions', highLabel: 'Emotionally stable', icon: 'Shield', color: '#5A8A6F' },
   ],
   metabolism: [
-    { id: 'cravings', label: 'Cravings intensity', question: 'How intense are your cravings today?', type: 'score', lowLabel: 'Intense', highLabel: 'None', icon: 'Cookie', color: '#D4A853' },
-    { id: 'post_meal', label: 'Post-meal feeling', question: 'How did you feel after your last meal?', type: 'choice', icon: 'Utensils', color: '#FFB74D', options: [
-      { value: 'crashed', label: 'Crashed', emoji: '😴' },
-      { value: 'sluggish', label: 'Sluggish', emoji: '😮‍💨' },
-      { value: 'stable', label: 'Stable', emoji: '🙂' },
-      { value: 'energized', label: 'Energized', emoji: '⚡' },
+    { id: 'post_meal_energy', label: 'Post-meal glucose', question: 'After your largest meal, did you crash or stay stable?', type: 'choice', icon: 'Utensils', color: '#FFB74D', options: [
+      { value: 'crashed', label: 'Needed to nap', emoji: '😴' },
+      { value: 'sluggish', label: 'Felt sluggish for 30+ min', emoji: '😮‍💨' },
+      { value: 'mild', label: 'Mild dip, recovered fast', emoji: '🙂' },
+      { value: 'stable', label: 'No dip — stayed sharp', emoji: '⚡' },
     ] },
-    { id: 'hunger_stability', label: 'Hunger patterns', question: 'How stable is your hunger today?', type: 'choice', icon: 'Activity', color: '#E57373', options: [
-      { value: 'erratic', label: 'All over the place', emoji: '📈📉' },
-      { value: 'somewhat', label: 'Somewhat stable', emoji: '〰️' },
-      { value: 'stable', label: 'Very stable', emoji: '➡️' },
+    { id: 'hunger_signal', label: 'Hunger signals', question: 'Were your hunger signals predictable and gradual today?', type: 'choice', icon: 'Activity', color: '#E57373', options: [
+      { value: 'erratic', label: 'Sudden, intense cravings', emoji: '🔥' },
+      { value: 'somewhat', label: 'Somewhat unpredictable', emoji: '〰️' },
+      { value: 'gradual', label: 'Gradual, easy to manage', emoji: '📊' },
+      { value: 'barely', label: 'Barely thought about food', emoji: '✨' },
     ] },
-    { id: 'digestion', label: 'Digestion', question: 'How\'s your digestion feeling?', type: 'score', lowLabel: 'Uncomfortable', highLabel: 'Great', icon: 'Activity', color: '#81C784' },
+    { id: 'sugar_craving', label: 'Sugar cravings', question: 'Rate the intensity of sugar or carb cravings today', type: 'score', lowLabel: 'Intense, hard to resist', highLabel: 'No cravings at all', icon: 'Cookie', color: '#D4A853' },
+    { id: 'bloating_gi', label: 'GI comfort', question: 'Any bloating, gas, or digestive discomfort after eating?', type: 'score', lowLabel: 'Very uncomfortable', highLabel: 'Completely comfortable', icon: 'Activity', color: '#81C784' },
   ],
   hormones: [
-    { id: 'mood_stability', label: 'Mood stability', question: 'How stable is your mood today?', type: 'score', lowLabel: 'All over the place', highLabel: 'Very stable', icon: 'Heart', color: '#C4857A' },
-    { id: 'cycle_symptoms', label: 'Hormonal symptoms', question: 'Any hormonal symptoms today?', type: 'choice', icon: 'Thermometer', color: '#E57373', options: [
-      { value: 'none', label: 'None', emoji: '✨' },
-      { value: 'mild', label: 'Mild', emoji: '😐' },
-      { value: 'moderate', label: 'Moderate', emoji: '😣' },
-      { value: 'severe', label: 'Severe', emoji: '😖' },
+    { id: 'mood_volatility', label: 'Mood volatility', question: 'How many noticeable mood swings did you have today?', type: 'choice', icon: 'Heart', color: '#C4857A', options: [
+      { value: 'none', label: 'Steady all day', emoji: '✨' },
+      { value: '1-2', label: '1–2 shifts', emoji: '🔄' },
+      { value: '3-4', label: '3–4 shifts', emoji: '😣' },
+      { value: '5+', label: 'Constantly shifting', emoji: '🎢' },
     ] },
-    { id: 'bloating', label: 'Bloating', question: 'Any bloating or discomfort?', type: 'choice', icon: 'Circle', color: '#D4A853', options: [
-      { value: 'none', label: 'None', emoji: '✨' },
-      { value: 'mild', label: 'Mild', emoji: '😐' },
-      { value: 'noticeable', label: 'Noticeable', emoji: '😮‍💨' },
-      { value: 'significant', label: 'Significant', emoji: '😣' },
+    { id: 'pms_symptoms', label: 'Cycle symptoms', question: 'Rate cramping, breast tenderness, or PMS severity today', type: 'score', lowLabel: 'Severe symptoms', highLabel: 'No symptoms', icon: 'Thermometer', color: '#E57373' },
+    { id: 'water_retention', label: 'Water retention', question: 'Any puffiness, bloating, or visible water retention?', type: 'choice', icon: 'Circle', color: '#D4A853', options: [
+      { value: 'none', label: 'None at all', emoji: '✨' },
+      { value: 'mild', label: 'Slightly puffy', emoji: '😐' },
+      { value: 'noticeable', label: 'Noticeably swollen', emoji: '😮‍💨' },
+      { value: 'significant', label: 'Significant retention', emoji: '😣' },
     ] },
-    { id: 'skin_clarity', label: 'Skin clarity', question: 'How\'s your skin looking?', type: 'score', lowLabel: 'Breaking out', highLabel: 'Clear & glowing', icon: 'Sparkles', color: '#FFB74D' },
+    { id: 'skin_breakout', label: 'Skin & breakouts', question: 'Rate your skin clarity — new breakouts, oiliness, dryness', type: 'score', lowLabel: 'Active breakout', highLabel: 'Clear & balanced', icon: 'Sparkles', color: '#FFB74D' },
   ],
   sport: [
-    { id: 'recovery', label: 'Recovery', question: 'How recovered do you feel?', type: 'score', lowLabel: 'Very sore', highLabel: 'Fully recovered', icon: 'RotateCcw', color: '#5A8A6F' },
-    { id: 'training_today', label: 'Training intensity', question: 'What was your training today?', type: 'choice', icon: 'Dumbbell', color: '#4A90D9', options: [
-      { value: 'rest', label: 'Rest day', emoji: '🛋️' },
-      { value: 'light', label: 'Light session', emoji: '🚶' },
-      { value: 'moderate', label: 'Moderate', emoji: '🏃' },
-      { value: 'intense', label: 'Intense', emoji: '🔥' },
+    { id: 'recovery_readiness', label: 'Recovery readiness', question: 'Could you train at full intensity right now?', type: 'score', lowLabel: 'Body says no', highLabel: 'Completely ready', icon: 'RotateCcw', color: '#5A8A6F' },
+    { id: 'training_load', label: 'Training load', question: 'What did you train today?', type: 'choice', icon: 'Dumbbell', color: '#4A90D9', options: [
+      { value: 'rest', label: 'Full rest day', emoji: '🛋️' },
+      { value: 'light', label: 'Active recovery / mobility', emoji: '🧘' },
+      { value: 'moderate', label: 'Moderate session', emoji: '🏃' },
+      { value: 'intense', label: 'High intensity / heavy lifts', emoji: '🔥' },
     ] },
-    { id: 'soreness', label: 'Muscle soreness', question: 'How sore are your muscles?', type: 'score', lowLabel: 'Very sore', highLabel: 'No soreness', icon: 'Activity', color: '#FFB74D' },
-    { id: 'performance', label: 'Performance', question: 'Rate your performance output', type: 'score', lowLabel: 'Struggled', highLabel: 'Peak', icon: 'TrendingUp', color: '#D4A853' },
+    { id: 'doms', label: 'DOMS severity', question: 'Rate your delayed onset muscle soreness from recent sessions', type: 'score', lowLabel: 'Can barely move', highLabel: 'No soreness', icon: 'Activity', color: '#FFB74D' },
+    { id: 'perceived_exertion', label: 'RPE output', question: 'Did today\'s training feel harder or easier than it should?', type: 'choice', icon: 'TrendingUp', color: '#D4A853', options: [
+      { value: 'harder', label: 'Felt much harder than expected', emoji: '😩' },
+      { value: 'slightly_harder', label: 'Slightly harder', emoji: '😤' },
+      { value: 'normal', label: 'Felt about right', emoji: '💪' },
+      { value: 'easier', label: 'Felt easier than expected', emoji: '🚀' },
+    ] },
   ],
   immune: [
-    { id: 'overall_health', label: 'Overall health', question: 'How healthy do you feel overall?', type: 'score', lowLabel: 'Under the weather', highLabel: 'Strong', icon: 'Shield', color: '#4A90D9' },
-    { id: 'symptoms', label: 'Symptoms', question: 'Any cold or flu symptoms?', type: 'choice', icon: 'Thermometer', color: '#E57373', options: [
-      { value: 'none', label: 'None', emoji: '✨' },
-      { value: 'slight', label: 'Slight', emoji: '🤧' },
-      { value: 'moderate', label: 'Moderate', emoji: '🤒' },
-      { value: 'unwell', label: 'Feeling unwell', emoji: '😷' },
+    { id: 'symptom_check', label: 'Symptom check', question: 'Any signs of illness — sore throat, sniffles, fatigue, headache?', type: 'choice', icon: 'Thermometer', color: '#E57373', options: [
+      { value: 'none', label: 'Completely clear', emoji: '✨' },
+      { value: 'vague', label: 'Something feels off', emoji: '🤔' },
+      { value: 'mild', label: 'Mild symptoms present', emoji: '🤧' },
+      { value: 'sick', label: 'Actively fighting something', emoji: '🤒' },
     ] },
-    { id: 'inflammation', label: 'Inflammation', question: 'Any inflammation or pain?', type: 'choice', icon: 'Flame', color: '#C4857A', options: [
-      { value: 'none', label: 'None', emoji: '✨' },
-      { value: 'mild', label: 'Mild', emoji: '😐' },
-      { value: 'moderate', label: 'Moderate', emoji: '😣' },
-      { value: 'significant', label: 'Significant', emoji: '😖' },
+    { id: 'recovery_speed', label: 'Recovery speed', question: 'If you felt run down recently, are you bouncing back?', type: 'choice', icon: 'RotateCcw', color: '#4A90D9', options: [
+      { value: 'fine', label: 'Haven\'t been run down', emoji: '💪' },
+      { value: 'fast', label: 'Recovering fast', emoji: '📈' },
+      { value: 'slow', label: 'Slow to recover', emoji: '🐢' },
+      { value: 'worse', label: 'Getting worse', emoji: '📉' },
     ] },
-    { id: 'resilience', label: 'Resilience', question: 'How resilient do you feel?', type: 'score', lowLabel: 'Fragile', highLabel: 'Robust', icon: 'Heart', color: '#81C784' },
+    { id: 'joint_inflammation', label: 'Joint & inflammation', question: 'Rate any joint stiffness, swelling, or inflammatory pain', type: 'score', lowLabel: 'Significant pain', highLabel: 'No inflammation', icon: 'Flame', color: '#C4857A' },
+    { id: 'vitality_rating', label: 'Overall vitality', question: 'Rate your body\'s overall resilience and strength today', type: 'score', lowLabel: 'Fragile & vulnerable', highLabel: 'Robust & strong', icon: 'Shield', color: '#81C784' },
   ],
 };
 
 export const DEFAULT_METRICS: GoalMetric[] = [
-  { id: 'energy', label: 'Energy', question: 'How is your energy today?', type: 'score', lowLabel: 'Low', highLabel: 'High', icon: 'Zap', color: '#FFB74D' },
-  { id: 'sleep', label: 'Sleep', question: 'How did you sleep?', type: 'score', lowLabel: 'Poorly', highLabel: 'Great', icon: 'Moon', color: '#7B8FC4' },
-  { id: 'mood', label: 'Mood', question: 'How\'s your mood?', type: 'score', lowLabel: 'Low', highLabel: 'Great', icon: 'Smile', color: '#81C784' },
+  { id: 'wake_energy', label: 'Wake-up energy', question: 'How alert were you within 30 minutes of waking?', type: 'score', lowLabel: 'Could barely function', highLabel: 'Immediately alert', icon: 'Sunrise', color: '#FFB74D' },
+  { id: 'sleep_quality', label: 'Sleep quality', question: 'Rate how deep and restorative last night\'s sleep was', type: 'score', lowLabel: 'Light & broken', highLabel: 'Deep & restorative', icon: 'Moon', color: '#7B8FC4' },
+  { id: 'afternoon_clarity', label: 'PM clarity', question: 'Was your thinking as sharp at 4pm as it was at 10am?', type: 'score', lowLabel: 'Significantly worse', highLabel: 'Just as sharp', icon: 'Brain', color: '#81C784' },
+  { id: 'body_signals', label: 'Body signals', question: 'Any unusual tension, soreness, or discomfort today?', type: 'choice', icon: 'Activity', color: '#C4857A', options: [
+    { value: 'none', label: 'Body felt great', emoji: '✨' },
+    { value: 'mild', label: 'Minor tension', emoji: '😐' },
+    { value: 'moderate', label: 'Noticeable discomfort', emoji: '😣' },
+    { value: 'significant', label: 'Significant issues', emoji: '😖' },
+  ] },
 ];
 
 export const NOTIFICATION_MODE_OPTIONS = [
