@@ -15,6 +15,7 @@ interface OnboardingScreenProps {
   ctaEnabled?: boolean;
   onCta: () => void;
   showBack?: boolean;
+  showProgress?: boolean;
   secondaryAction?: { text: string; onPress: () => void };
 }
 
@@ -26,6 +27,7 @@ export default function OnboardingScreen({
   ctaEnabled = true,
   onCta,
   showBack = true,
+  showProgress = true,
   secondaryAction,
 }: OnboardingScreenProps) {
   const router = useRouter();
@@ -54,19 +56,23 @@ export default function OnboardingScreen({
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        {showBack ? (
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton} testID="back-button">
-            <ChevronLeft size={24} color={Colors.navy} />
-          </TouchableOpacity>
-        ) : (
+      {(showBack || showProgress) && (
+        <View style={styles.header}>
+          {showBack ? (
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton} testID="back-button">
+              <ChevronLeft size={24} color={Colors.navy} />
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.backPlaceholder} />
+          )}
+          {showProgress && (
+            <View style={styles.progressTrack}>
+              <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
+            </View>
+          )}
           <View style={styles.backPlaceholder} />
-        )}
-        <View style={styles.progressTrack}>
-          <Animated.View style={[styles.progressFill, { width: progressWidth }]} />
         </View>
-        <View style={styles.backPlaceholder} />
-      </View>
+      )}
 
       <Animated.View
         style={[
