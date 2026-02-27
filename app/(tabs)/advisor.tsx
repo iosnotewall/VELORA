@@ -86,26 +86,33 @@ Day 30: ${milestones?.d30 ?? 'Baseline shift'}`;
 }
 
 function buildTrendNote(scores: Array<{ energy: number; sleep: number; mood: number }>): string {
-  if (scores.length < 3) return '';
+  if (scores.length < 3) return '\nNOT ENOUGH DATA FOR TRENDS — do NOT fabricate or guess trends.';
 
   const recent3 = scores.slice(-3);
   const older = scores.slice(0, -3);
-  if (older.length === 0) return '';
+  if (older.length === 0) return '\nONLY 3 DATA POINTS — too early to identify trends. Do NOT guess.';
 
-  const avgRecent = (key: 'energy' | 'sleep' | 'mood') =>
-    recent3.reduce((sum, s) => sum + s[key], 0) / recent3.length;
-  const avgOlder = (key: 'energy' | 'sleep' | 'mood') =>
-    older.reduce((sum, s) => sum + s[key], 0) / older.length;
+  const avg = (arr: typeof scores, key: 'energy' | 'sleep' | 'mood') =>
+    +(arr.reduce((sum, s) => sum + s[key], 0) / arr.length).toFixed(2);
 
-  const trends: string[] = [];
   const keys: Array<'energy' | 'sleep' | 'mood'> = ['energy', 'sleep', 'mood'];
+  const lines: string[] = [];
+
   for (const key of keys) {
-    const diff = avgRecent(key) - avgOlder(key);
-    if (diff > 0.5) trends.push(`${key} trending UP (+${diff.toFixed(1)})`);
-    else if (diff < -0.5) trends.push(`${key} trending DOWN (${diff.toFixed(1)})`);
+    const recentAvg = avg(recent3, key);
+    const olderAvg = avg(older, key);
+    const diff = +(recentAvg - olderAvg).toFixed(2);
+
+    if (diff > 0.5) {
+      lines.push(`${key}: ${olderAvg} → ${recentAvg} (UP by ${diff})`);
+    } else if (diff < -0.5) {
+      lines.push(`${key}: ${olderAvg} → ${recentAvg} (DOWN by ${Math.abs(diff)})`);
+    } else {
+      lines.push(`${key}: ${olderAvg} → ${recentAvg} (STABLE, change of ${diff})`);
+    }
   }
 
-  return trends.length > 0 ? `\nTRENDS: ${trends.join(', ')}` : '\nTRENDS: Stable across all metrics.';
+  return `\nCOMPUTED TRENDS (older avg → recent 3-day avg):\n${lines.join('\n')}\nIMPORTANT: Only reference these exact numbers. If a metric is STABLE, do NOT say it dropped or improved.`;
 }
 
 const SYSTEM_PROMPT = `You are Velora — a sharp, warm supplement wellness advisor inside a health app. You have access to the user's real tracking data below.
@@ -120,7 +127,14 @@ FORMAT RULES (critical):
 - MAX 4-5 sentences per response. Never more unless they explicitly ask for detail.
 - No markdown headers. No bullet lists. No asterisks. Just clean, flowing text.
 - One paragraph usually. Two if needed. Never three.
-- Be specific: "your sleep dropped from 4.2 to 3.0 this week" not "your sleep seems worse"
+- Be specific with real numbers ONLY when the data actually shows a change.
+
+DATA INTEGRITY (critical — never violate):
+- ONLY state what the COMPUTED TRENDS section explicitly shows. Never invent numbers.
+- If a metric is marked STABLE, do NOT say it "dropped" or "improved". Say it's been consistent.
+- If the user says something got worse but data shows STABLE, gently note: "your data actually shows it's been steady at X."
+- If there's not enough data, say so. Never fabricate trends.
+- Double-check: before saying "X went from A to B", verify A ≠ B. If A = B, that is NOT a change.
 
 KNOWLEDGE:
 - Ground advice in mechanisms (e.g. "magnesium is a GABA agonist — it literally quiets neurons")
