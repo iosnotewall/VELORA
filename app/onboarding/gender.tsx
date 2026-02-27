@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
-import { User, UserRound, EyeOff } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform, Easing } from 'react-native';
+import { Mars, Venus, HelpCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
@@ -16,12 +16,12 @@ interface GenderOption {
 }
 
 const OPTIONS: GenderOption[] = [
-  { id: 'male',   label: 'Male',              sub: 'Tune recommendations to male physiology',  icon: User },
-  { id: 'female', label: 'Female',            sub: 'Tune recommendations to female physiology', icon: UserRound },
-  { id: 'skip',   label: 'Prefer not to say', sub: "No worries — we'll keep advice universal",  icon: EyeOff },
+  { id: 'male',   label: 'Male',              sub: 'Tune recommendations to male physiology',  icon: Mars },
+  { id: 'female', label: 'Female',            sub: 'Tune recommendations to female physiology', icon: Venus },
+  { id: 'skip',   label: 'Prefer not to say', sub: "No worries — we'll keep advice universal",  icon: HelpCircle },
 ];
 
-const STAGGER = 80;
+const STAGGER = 120;
 
 export default function GenderScreen() {
   const router = useRouter();
@@ -29,28 +29,50 @@ export default function GenderScreen() {
   const [selected, setSelected] = useState<string>('');
 
   const titleAnim   = useRef(new Animated.Value(0)).current;
-  const subtitleAnim = useRef(new Animated.Value(0)).current;
+  const subLineAnims = useRef([
+    new Animated.Value(0),
+    new Animated.Value(0),
+    new Animated.Value(0),
+  ]).current;
   const optionAnims = useRef(OPTIONS.map(() => new Animated.Value(0))).current;
   const scaleAnims  = useRef(OPTIONS.map(() => new Animated.Value(1))).current;
 
+  const SUB_LINES = [
+    'Your body processes supplements',
+    'differently based on biology.',
+    'This helps us dial in the right doses and timing.',
+  ];
+
   useEffect(() => {
+    const easing = Easing.out(Easing.cubic);
     const sequence = [
+      Animated.delay(200),
       Animated.timing(titleAnim, {
         toValue: 1,
-        duration: 380,
+        duration: 700,
+        easing,
         useNativeDriver: Platform.OS !== 'web',
       }),
-      Animated.timing(subtitleAnim, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
+      Animated.delay(150),
+      Animated.stagger(
+        200,
+        subLineAnims.map(anim =>
+          Animated.timing(anim, {
+            toValue: 1,
+            duration: 500,
+            easing,
+            useNativeDriver: Platform.OS !== 'web',
+          })
+        )
+      ),
+      Animated.delay(100),
       Animated.stagger(
         STAGGER,
         optionAnims.map(anim =>
           Animated.timing(anim, {
             toValue: 1,
-            duration: 280,
+            duration: 380,
+            easing,
             useNativeDriver: Platform.OS !== 'web',
           })
         )
@@ -83,8 +105,7 @@ export default function GenderScreen() {
     router.push('/onboarding/consider' as any);
   }, [selected, updateState, router]);
 
-  const titleTranslate    = titleAnim.interpolate({ inputRange: [0, 1], outputRange: [16, 0] });
-  const subtitleTranslate = subtitleAnim.interpolate({ inputRange: [0, 1], outputRange: [12, 0] });
+  const titleTranslate = titleAnim.interpolate({ inputRange: [0, 1], outputRange: [18, 0] });
 
   return (
     <OnboardingScreen
@@ -95,6 +116,8 @@ export default function GenderScreen() {
       onCta={handleContinue}
       hideHeader
     >
+      <View style={styles.topSpacer} />
+
       <Animated.Text
         style={[
           styles.headline,
@@ -107,17 +130,28 @@ export default function GenderScreen() {
         Let's personalize{"\n"}your plan
       </Animated.Text>
 
-      <Animated.Text
-        style={[
-          styles.subtitle,
-          {
-            opacity: subtitleAnim,
-            transform: [{ translateY: subtitleTranslate }],
-          },
-        ]}
-      >
-        Your body processes supplements differently based on biology. This helps us dial in the right doses and timing.
-      </Animated.Text>
+      <View style={styles.subtitleBlock}>
+        {SUB_LINES.map((line, i) => {
+          const lineTranslate = subLineAnims[i].interpolate({
+            inputRange: [0, 1],
+            outputRange: [10, 0],
+          });
+          return (
+            <Animated.Text
+              key={i}
+              style={[
+                styles.subtitleLine,
+                {
+                  opacity: subLineAnims[i],
+                  transform: [{ translateY: lineTranslate }],
+                },
+              ]}
+            >
+              {line}
+            </Animated.Text>
+          );
+        })}
+      </View>
 
       <View style={styles.options}>
         {OPTIONS.map((option, index) => {
@@ -168,21 +202,25 @@ export default function GenderScreen() {
 }
 
 const styles = StyleSheet.create({
+  topSpacer: {
+    height: 32,
+  },
   headline: {
     fontFamily: Fonts.heading,
     fontSize: 30,
     color: Colors.navy,
     lineHeight: 38,
-    marginTop: 8,
-    marginBottom: 10,
+    marginBottom: 12,
     letterSpacing: -0.5,
   },
-  subtitle: {
+  subtitleBlock: {
+    marginBottom: 32,
+  },
+  subtitleLine: {
     fontFamily: Fonts.body,
     fontSize: 15,
     color: Colors.mediumGray,
     lineHeight: 23,
-    marginBottom: 32,
   },
   options: {
     gap: 12,
