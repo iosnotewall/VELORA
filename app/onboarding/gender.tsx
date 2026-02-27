@@ -25,7 +25,7 @@ const STAGGER = 140;
 
 export default function GenderScreen() {
   const router = useRouter();
-  const { updateState } = useAppState();
+  const { updateState, userName } = useAppState();
   const [selected, setSelected] = useState<string>('');
 
   const titleAnim   = useRef(new Animated.Value(0)).current;
@@ -129,7 +129,7 @@ export default function GenderScreen() {
           },
         ]}
       >
-        Let's personalize{"\n"}your plan
+        Let's make it truly{"\n"}for you{userName ? `, ${userName}` : ''}
       </Animated.Text>
 
       <View style={styles.subtitleBlock}>
