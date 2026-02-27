@@ -38,7 +38,7 @@ export default function FrequencyScreen() {
   }, [selected, updateState, router]);
 
   return (
-    <OnboardingScreen step={3} totalSteps={9} ctaText="Continue" ctaEnabled={!!selected} onCta={handleContinue} showBack={false} showProgress={false}>
+    <OnboardingScreen step={3} totalSteps={9} ctaText="Continue" ctaEnabled={!!selected} onCta={handleContinue}>
       <Text style={styles.headline}>How many days a week do you take your supplements?</Text>
 
       <View style={styles.options}>
