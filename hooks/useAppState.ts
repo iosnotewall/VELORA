@@ -27,6 +27,7 @@ export interface AppState {
   customProducts: CustomProduct[];
   routineTime: string;
   userName: string;
+  gender: string;
   currentStreak: number;
   longestStreak: number;
   totalDaysTaken: number;
@@ -54,6 +55,7 @@ const DEFAULT_STATE: AppState = {
   customProducts: [],
   routineTime: '08:00',
   userName: '',
+  gender: '',
   currentStreak: 0,
   longestStreak: 0,
   totalDaysTaken: 0,

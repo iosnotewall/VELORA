@@ -29,6 +29,7 @@ type ScreenView = 'history' | 'chat';
 function buildUserContext(state: {
   goal: string;
   userName: string;
+  gender: string;
   currentStreak: number;
   totalDaysTaken: number;
   products: string[];
@@ -61,8 +62,11 @@ function buildUserContext(state: {
 
   const trendNote = buildTrendNote(recentScores);
 
+  const genderLabel = state.gender === 'male' ? 'Male' : state.gender === 'female' ? 'Female' : state.gender === 'other' ? 'Other' : 'Not specified';
+
   return `USER PROFILE (live data — refreshed at conversation start):
 Name: ${state.userName || 'User'}
+Biological sex: ${genderLabel}
 Goal: ${goalData?.label ?? 'General wellness'} — ${goalData?.sub ?? ''}
 Current streak: ${state.currentStreak} days | Total days tracked: ${state.totalDaysTaken}
 Supplements: ${state.products.join(', ') || 'Not specified'}
@@ -263,6 +267,7 @@ export default function AdvisorScreen() {
   const userContext = useMemo(() => buildUserContext({
     goal: appState.goal,
     userName: appState.userName,
+    gender: appState.gender,
     currentStreak: appState.currentStreak,
     totalDaysTaken: appState.totalDaysTaken,
     products: appState.products,
@@ -271,7 +276,7 @@ export default function AdvisorScreen() {
     friction: appState.friction,
     commitmentLevel: appState.commitmentLevel,
   }), [
-    appState.goal, appState.userName, appState.currentStreak,
+    appState.goal, appState.userName, appState.gender, appState.currentStreak,
     appState.totalDaysTaken, appState.products, appState.dailyScores,
     appState.frequency, appState.friction, appState.commitmentLevel,
   ]);
