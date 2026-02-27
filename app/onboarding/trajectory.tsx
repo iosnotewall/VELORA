@@ -392,7 +392,7 @@ export default function TrajectoryScreen() {
 
             <TouchableOpacity
               style={styles.modalGetStarted}
-              onPress={() => { closeModal(); setTimeout(() => router.push('/onboarding/sim-checkin' as any), 300); }}
+              onPress={() => { closeModal(); setTimeout(() => router.push('/onboarding/walkthrough' as any), 300); }}
               activeOpacity={0.85}
             >
               <Text style={styles.modalGetStartedText}>Get Started</Text>

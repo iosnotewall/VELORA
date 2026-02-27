@@ -24,6 +24,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="friction" options={{ animation: 'fade' }} />
       <Stack.Screen name="unlock" options={{ animation: 'fade' }} />
       <Stack.Screen name="trajectory" options={{ animation: 'fade' }} />
+      <Stack.Screen name="walkthrough" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="sim-checkin" options={{ animation: 'fade' }} />
       <Stack.Screen name="sim-wisdom" options={{ animation: 'fade' }} />
       <Stack.Screen name="sim-congrats" options={{ animation: 'fade' }} />

@@ -181,10 +181,20 @@ export default function SimCheckinScreen() {
     animateTransition(() => setCurrentStep(prev => prev - 1));
   }, [currentStep, router, animateTransition]);
 
+  const { updateState } = useAppState();
+
   const handleContinue = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    console.log('[SimCheckin] Saving onboarding sim data:', { scores, choices });
+    updateState({
+      onboardingSimData: {
+        scores,
+        choices,
+        completedAt: new Date().toISOString(),
+      },
+    });
     router.push('/onboarding/sim-congrats' as any);
-  }, [router]);
+  }, [router, scores, choices, updateState]);
 
   const progressFraction = (currentStep + (isCurrentAnswered() ? 1 : 0)) / metrics.length;
 

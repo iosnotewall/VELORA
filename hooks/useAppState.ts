@@ -20,6 +20,12 @@ export interface DailyScore {
 
 export type NotificationMode = 'specific' | 'random' | 'hourly';
 
+export interface OnboardingSimData {
+  scores: Record<string, number>;
+  choices: Record<string, string>;
+  completedAt: string;
+}
+
 export interface AppState {
   goal: string;
   gapScore: number;
@@ -46,6 +52,7 @@ export interface AppState {
   streakShieldUsedDate: string | null;
   notificationMode: NotificationMode;
   notificationTimes: string[];
+  onboardingSimData: OnboardingSimData | null;
 }
 
 const DEFAULT_STATE: AppState = {
@@ -74,6 +81,7 @@ const DEFAULT_STATE: AppState = {
   streakShieldUsedDate: null,
   notificationMode: 'specific',
   notificationTimes: ['08:00'],
+  onboardingSimData: null,
 };
 
 const STORAGE_KEY = 'ivb_app_state';
