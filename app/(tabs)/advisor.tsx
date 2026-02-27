@@ -594,6 +594,23 @@ export default function AdvisorScreen() {
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
         >
+          {sessions.length > 0 && (
+            <TouchableOpacity
+              style={styles.historyBar}
+              onPress={goToHistory}
+              activeOpacity={0.7}
+              testID="view-history-button"
+            >
+              <View style={styles.historyBarLeft}>
+                <Clock size={14} color={Colors.mediumGray} strokeWidth={2} />
+                <Text style={styles.historyBarText}>
+                  {sessions.length} previous {sessions.length === 1 ? 'chat' : 'chats'}
+                </Text>
+              </View>
+              <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
+            </TouchableOpacity>
+          )}
+
           <ScrollView
             contentContainerStyle={styles.welcomeScroll}
             showsVerticalScrollIndicator={false}
@@ -635,20 +652,7 @@ export default function AdvisorScreen() {
               ))}
             </View>
 
-            {sessions.length > 0 && (
-              <TouchableOpacity
-                style={styles.historyLink}
-                onPress={goToHistory}
-                activeOpacity={0.7}
-                testID="view-history-button"
-              >
-                <Clock size={16} color={Colors.mediumGray} strokeWidth={2} />
-                <Text style={styles.historyLinkText}>
-                  {sessions.length} previous {sessions.length === 1 ? 'chat' : 'chats'}
-                </Text>
-                <ChevronRight size={16} color={Colors.mediumGray} strokeWidth={2} />
-              </TouchableOpacity>
-            )}
+
           </ScrollView>
 
           <View style={[styles.inputContainer, { paddingBottom: Math.max(insets.bottom, 12) }]}>
@@ -1019,25 +1023,25 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Colors.navy,
   },
-  historyLink: {
+  historyBar: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginTop: 24,
-    paddingVertical: 14,
+    justifyContent: 'space-between' as const,
     paddingHorizontal: 20,
+    paddingVertical: 12,
     backgroundColor: Colors.white,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    gap: 8,
-    width: '100%' as const,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
   },
-  historyLinkText: {
+  historyBarLeft: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+  },
+  historyBarText: {
     fontFamily: Fonts.dmMedium,
-    fontSize: 14,
+    fontSize: 13,
     color: Colors.mediumGray,
-    flex: 1,
   },
   loadingContainer: {
     flex: 1,
