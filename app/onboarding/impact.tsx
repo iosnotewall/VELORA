@@ -141,8 +141,7 @@ export default function ImpactScreen() {
                 strokeDasharray={`${CIRCUMFERENCE}`}
                 strokeDashoffset={strokeDashoffset}
                 strokeLinecap="round"
-                rotation="-90"
-                origin={`${GAUGE_SIZE / 2}, ${GAUGE_SIZE / 2}`}
+                transform={`rotate(-90, ${GAUGE_SIZE / 2}, ${GAUGE_SIZE / 2})`}
               />
             </Svg>
             <View style={styles.gaugeCenter}>
