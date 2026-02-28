@@ -2,27 +2,26 @@ import React, { useState, useCallback, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Animated, PanResponder, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronRight, TrendingUp, Clock, Coffee, Zap, Activity, Shield, Heart, Moon, Flame, Brain, Leaf, Sparkles, Target, Cloud, Sun, Thermometer, Circle, RotateCcw } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, TrendingUp, Clock, Coffee, Zap, Activity, Shield, Heart, Moon, Flame, Brain, Leaf, Sparkles, Target, Cloud, Sun, Thermometer, Circle, RotateCcw, Check } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { GOAL_METRICS, DEFAULT_METRICS, GOALS } from '@/constants/content';
 import type { GoalMetric, ChoiceOption } from '@/constants/content';
 import { useAppState } from '@/hooks/useAppState';
-import PrimaryButton from '@/components/PrimaryButton';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SLIDER_WIDTH = SCREEN_WIDTH - 96;
-const SLIDER_TRACK_HEIGHT = 6;
-const THUMB_SIZE = 32;
+const SLIDER_WIDTH = SCREEN_WIDTH - 112;
+const SLIDER_TRACK_HEIGHT = 8;
+const THUMB_SIZE = 28;
 const useNative = Platform.OS !== 'web';
 
-const SCORE_LABELS: Record<number, string> = {
-  1: 'Rough',
-  2: 'Low',
-  3: 'Okay',
-  4: 'Good',
-  5: 'Great',
+const SCORE_LABELS: Record<number, { label: string; color: string }> = {
+  1: { label: 'Rough', color: '#E57373' },
+  2: { label: 'Low', color: '#E8A838' },
+  3: { label: 'Okay', color: '#D4A853' },
+  4: { label: 'Good', color: '#5A8A6F' },
+  5: { label: 'Great', color: '#2E7D52' },
 };
 
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
@@ -57,23 +56,22 @@ function SliderInput({
   metric,
   value,
   onSelect,
-  goalColor,
 }: {
   metric: GoalMetric;
   value: number;
   onSelect: (score: number) => void;
   goalColor: string;
 }) {
-  const sliderAnim = useRef(new Animated.Value(value > 0 ? (value - 1) / 4 : 0)).current;
-  const [currentVal, setCurrentVal] = useState(value);
-  const lastHapticVal = useRef(value);
+  const sliderAnim = useRef(new Animated.Value(value > 0 ? (value - 1) / 4 : 0.5)).current;
+  const [currentVal, setCurrentVal] = useState(value || 3);
+  const lastHapticVal = useRef(value || 3);
 
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (_, gestureState) => {
-        const touchX = gestureState.x0 - 48;
+        const touchX = gestureState.x0 - 56;
         const fraction = Math.max(0, Math.min(1, touchX / SLIDER_WIDTH));
         const score = Math.round(fraction * 4) + 1;
         const snappedFraction = (score - 1) / 4;
@@ -86,7 +84,7 @@ function SliderInput({
         }
       },
       onPanResponderMove: (_, gestureState) => {
-        const touchX = gestureState.x0 + gestureState.dx - 48;
+        const touchX = gestureState.x0 + gestureState.dx - 56;
         const fraction = Math.max(0, Math.min(1, touchX / SLIDER_WIDTH));
         const score = Math.round(fraction * 4) + 1;
         const snappedFraction = (score - 1) / 4;
@@ -121,19 +119,16 @@ function SliderInput({
     outputRange: ['0%', '100%'],
   });
 
-  const accentColor = metric.color;
+  const scoreInfo = SCORE_LABELS[currentVal] || SCORE_LABELS[3];
+  const accentColor = scoreInfo.color;
 
   return (
     <View style={sliderStyles.container}>
       <View style={sliderStyles.valueRow}>
-        {currentVal > 0 ? (
-          <>
-            <Text style={[sliderStyles.valueNumber, { color: accentColor }]}>{currentVal}</Text>
-            <Text style={[sliderStyles.valueLabel, { color: accentColor }]}>{SCORE_LABELS[currentVal]}</Text>
-          </>
-        ) : (
-          <Text style={sliderStyles.valuePlaceholder}>slide to rate</Text>
-        )}
+        <Text style={[sliderStyles.valueNumber, { color: accentColor }]}>{currentVal}</Text>
+        <View style={[sliderStyles.valueBadge, { backgroundColor: accentColor + '15' }]}>
+          <Text style={[sliderStyles.valueLabel, { color: accentColor }]}>{scoreInfo.label}</Text>
+        </View>
       </View>
 
       <View style={sliderStyles.trackContainer} {...panResponder.panHandlers}>
@@ -141,26 +136,15 @@ function SliderInput({
           <Animated.View style={[sliderStyles.trackFill, { width: fillWidth, backgroundColor: accentColor }]} />
         </View>
 
-        {[1, 2, 3, 4, 5].map((dot) => (
-          <View
-            key={dot}
-            style={[
-              sliderStyles.tickDot,
-              { left: ((dot - 1) / 4) * (SLIDER_WIDTH - 4) },
-              currentVal >= dot && { backgroundColor: accentColor },
-            ]}
-          />
-        ))}
-
         <Animated.View style={[
           sliderStyles.thumb,
           {
             left: thumbLeft,
-            backgroundColor: currentVal > 0 ? accentColor : Colors.mediumGray,
-            shadowColor: accentColor,
+            backgroundColor: '#FFFFFF',
+            borderColor: accentColor,
           },
         ]}>
-          <View style={sliderStyles.thumbInner} />
+          <View style={[sliderStyles.thumbDot, { backgroundColor: accentColor }]} />
         </Animated.View>
       </View>
 
@@ -176,7 +160,6 @@ function ChoiceInput({
   metric,
   value,
   onSelect,
-  goalColor,
 }: {
   metric: GoalMetric;
   value: string;
@@ -184,7 +167,6 @@ function ChoiceInput({
   goalColor: string;
 }) {
   const options = metric.options ?? [];
-  const IconComp = ICON_MAP[metric.icon] || Activity;
 
   return (
     <View style={choiceStyles.container}>
@@ -198,22 +180,20 @@ function ChoiceInput({
             style={[
               choiceStyles.option,
               isSelected && {
-                backgroundColor: metric.color + '10',
-                borderColor: metric.color + '50',
+                backgroundColor: metric.color + '08',
+                borderColor: metric.color,
               },
             ]}
           >
             <View style={[
-              choiceStyles.radioOuter,
-              isSelected && { borderColor: metric.color },
+              choiceStyles.checkOuter,
+              isSelected && { borderColor: metric.color, backgroundColor: metric.color },
             ]}>
-              {isSelected && (
-                <View style={[choiceStyles.radioInner, { backgroundColor: metric.color }]} />
-              )}
+              {isSelected && <Check size={12} color="#FFFFFF" strokeWidth={3} />}
             </View>
             <Text style={[
               choiceStyles.optionText,
-              isSelected && { color: Colors.navy },
+              isSelected && { color: Colors.navy, fontFamily: Fonts.headingSemiBold },
             ]}>
               {option.label}
             </Text>
@@ -324,7 +304,14 @@ export default function SimCheckinScreen() {
       return opt ? opt.label : '';
     }
     const score = scores[metric.id] ?? 0;
-    return `${score}/5 — ${SCORE_LABELS[score] || ''}`;
+    const info = SCORE_LABELS[score];
+    return `${score}/5 — ${info?.label || ''}`;
+  };
+
+  const getScoreColor = (metric: GoalMetric): string => {
+    if (metric.type === 'choice') return metric.color;
+    const score = scores[metric.id] ?? 0;
+    return SCORE_LABELS[score]?.color || metric.color;
   };
 
   const MetricIcon = currentMetric ? (ICON_MAP[currentMetric.icon] || Activity) : Activity;
@@ -333,7 +320,7 @@ export default function SimCheckinScreen() {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton} activeOpacity={0.7}>
-          <ChevronLeft size={24} color={Colors.navy} />
+          <ChevronLeft size={22} color={Colors.navy} />
         </TouchableOpacity>
         <View style={styles.progressTrack}>
           <Animated.View style={[styles.progressFill, { width: `${progressFraction * 100}%`, backgroundColor: goalColor }]} />
@@ -348,70 +335,68 @@ export default function SimCheckinScreen() {
           opacity: fadeAnim,
           transform: [{ translateX: slideAnim }],
         }]}>
-          <View style={styles.topContent}>
+          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
             {currentStep === 0 && displayName ? (
-              <View style={styles.greetingRow}>
-                <View style={[styles.greetingDot, { backgroundColor: goalColor }]} />
-                <Text style={styles.greeting}>
-                  {displayName.toLowerCase()}, let's check in
-                </Text>
-              </View>
+              <Text style={styles.greeting}>
+                {displayName.toLowerCase()}, let's check in
+              </Text>
             ) : null}
 
             <View style={[styles.metricIconWrap, { backgroundColor: currentMetric.color + '12' }]}>
-              <MetricIcon size={22} color={currentMetric.color} strokeWidth={2} />
+              <MetricIcon size={20} color={currentMetric.color} strokeWidth={2} />
             </View>
 
             <Text style={styles.question}>{currentMetric.question}</Text>
 
-            <View style={styles.metricTag}>
+            <View style={[styles.metricTag, { backgroundColor: currentMetric.color + '10' }]}>
               <View style={[styles.metricTagDot, { backgroundColor: currentMetric.color }]} />
-              <Text style={styles.metricTagText}>{currentMetric.label}</Text>
+              <Text style={[styles.metricTagText, { color: currentMetric.color }]}>{currentMetric.label}</Text>
             </View>
-          </View>
 
-          <View style={styles.inputArea}>
-            {currentMetric.type === 'score' ? (
-              <SliderInput
-                metric={currentMetric}
-                value={scores[currentMetric.id] ?? 0}
-                onSelect={handleScoreSelect}
-                goalColor={goalColor}
-              />
-            ) : (
-              <ChoiceInput
-                metric={currentMetric}
-                value={choices[currentMetric.id] ?? ''}
-                onSelect={handleChoiceSelect}
-                goalColor={goalColor}
-              />
-            )}
-          </View>
+            <View style={styles.inputArea}>
+              {currentMetric.type === 'score' ? (
+                <SliderInput
+                  metric={currentMetric}
+                  value={scores[currentMetric.id] ?? 0}
+                  onSelect={handleScoreSelect}
+                  goalColor={goalColor}
+                />
+              ) : (
+                <ChoiceInput
+                  metric={currentMetric}
+                  value={choices[currentMetric.id] ?? ''}
+                  onSelect={handleChoiceSelect}
+                  goalColor={goalColor}
+                />
+              )}
+            </View>
+          </ScrollView>
         </Animated.View>
       ) : (
         <ScrollView style={styles.summaryScroll} contentContainerStyle={styles.summaryContent} showsVerticalScrollIndicator={false}>
           <View style={styles.summaryHeaderSection}>
-            <View style={[styles.summaryCheckCircle, { backgroundColor: goalColor + '12', borderColor: goalColor + '30' }]}>
-              <TrendingUp size={28} color={goalColor} strokeWidth={2} />
+            <View style={[styles.summaryIconCircle, { backgroundColor: goalColor + '10', borderColor: goalColor + '25' }]}>
+              <TrendingUp size={24} color={goalColor} strokeWidth={2.2} />
             </View>
-            <Text style={styles.summaryTitle}>your snapshot</Text>
+            <Text style={styles.summaryTitle}>Your Snapshot</Text>
             <Text style={styles.summarySub}>
-              {displayName ? `here's what you logged, ${displayName.toLowerCase()}` : "here's what you logged"}
+              {displayName ? `Here's what you logged, ${displayName.toLowerCase()}` : "Here's what you logged"}
             </Text>
           </View>
 
           <View style={styles.summaryCards}>
             {metrics.map((metric) => {
               const IconComp = ICON_MAP[metric.icon] || Activity;
+              const valueColor = getScoreColor(metric);
               return (
                 <View key={metric.id} style={styles.summaryCard}>
                   <View style={styles.summaryCardLeft}>
-                    <View style={[styles.summaryIconWrap, { backgroundColor: metric.color + '12' }]}>
+                    <View style={[styles.summaryIconWrap, { backgroundColor: metric.color + '10' }]}>
                       <IconComp size={16} color={metric.color} strokeWidth={2} />
                     </View>
                     <Text style={styles.summaryMetricLabel}>{metric.label}</Text>
                   </View>
-                  <Text style={[styles.summaryValue, { color: metric.color }]} numberOfLines={1}>
+                  <Text style={[styles.summaryValue, { color: valueColor }]} numberOfLines={1}>
                     {getSummaryValue(metric)}
                   </Text>
                 </View>
@@ -419,38 +404,46 @@ export default function SimCheckinScreen() {
             })}
           </View>
 
-          <View style={[styles.summaryNote, { borderLeftColor: goalColor }]}>
-            <Text style={styles.summaryNoteTitle}>this is your daily check-in</Text>
-            <Text style={styles.summaryNoteText}>
-              Track these metrics every day to reveal patterns you can't feel day-to-day.
-            </Text>
+          <View style={styles.summaryInsight}>
+            <View style={[styles.insightAccent, { backgroundColor: goalColor }]} />
+            <View style={styles.insightContent}>
+              <Text style={styles.insightTitle}>This is your daily check-in</Text>
+              <Text style={styles.insightText}>
+                Track these metrics every day to reveal patterns you can't feel day-to-day.
+              </Text>
+            </View>
           </View>
         </ScrollView>
       )}
 
       <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
         {isLastStep ? (
-          <PrimaryButton title="log check-in" onPress={handleContinue} />
+          <TouchableOpacity
+            onPress={handleContinue}
+            activeOpacity={0.85}
+            style={[styles.primaryButton, { backgroundColor: goalColor }]}
+          >
+            <Text style={styles.primaryButtonText}>Log Check-In</Text>
+            <ChevronRight size={18} color="#FFFFFF" strokeWidth={2.5} />
+          </TouchableOpacity>
         ) : (
           <TouchableOpacity
             onPress={handleNext}
             activeOpacity={0.85}
             style={[
-              styles.nextButton,
+              styles.primaryButton,
               isCurrentAnswered()
                 ? { backgroundColor: Colors.navy }
-                : { backgroundColor: Colors.lightGray },
+                : { backgroundColor: '#E0DDD9' },
             ]}
           >
             <Text style={[
-              styles.nextButtonText,
-              isCurrentAnswered()
-                ? { color: Colors.white }
-                : { color: Colors.mediumGray },
+              styles.primaryButtonText,
+              !isCurrentAnswered() && { color: '#9A9A9A' },
             ]}>
-              {currentStep < metrics.length - 1 ? 'Next' : 'See summary'}
+              {currentStep < metrics.length - 1 ? 'Next' : 'See Summary'}
             </Text>
-            {isCurrentAnswered() && <ChevronRight size={18} color={Colors.white} strokeWidth={2.5} />}
+            {isCurrentAnswered() && <ChevronRight size={18} color="#FFFFFF" strokeWidth={2.5} />}
           </TouchableOpacity>
         )}
       </View>
@@ -461,28 +454,27 @@ export default function SimCheckinScreen() {
 const sliderStyles = StyleSheet.create({
   container: {
     width: '100%',
-    paddingHorizontal: 0,
   },
   valueRow: {
     flexDirection: 'row' as const,
-    alignItems: 'baseline' as const,
-    gap: 8,
-    marginBottom: 20,
-    minHeight: 32,
+    alignItems: 'center' as const,
+    gap: 12,
+    marginBottom: 24,
   },
   valueNumber: {
     fontFamily: Fonts.heading,
-    fontSize: 36,
-    letterSpacing: -1,
+    fontSize: 44,
+    letterSpacing: -2,
+  },
+  valueBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 20,
   },
   valueLabel: {
     fontFamily: Fonts.headingSemiBold,
-    fontSize: 16,
-  },
-  valuePlaceholder: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 15,
-    color: Colors.mediumGray,
+    fontSize: 14,
+    letterSpacing: 0.2,
   },
   trackContainer: {
     height: 48,
@@ -491,21 +483,13 @@ const sliderStyles = StyleSheet.create({
   },
   track: {
     height: SLIDER_TRACK_HEIGHT,
-    backgroundColor: Colors.lightGray,
+    backgroundColor: '#EEEAE4',
     borderRadius: SLIDER_TRACK_HEIGHT / 2,
     overflow: 'hidden' as const,
   },
   trackFill: {
     height: '100%',
     borderRadius: SLIDER_TRACK_HEIGHT / 2,
-  },
-  tickDot: {
-    position: 'absolute' as const,
-    top: (48 - SLIDER_TRACK_HEIGHT) / 2 + SLIDER_TRACK_HEIGHT / 2 - 2,
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
   },
   thumb: {
     position: 'absolute' as const,
@@ -515,26 +499,27 @@ const sliderStyles = StyleSheet.create({
     borderRadius: THUMB_SIZE / 2,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 5,
+    borderWidth: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  thumbInner: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: 'rgba(255,255,255,0.9)',
+  thumbDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
   },
   labels: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
-    marginTop: 8,
+    marginTop: 10,
   },
   labelText: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: Colors.mediumGray,
+    color: '#9A9A9A',
     maxWidth: '45%',
   },
 });
@@ -542,37 +527,32 @@ const sliderStyles = StyleSheet.create({
 const choiceStyles = StyleSheet.create({
   container: {
     width: '100%',
-    gap: 8,
+    gap: 10,
   },
   option: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 15,
+    paddingVertical: 16,
     borderWidth: 1.5,
-    borderColor: Colors.border,
-    gap: 12,
+    borderColor: '#EEEAE4',
+    gap: 14,
   },
-  radioOuter: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+  checkOuter: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
-    borderColor: Colors.border,
+    borderColor: '#D0CCC6',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
   optionText: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 14,
-    color: Colors.darkGray,
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 15,
+    color: '#5A5A6A',
     flex: 1,
   },
 });
@@ -580,7 +560,7 @@ const choiceStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FAF7F2',
+    backgroundColor: '#FFFFFF',
   },
   header: {
     flexDirection: 'row' as const,
@@ -592,13 +572,15 @@ const styles = StyleSheet.create({
   backButton: {
     width: 36,
     height: 36,
+    borderRadius: 18,
+    backgroundColor: '#F5F3F0',
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
   progressTrack: {
     flex: 1,
     height: 4,
-    backgroundColor: Colors.lightGray,
+    backgroundColor: '#EEEAE4',
     borderRadius: 100,
     overflow: 'hidden' as const,
   },
@@ -608,34 +590,24 @@ const styles = StyleSheet.create({
   },
   stepText: {
     fontFamily: Fonts.bodySemiBold,
-    fontSize: 12,
-    color: Colors.mediumGray,
+    fontSize: 13,
+    color: '#9A9A9A',
     minWidth: 30,
     textAlign: 'right' as const,
   },
   questionArea: {
     flex: 1,
+  },
+  scrollContent: {
     paddingHorizontal: 24,
-  },
-  topContent: {
-    paddingTop: 16,
-    marginBottom: 32,
-  },
-  greetingRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    gap: 8,
-    marginBottom: 20,
-  },
-  greetingDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    paddingTop: 20,
+    paddingBottom: 24,
   },
   greeting: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 15,
-    color: Colors.mediumGray,
+    color: '#9A9A9A',
+    marginBottom: 20,
   },
   metricIconWrap: {
     width: 44,
@@ -643,20 +615,25 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
-    marginBottom: 16,
+    marginBottom: 18,
   },
   question: {
     fontFamily: Fonts.heading,
     fontSize: 26,
     color: Colors.navy,
     lineHeight: 34,
-    marginBottom: 12,
+    marginBottom: 14,
     letterSpacing: -0.3,
   },
   metricTag: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
+    alignSelf: 'flex-start' as const,
     gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    marginBottom: 32,
   },
   metricTagDot: {
     width: 6,
@@ -666,37 +643,31 @@ const styles = StyleSheet.create({
   metricTagText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 12,
-    color: Colors.mediumGray,
     letterSpacing: 0.3,
   },
   inputArea: {
-    backgroundColor: Colors.white,
-    borderRadius: 22,
+    backgroundColor: '#FAFAF8',
+    borderRadius: 20,
     padding: 24,
-    shadowColor: '#8A7A68',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.07,
-    shadowRadius: 20,
-    elevation: 4,
     borderWidth: 1,
-    borderColor: 'rgba(138,122,104,0.06)',
+    borderColor: '#EEEAE4',
   },
   summaryScroll: {
     flex: 1,
   },
   summaryContent: {
     paddingHorizontal: 24,
-    paddingTop: 20,
+    paddingTop: 24,
     paddingBottom: 20,
   },
   summaryHeaderSection: {
     alignItems: 'center' as const,
     marginBottom: 28,
   },
-  summaryCheckCircle: {
-    width: 64,
-    height: 64,
-    borderRadius: 20,
+  summaryIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     borderWidth: 1,
@@ -704,7 +675,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontFamily: Fonts.heading,
-    fontSize: 30,
+    fontSize: 28,
     color: Colors.navy,
     textAlign: 'center' as const,
     marginBottom: 6,
@@ -713,7 +684,7 @@ const styles = StyleSheet.create({
   summarySub: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 15,
-    color: Colors.mediumGray,
+    color: '#9A9A9A',
     textAlign: 'center' as const,
   },
   summaryCards: {
@@ -724,17 +695,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
     justifyContent: 'space-between' as const,
-    backgroundColor: Colors.white,
-    borderRadius: 16,
+    backgroundColor: '#FAFAF8',
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderWidth: 1,
-    borderColor: 'rgba(138,122,104,0.06)',
-    shadowColor: '#8A7A68',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 1,
+    borderColor: '#EEEAE4',
   },
   summaryCardLeft: {
     flexDirection: 'row' as const,
@@ -743,8 +709,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   summaryIconWrap: {
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     borderRadius: 10,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
@@ -761,41 +727,57 @@ const styles = StyleSheet.create({
     maxWidth: '40%',
     textAlign: 'right' as const,
   },
-  summaryNote: {
-    backgroundColor: Colors.white,
-    borderRadius: 16,
-    padding: 18,
+  summaryInsight: {
+    flexDirection: 'row' as const,
+    backgroundColor: '#FAFAF8',
+    borderRadius: 14,
+    overflow: 'hidden' as const,
     borderWidth: 1,
-    borderColor: 'rgba(138,122,104,0.06)',
-    borderLeftWidth: 3,
+    borderColor: '#EEEAE4',
   },
-  summaryNoteTitle: {
-    fontFamily: Fonts.heading,
-    fontSize: 15,
+  insightAccent: {
+    width: 4,
+  },
+  insightContent: {
+    flex: 1,
+    padding: 16,
+  },
+  insightTitle: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 14,
     color: Colors.navy,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  summaryNoteText: {
+  insightText: {
     fontFamily: Fonts.body,
     fontSize: 13,
-    color: Colors.mediumGray,
+    color: '#9A9A9A',
     lineHeight: 20,
   },
   footer: {
     paddingHorizontal: 24,
     paddingTop: 12,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F0EEED',
   },
-  nextButton: {
+  primaryButton: {
     height: 56,
     borderRadius: 100,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     flexDirection: 'row' as const,
-    gap: 6,
+    gap: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  nextButtonText: {
+  primaryButtonText: {
     fontFamily: Fonts.heading,
     fontSize: 16,
+    color: '#FFFFFF',
     letterSpacing: -0.2,
   },
 });

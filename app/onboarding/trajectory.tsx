@@ -355,7 +355,7 @@ export default function TrajectoryScreen() {
             </TouchableOpacity>
 
             <Text style={styles.modalLabel}>HOW VOLERA WORKS</Text>
-            <Text style={styles.modalTitle}>You already bought{"\n"}the supplements.</Text>
+            <Text style={styles.modalTitle}>Your supplements{"\n"}need one thing.</Text>
 
             <View style={styles.stepsContainer}>
               <View style={styles.stepRow}>
@@ -363,8 +363,8 @@ export default function TrajectoryScreen() {
                   <Text style={styles.stepNumberText}>1</Text>
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>We remind you</Text>
-                  <Text style={styles.stepSub}>So you never forget again</Text>
+                  <Text style={styles.stepText}>We remind you daily</Text>
+                  <Text style={styles.stepSub}>So you never forget to take them</Text>
                 </View>
               </View>
 
@@ -375,8 +375,8 @@ export default function TrajectoryScreen() {
                   <Text style={styles.stepNumberText}>2</Text>
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>You take 30 seconds</Text>
-                  <Text style={styles.stepSub}>Quick check-in, no effort</Text>
+                  <Text style={styles.stepText}>You log in 30 seconds</Text>
+                  <Text style={styles.stepSub}>Track how your body responds</Text>
                 </View>
               </View>
 
@@ -387,15 +387,15 @@ export default function TrajectoryScreen() {
                   <Text style={styles.stepNumberText}>3</Text>
                 </View>
                 <View style={styles.stepTextWrap}>
-                  <Text style={styles.stepText}>You see it working</Text>
-                  <Text style={styles.stepSub}>Real proof in 30 days</Text>
+                  <Text style={styles.stepText}>You see real proof</Text>
+                  <Text style={styles.stepSub}>Visible results within 30 days</Text>
                 </View>
               </View>
             </View>
 
             <View style={styles.modalFooterWrap}>
               <Text style={styles.modalFooterText}>
-                The supplements you already own{"\n"}<Text style={styles.modalFooterBold}>only work if you take them.</Text>
+                Consistency is the missing piece.{"\n"}<Text style={styles.modalFooterBold}>We make it effortless.</Text>
               </Text>
             </View>
 

@@ -27,7 +27,7 @@ export default function NotifyPermissionScreen() {
   const notifExample = NOTIFICATION_EXAMPLES[goal] || "Time to check in. Your body is listening.";
   const displayName = userName ? userName.split(' ')[0] : '';
 
-  const [showPopup, setShowPopup] = useState(false);
+  const [_showPopup, _setShowPopup] = useState(false);
   const [permissionGranted, setPermissionGranted] = useState(false);
 
   const titleAnim = useRef(new Animated.Value(0)).current;
@@ -79,73 +79,28 @@ export default function NotifyPermissionScreen() {
     ).start();
   }, []);
 
-  const showPermissionPopup = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    setShowPopup(true);
-
-    Animated.parallel([
-      Animated.timing(overlayAnim, { toValue: 1, duration: 300, useNativeDriver: useNative }),
-      Animated.spring(popupScale, { toValue: 1, useNativeDriver: useNative, damping: 15, stiffness: 200 }),
-      Animated.timing(popupOpacity, { toValue: 1, duration: 200, useNativeDriver: useNative }),
-    ]).start();
-  }, []);
-
-  const handleAllow = useCallback(async () => {
+  const handleEnableReminders = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-    if (Platform.OS !== 'web') {
-      try {
-        const { default: Notifications } = await import('expo-notifications');
-        const { status } = await Notifications.requestPermissionsAsync();
-        updateState({ notificationsEnabled: status === 'granted' });
-      } catch (e) {
-        console.log('[NotifyPermission] Permission error:', e);
-        updateState({ notificationsEnabled: true });
-      }
-    } else {
-      updateState({ notificationsEnabled: true });
-    }
-
+    updateState({ notificationsEnabled: true });
     setPermissionGranted(true);
 
-    Animated.parallel([
-      Animated.timing(popupScale, { toValue: 0.9, duration: 200, useNativeDriver: useNative }),
-      Animated.timing(popupOpacity, { toValue: 0, duration: 200, useNativeDriver: useNative }),
-    ]).start(() => {
-      Animated.sequence([
-        Animated.delay(100),
-        Animated.spring(checkScale, { toValue: 1, useNativeDriver: useNative, damping: 10, stiffness: 150 }),
-        Animated.timing(checkAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
-        Animated.delay(300),
-        Animated.timing(continueAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
-      ]).start();
-    });
+    Animated.sequence([
+      Animated.delay(100),
+      Animated.spring(checkScale, { toValue: 1, useNativeDriver: useNative, damping: 10, stiffness: 150 }),
+      Animated.timing(checkAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+      Animated.delay(300),
+      Animated.timing(continueAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
+    ]).start();
   }, [updateState]);
 
-  const handleDontAllow = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    updateState({ notificationsEnabled: false });
 
-    Animated.parallel([
-      Animated.timing(popupScale, { toValue: 0.9, duration: 200, useNativeDriver: useNative }),
-      Animated.timing(popupOpacity, { toValue: 0, duration: 200, useNativeDriver: useNative }),
-      Animated.timing(overlayAnim, { toValue: 0, duration: 300, useNativeDriver: useNative }),
-    ]).start(() => {
-      setShowPopup(false);
-      router.push('/onboarding/supplement-timing' as any);
-    });
-  }, [updateState, router]);
 
   const handleContinue = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     router.push('/onboarding/supplement-timing' as any);
   }, [router]);
 
-  const handleSkip = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    updateState({ notificationsEnabled: false });
-    router.push('/onboarding/supplement-timing' as any);
-  }, [updateState, router]);
+
 
   const fadeSlide = (anim: Animated.Value, dist = 20) => ({
     opacity: anim,
@@ -244,50 +199,17 @@ export default function NotifyPermissionScreen() {
           <Animated.View style={fadeSlide(buttonAnim, 20)}>
             <TouchableOpacity
               style={[styles.ctaButton, { backgroundColor: goalColor }]}
-              onPress={showPermissionPopup}
+              onPress={handleEnableReminders}
               activeOpacity={0.85}
             >
               <Bell size={18} color="#FFFFFF" strokeWidth={2.5} />
               <Text style={styles.ctaText}>Enable reminders</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleSkip} activeOpacity={0.7} style={styles.skipBtn}>
-              <Text style={styles.skipText}>Maybe later</Text>
-            </TouchableOpacity>
           </Animated.View>
         )}
       </View>
 
-      {showPopup && (
-        <Animated.View style={[styles.overlay, { opacity: overlayAnim }]}>
-          <Animated.View style={[styles.popup, {
-            opacity: popupOpacity,
-            transform: [{ scale: popupScale }],
-          }]}>
-            <View style={styles.popupIconWrap}>
-              <View style={[styles.popupIcon, { backgroundColor: goalColor + '12' }]}>
-                <Bell size={28} color={goalColor} strokeWidth={2} />
-              </View>
-            </View>
 
-            <Text style={styles.popupTitle}>"Volera" Would Like to{'\n'}Send You Notifications</Text>
-            <Text style={styles.popupBody}>
-              Notifications may include alerts, sounds, and icon badges. These can be configured in Settings.
-            </Text>
-
-            <View style={styles.popupDivider} />
-
-            <TouchableOpacity onPress={handleDontAllow} activeOpacity={0.7} style={styles.popupBtn}>
-              <Text style={styles.popupBtnText}>Don't Allow</Text>
-            </TouchableOpacity>
-
-            <View style={styles.popupDivider} />
-
-            <TouchableOpacity onPress={handleAllow} activeOpacity={0.7} style={styles.popupBtn}>
-              <Text style={[styles.popupBtnText, styles.popupBtnPrimary]}>Allow</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </Animated.View>
-      )}
     </View>
   );
 }
@@ -467,16 +389,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#FFFFFF',
     letterSpacing: -0.2,
-  },
-  skipBtn: {
-    alignItems: 'center' as const,
-    paddingTop: 16,
-    paddingBottom: 4,
-  },
-  skipText: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
-    color: TEXT_TERTIARY,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,

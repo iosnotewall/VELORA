@@ -116,16 +116,16 @@ export const MILESTONES: Record<string, { d7: string; d21: string; d30: string }
 };
 
 export const NOTIFICATION_EXAMPLES: Record<string, string> = {
-  energy: "You have 14 hours of energy ahead. What you do now decides how you feel at 4pm.",
-  stress: "Your cortisol is highest right now. One capsule changes how the next 8 hours feel.",
-  pain: "Your joints are stiffest in the morning. This is the exact moment supplementation matters most.",
-  menopause: "Women who supplement consistently report 47% fewer hot flashes by week 3. Today is day by day.",
-  metabolism: "Your insulin sensitivity peaks in the morning. This is the window to support your metabolism.",
-  digestion: "Your gut bacteria reset overnight. What you feed them first thing shapes your entire day.",
-  focus: "Your brain burns 20% of your energy. Give it the fuel before your sharpest hours begin.",
-  cycle: "Your hormones are rebuilding right now. Consistent support reduces PMS severity by up to 40%.",
-  fertility: "Egg quality takes 90 days to improve. Every single morning counts toward your baby.",
-  antiaging: "Your cells repaired overnight. Antioxidants taken now protect 8 hours of cellular renewal.",
+  energy: "Time for your supplements. Your energy today depends on it.",
+  stress: "Take your supplements now. Calm starts here.",
+  pain: "Morning dose time. Your joints will thank you.",
+  menopause: "Supplement time. Stay consistent, stay comfortable.",
+  metabolism: "Take your morning dose. Your metabolism is ready.",
+  digestion: "Gut health check: take your supplements now.",
+  focus: "Brain fuel time. Take your supplements.",
+  cycle: "Hormone support starts now. Take your dose.",
+  fertility: "Every day counts. Take your supplements now.",
+  antiaging: "Protect your cells. Time for your supplements.",
 };
 
 export const ROUTINE_TIMES = [
