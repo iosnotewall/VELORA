@@ -62,7 +62,7 @@ const DEFAULT_STATE: AppState = {
   customProducts: [],
   routineTime: '08:00',
   userName: '',
-  gender: '',
+  gender: 'female',
   currentStreak: 0,
   longestStreak: 0,
   totalDaysTaken: 0,

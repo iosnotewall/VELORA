@@ -40,8 +40,8 @@ export default function NameScreen() {
   const handleContinue = useCallback(() => {
     if (!name.trim()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    updateState({ userName: name.trim() });
-    router.push('/onboarding/gender' as any);
+    updateState({ userName: name.trim(), gender: 'female' });
+    router.push('/onboarding/consider' as any);
   }, [name, updateState, router]);
 
   const slideUp = (anim: Animated.Value) => ({

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, ScrollView, Easing, Dimensions, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Zap, Moon, Brain, Leaf, Flame, Heart, Dumbbell, Shield, Check } from 'lucide-react-native';
+import { Zap, Moon, Brain, Leaf, Flame, Heart, Shield, Check, Sun, Star, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import OnboardingScreen from '@/components/OnboardingScreen';
 import { useAppState } from '@/hooks/useAppState';
@@ -10,7 +10,7 @@ import { Fonts } from '@/constants/fonts';
 import { GOALS } from '@/constants/content';
 
 const ICON_MAP: Record<string, React.ElementType> = {
-  Zap, Moon, Brain, Leaf, Flame, Heart, Dumbbell, Shield,
+  Zap, Moon, Brain, Leaf, Flame, Heart, Shield, Sun, Star, Sparkles,
 };
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');

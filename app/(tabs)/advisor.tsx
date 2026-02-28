@@ -29,7 +29,6 @@ type ScreenView = 'welcome' | 'chat' | 'history';
 function buildUserContext(state: {
   goal: string;
   userName: string;
-  gender: string;
   currentStreak: number;
   totalDaysTaken: number;
   products: string[];
@@ -62,11 +61,9 @@ function buildUserContext(state: {
 
   const trendNote = buildTrendNote(recentScores);
 
-  const genderLabel = state.gender === 'male' ? 'Male' : state.gender === 'female' ? 'Female' : state.gender === 'other' ? 'Other' : 'Not specified';
-
   return `USER PROFILE (live data — refreshed at conversation start):
 Name: ${state.userName || 'User'}
-Biological sex: ${genderLabel}
+Biological sex: Female (all advice is personalized to female biology)
 Goal: ${goalData?.label ?? 'General wellness'} — ${goalData?.sub ?? ''}
 Current streak: ${state.currentStreak} days | Total days tracked: ${state.totalDaysTaken}
 Supplements: ${state.products.join(', ') || 'Not specified'}
@@ -119,7 +116,13 @@ function buildTrendNote(scores: Array<{ energy: number; sleep: number; mood: num
   return `\nCOMPUTED TRENDS (older avg → recent 3-day avg):\n${lines.join('\n')}\nIMPORTANT: Only reference these exact numbers. If a metric is STABLE, do NOT say it dropped or improved.`;
 }
 
-const SYSTEM_PROMPT = `You are Velora — a sharp, warm supplement wellness advisor inside a health app. You have access to the user's real tracking data below.
+const SYSTEM_PROMPT = `You are Velora — a sharp, warm supplement wellness advisor inside a health app designed exclusively for women. You have access to the user's real tracking data below.
+
+IMPORTANT — FEMALE BIOLOGY FOCUS:
+- ALL advice is personalized to female biology, hormonal cycles, and women's health.
+- Consider menstrual cycle phases, hormonal fluctuations, perimenopause/menopause when relevant.
+- Reference female-specific mechanisms: estrogen/progesterone ratios, iron loss during menstruation, bone density changes, etc.
+- Be aware of how female hormones affect supplement absorption, energy, mood, and sleep throughout the month.
 
 VOICE:
 - Talk like a knowledgeable friend, not a textbook. Short sentences. Conversational.
@@ -144,6 +147,7 @@ KNOWLEDGE:
 - Ground advice in mechanisms (e.g. "magnesium is a GABA agonist — it literally quiets neurons")
 - Reference timelines honestly ("most people feel magnesium benefits around day 14-21")
 - If their data shows a clear pattern, call it out directly
+- Consider female-specific nutrient needs: higher iron requirements, calcium/D3 for bone health, folate for reproductive health
 - Never diagnose. For serious concerns, one sentence: "worth mentioning to your doctor"
 - Stay in your lane: supplements, consistency, wellness habits.
 
@@ -270,7 +274,6 @@ export default function AdvisorScreen() {
   const userContext = useMemo(() => buildUserContext({
     goal: appState.goal,
     userName: appState.userName,
-    gender: appState.gender,
     currentStreak: appState.currentStreak,
     totalDaysTaken: appState.totalDaysTaken,
     products: appState.products,
@@ -279,7 +282,7 @@ export default function AdvisorScreen() {
     friction: appState.friction,
     commitmentLevel: appState.commitmentLevel,
   }), [
-    appState.goal, appState.userName, appState.gender, appState.currentStreak,
+    appState.goal, appState.userName, appState.currentStreak,
     appState.totalDaysTaken, appState.products, appState.dailyScores,
     appState.frequency, appState.friction, appState.commitmentLevel,
   ]);

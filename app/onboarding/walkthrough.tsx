@@ -23,23 +23,23 @@ const GOAL_WALKTHROUGH: Record<string, {
     metrics: ['Wake-up energy', 'Mitochondrial dip', 'Sustained output', 'Caffeine dependency'],
     snapshotText: "your energy trajectory over time",
   },
-  sleep: {
-    notifText: "your sleep quality and recovery",
-    trackingIntro: "We'll ask about sleep onset, night wakings,\nand how rested you feel each morning.",
-    metrics: ['Sleep onset', 'Sleep continuity', 'Perceived depth', 'Morning readiness'],
-    snapshotText: "your sleep patterns week by week",
-  },
-  focus: {
-    notifText: "your mental clarity and focus",
-    trackingIntro: "We'll ask about deep work capacity,\ntask switching, and afternoon cognition.",
-    metrics: ['Deep work capacity', 'Task switching', 'Word retrieval', 'PM clarity'],
-    snapshotText: "your cognitive performance over time",
-  },
   stress: {
-    notifText: "your stress levels and calm",
-    trackingIntro: "We'll ask about baseline tension,\nstress recovery, and emotional regulation.",
-    metrics: ['Baseline tension', 'Trigger response', 'Pre-sleep mind', 'Emotional regulation'],
+    notifText: "your stress, anxiety and sleep",
+    trackingIntro: "We'll ask about baseline tension,\nstress recovery, sleep onset, and emotional regulation.",
+    metrics: ['Baseline tension', 'Trigger response', 'Sleep onset', 'Emotional regulation'],
     snapshotText: "your stress resilience over time",
+  },
+  pain: {
+    notifText: "your pain and inflammation levels",
+    trackingIntro: "We'll ask about pain intensity,\njoint stiffness, mobility, and inflammation signs.",
+    metrics: ['Pain intensity', 'Joint stiffness', 'Mobility', 'Inflammation signs'],
+    snapshotText: "your pain and mobility over time",
+  },
+  menopause: {
+    notifText: "your menopause comfort",
+    trackingIntro: "We'll ask about hot flashes,\nmood stability, night sweats, and bone comfort.",
+    metrics: ['Hot flashes', 'Mood stability', 'Night sweats & sleep', 'Bone & joint comfort'],
+    snapshotText: "your menopause comfort over time",
   },
   metabolism: {
     notifText: "your metabolic signals",
@@ -47,23 +47,35 @@ const GOAL_WALKTHROUGH: Record<string, {
     metrics: ['Post-meal glucose', 'Hunger signals', 'Sugar cravings', 'GI comfort'],
     snapshotText: "your metabolic patterns over time",
   },
-  hormones: {
-    notifText: "your hormonal balance",
+  digestion: {
+    notifText: "your digestive health",
+    trackingIntro: "We'll ask about bloating,\nregularity, gut comfort, and food tolerance.",
+    metrics: ['Bloating', 'Regularity', 'Gut comfort', 'Food tolerance'],
+    snapshotText: "your digestive health over time",
+  },
+  focus: {
+    notifText: "your mental clarity and focus",
+    trackingIntro: "We'll ask about deep work capacity,\ntask switching, and afternoon cognition.",
+    metrics: ['Deep work capacity', 'Task switching', 'Word retrieval', 'PM clarity'],
+    snapshotText: "your cognitive performance over time",
+  },
+  cycle: {
+    notifText: "your hormonal balance and cycle",
     trackingIntro: "We'll ask about mood shifts,\ncycle symptoms, and skin clarity.",
     metrics: ['Mood volatility', 'Cycle symptoms', 'Water retention', 'Skin & breakouts'],
     snapshotText: "your hormonal balance over cycles",
   },
-  sport: {
-    notifText: "your recovery and performance",
-    trackingIntro: "We'll ask about recovery readiness,\ntraining load, and muscle soreness.",
-    metrics: ['Recovery readiness', 'Training load', 'DOMS severity', 'RPE output'],
-    snapshotText: "your performance trajectory over time",
+  fertility: {
+    notifText: "your fertility and pregnancy journey",
+    trackingIntro: "We'll ask about supplement timing,\nenergy, stress levels, and body signals.",
+    metrics: ['Supplement timing', 'Overall energy', 'Stress level', 'Body signals'],
+    snapshotText: "your fertility preparation over time",
   },
-  immune: {
-    notifText: "your immune resilience",
-    trackingIntro: "We'll ask about symptoms, recovery speed,\nand overall vitality.",
-    metrics: ['Symptom check', 'Recovery speed', 'Joint health', 'Overall vitality'],
-    snapshotText: "your immune strength over time",
+  antiaging: {
+    notifText: "your anti-aging and vitality",
+    trackingIntro: "We'll ask about skin quality,\nvitality, recovery speed, and joint flexibility.",
+    metrics: ['Skin quality', 'Vitality', 'Recovery speed', 'Joint flexibility'],
+    snapshotText: "your vitality and skin health over time",
   },
 };
 

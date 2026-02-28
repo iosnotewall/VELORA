@@ -1,48 +1,58 @@
 export const GOALS = [
-  { id: 'energy', label: 'Energy & Vitality', sub: 'Beat daily fatigue', icon: 'Zap' as const, feeling: 'energized' },
-  { id: 'sleep', label: 'Sleep & Recovery', sub: 'Rest deeply, wake rested', icon: 'Moon' as const, feeling: 'well-rested' },
-  { id: 'focus', label: 'Focus & Memory', sub: 'Think sharper, longer', icon: 'Brain' as const, feeling: 'focused' },
-  { id: 'stress', label: 'Stress & Anxiety', sub: 'Calm your nervous system', icon: 'Leaf' as const, feeling: 'calm' },
-  { id: 'metabolism', label: 'Metabolism', sub: 'Weight & glucose control', icon: 'Flame' as const, feeling: 'metabolically balanced' },
-  { id: 'hormones', label: 'Hormonal Balance', sub: 'Cycles, menopause, PMS', icon: 'Heart' as const, feeling: 'hormonally balanced' },
-  { id: 'sport', label: 'Sport & Performance', sub: 'Train harder, recover faster', icon: 'Dumbbell' as const, feeling: 'at peak performance' },
-  { id: 'immune', label: 'Immune System', sub: 'Stay strong year-round', icon: 'Shield' as const, feeling: 'strong and healthy' },
+  { id: 'energy', label: 'Energy & Performance', sub: 'Beat fatigue, boost vitality', icon: 'Zap' as const, feeling: 'energized' },
+  { id: 'stress', label: 'Stress, Anxiety & Sleep', sub: 'Calm your mind, rest deeply', icon: 'Moon' as const, feeling: 'calm and rested' },
+  { id: 'pain', label: 'Pain & Inflammation', sub: 'Joints, chronic pain relief', icon: 'Shield' as const, feeling: 'pain-free and mobile' },
+  { id: 'menopause', label: 'Menopause & Perimenopause', sub: 'Navigate the transition with ease', icon: 'Sun' as const, feeling: 'balanced and comfortable' },
+  { id: 'metabolism', label: 'Fat Loss & Metabolism', sub: 'Weight, glucose & appetite control', icon: 'Flame' as const, feeling: 'metabolically balanced' },
+  { id: 'digestion', label: 'Digestion & Gut Health', sub: 'Bloating, regularity, comfort', icon: 'Leaf' as const, feeling: 'digestively comfortable' },
+  { id: 'focus', label: 'Memory & Concentration', sub: 'Think sharper, remember more', icon: 'Brain' as const, feeling: 'focused and sharp' },
+  { id: 'cycle', label: 'Menstrual Cycle', sub: 'PMS, cramps, hormonal balance', icon: 'Heart' as const, feeling: 'hormonally balanced' },
+  { id: 'fertility', label: 'Fertility & Pregnancy', sub: 'Conception, prenatal, postpartum', icon: 'Star' as const, feeling: 'supported in your journey' },
+  { id: 'antiaging', label: 'Anti-Aging', sub: 'Cellular health, skin, longevity', icon: 'Sparkles' as const, feeling: 'youthful and radiant' },
 ] as const;
 
 export type GoalId = typeof GOALS[number]['id'];
 
 export const SCIENCE_CONTENT: Record<string, { text: string; ingredients: string[] }> = {
   energy: {
-    text: "Your cells produce energy through mitochondria — tiny powerhouses that rely on magnesium and B-vitamins to function. Without consistent intake, mitochondrial efficiency drops, and you feel it as that mid-afternoon crash. Bioavailable supplement forms ensure your body can actually absorb and use what it needs.",
-    ingredients: ['Energy Formula', 'Magnesium Complex', 'Vitamin D3 + K2'],
-  },
-  sleep: {
-    text: "Melatonin production, muscle relaxation, and nervous system downregulation all require magnesium. Most people are deficient without knowing it. Consistent supplementation raises baseline levels over 2-3 weeks, gradually shifting your sleep architecture toward deeper, more restorative cycles.",
-    ingredients: ['Magnesium Complex', 'Anti-Inflammatory (PEA)'],
+    text: "Your cells produce energy through mitochondria — tiny powerhouses that rely on magnesium, B-vitamins, and iron to function. Women are especially prone to iron deficiency, which directly impacts oxygen delivery to every cell. Bioavailable supplement forms ensure your body can actually absorb and use what it needs.",
+    ingredients: ['Energy & Anti-Fatigue Formula', 'High-Absorption Magnesium', 'Iron Replenishment Complex', 'Thyroid & Energy Support'],
   },
   stress: {
-    text: "Cortisol — your stress hormone — depletes magnesium with every spike. The more stressed you are, the more you need it. Consistent magnesium supplementation helps regulate the HPA axis, the system that controls your stress response.",
-    ingredients: ['Magnesium Complex', 'Hormonal Balance'],
+    text: "Cortisol — your stress hormone — depletes magnesium with every spike. The more stressed you are, the more you need it. Adaptogenic herbs help regulate the HPA axis, while magnesium supports GABA production — the neurotransmitter that literally quiets your neurons for better sleep and calm.",
+    ingredients: ['Adaptogen Stress Support', 'High-Absorption Magnesium', 'Sleep & Recovery Night Formula'],
   },
-  focus: {
-    text: "Cognitive performance relies on acetylcholine synthesis and cerebral blood flow. Specific adaptogens and phospholipids — when taken consistently — cross the blood-brain barrier and measurably improve reaction time and working memory.",
-    ingredients: ['Memory & Focus', 'Omega 3 (Vegan)'],
+  pain: {
+    text: "Chronic pain and inflammation involve complex pathways including COX enzymes and cytokines. PEA (palmitoylethanolamide) is a naturally occurring fatty acid amide your body produces — supplementing it supports your endocannabinoid system for natural pain modulation. Joint compounds like collagen and glucosamine rebuild cartilage tissue over time.",
+    ingredients: ['PEA Pain & Inflammation Relief', 'Joint Health & Mobility Complex', 'Omega-3 High in EPA'],
   },
-  hormones: {
-    text: "Hormonal synthesis requires specific micronutrients as cofactors. Without them, your body can't produce estrogen and progesterone at optimal ratios. Clinical-grade compounds shown in trials support steroidogenic enzyme function and restore balance.",
-    ingredients: ['Hormonal Balance', 'Vitamin D3 + K2'],
+  menopause: {
+    text: "During perimenopause and menopause, declining estrogen affects everything from bone density to thermoregulation. Specific phytoestrogens and adaptogens can ease hot flashes, mood swings, and sleep disruption. Vitamin D3+K2 becomes critical for bone health as estrogen's protective effect diminishes.",
+    ingredients: ['Menopause Comfort Formula', 'High-Absorption Magnesium', 'Vitamin D3 + K2', 'Cellular Antioxidant Complex'],
   },
   metabolism: {
-    text: "Blood glucose regulation is the foundation of metabolic health. Consistent supplementation with chromium, berberine, and specific plant compounds improves insulin sensitivity and reduces post-meal glucose spikes — the root of weight gain.",
-    ingredients: ['Metabolic Support'],
+    text: "Blood glucose regulation is the foundation of metabolic health in women. Consistent supplementation with specific plant compounds improves insulin sensitivity and reduces post-meal glucose spikes — the root of weight gain. Appetite-regulating supplements work on satiety hormones like GLP-1 and leptin.",
+    ingredients: ['Metabolic Health & Glucose Balance', 'Appetite Control & Satiety', 'Soluble Fiber Supplement'],
   },
-  sport: {
-    text: "Muscle protein synthesis, VO2 max, and recovery all depend on micronutrient sufficiency. Deficiencies — even small ones — measurably reduce performance output. Consistent omega-3 and magnesium intake is the baseline every athlete needs.",
-    ingredients: ['Omega 3 (Vegan)', 'Magnesium Complex'],
+  digestion: {
+    text: "Your gut microbiome contains trillions of bacteria that influence everything from nutrient absorption to immune function and mood. Soluble fiber acts as a prebiotic, feeding beneficial bacteria and promoting regular transit. Women's hormonal fluctuations directly impact gut motility, making consistent fiber intake especially important.",
+    ingredients: ['Soluble Fiber Supplement', 'High-Absorption Magnesium'],
   },
-  immune: {
-    text: "Your immune system runs on vitamin D, zinc, and omega-3 fatty acids. Modern indoor lifestyles leave 70% of Europeans deficient in D3. Consistent daily supplementation at clinical doses — not the tiny RDA amounts — makes a statistically significant difference in infection frequency and severity.",
-    ingredients: ['Vitamin D3 + K2', 'Omega 3 (Vegan)'],
+  focus: {
+    text: "Cognitive performance relies on acetylcholine synthesis and cerebral blood flow. Specific nootropic compounds — when taken consistently — cross the blood-brain barrier and measurably improve reaction time and working memory. Omega-3 DHA is a structural component of brain cell membranes.",
+    ingredients: ['Memory & Concentration Nootropic', 'Omega-3 High in DHA', 'Methylcobalamin B12 Liquid'],
+  },
+  cycle: {
+    text: "Hormonal synthesis requires specific micronutrients as cofactors. Without them, your body can't produce estrogen and progesterone at optimal ratios. Clinical-grade compounds support steroidogenic enzyme function and restore balance throughout your cycle, reducing PMS severity and regulating flow.",
+    ingredients: ['Female Hormonal Balance', 'High-Absorption Magnesium', 'Iron Replenishment Complex', 'Vitamin D3 + K2'],
+  },
+  fertility: {
+    text: "Egg quality, implantation, and early fetal development all depend on optimal micronutrient status. Folate, iron, DHA, and specific antioxidants are critical from pre-conception through pregnancy and into breastfeeding. Each stage has different nutritional demands that targeted supplementation addresses.",
+    ingredients: ['Female Fertility Optimizer', 'Pre-Conception Women\'s Multivitamin', 'Prenatal Pregnancy Multivitamin', 'Omega-3 High in DHA'],
+  },
+  antiaging: {
+    text: "Aging at the cellular level is driven by oxidative stress, telomere shortening, and mitochondrial decline. Broad-spectrum antioxidants neutralize free radicals that damage DNA and collagen. Omega-3 fatty acids reduce chronic low-grade inflammation — the silent driver of premature aging in skin, joints, and organs.",
+    ingredients: ['Cellular Antioxidant Complex', 'Vegan Omega-3 (Algae)', 'Vitamin C 500mg'],
   },
 };
 
@@ -54,56 +64,68 @@ export const GAP_INSIGHTS: Record<string, string> = {
 
 export const MILESTONES: Record<string, { d7: string; d21: string; d30: string }> = {
   energy: {
-    d7: "Your cells are beginning to absorb the magnesium.",
+    d7: "Your cells are beginning to absorb the magnesium and iron.",
     d21: "Morning energy arrives faster. Afternoon crashes soften.",
     d30: "Sustained energy is your new normal.",
   },
-  sleep: {
-    d7: "Sleep onset may feel slightly easier.",
-    d21: "Deeper sleep cycles, fewer night wakings.",
-    d30: "You wake rested. Consistently.",
-  },
   stress: {
-    d7: "Cortisol response begins to regulate.",
-    d21: "You feel less reactive. More grounded.",
-    d30: "Stress still exists — but you handle it differently.",
+    d7: "Cortisol response begins to regulate. Sleep onset may improve.",
+    d21: "You feel less reactive. Sleep deepens. More grounded.",
+    d30: "Stress still exists — but you handle it differently. Sleep is restorative.",
+  },
+  pain: {
+    d7: "PEA is beginning to accumulate in your system.",
+    d21: "Inflammation markers shifting. Joint stiffness easing.",
+    d30: "Noticeable reduction in chronic pain and improved mobility.",
+  },
+  menopause: {
+    d7: "Your body is starting to respond to the phytoestrogens.",
+    d21: "Hot flashes less frequent. Mood more stable.",
+    d30: "A new hormonal equilibrium is establishing itself.",
+  },
+  metabolism: {
+    d7: "Insulin sensitivity is beginning to improve.",
+    d21: "Post-meal energy crashes are softening. Cravings ease.",
+    d30: "Your metabolic baseline has shifted. Appetite more predictable.",
+  },
+  digestion: {
+    d7: "Gut bacteria are responding to the increased fiber.",
+    d21: "Bloating reduces. Transit becomes more regular.",
+    d30: "Digestive comfort is your new baseline.",
   },
   focus: {
     d7: "Subtle clarity in the morning.",
     d21: "Longer periods of deep focus without effort.",
     d30: "Your cognitive baseline has shifted upward.",
   },
-  hormones: {
+  cycle: {
     d7: "Inflammation markers beginning to shift.",
     d21: "Cycle symptoms less intense. Mood more stable.",
     d30: "A new hormonal rhythm is establishing itself.",
   },
-  metabolism: {
-    d7: "Insulin sensitivity is beginning to improve.",
-    d21: "Post-meal energy crashes are softening.",
-    d30: "Your metabolic baseline has shifted.",
+  fertility: {
+    d7: "Key micronutrients are building up in your tissues.",
+    d21: "Egg quality markers improving. Hormones stabilizing.",
+    d30: "Your body is better prepared for conception and beyond.",
   },
-  sport: {
-    d7: "Recovery between sessions begins to improve.",
-    d21: "Performance output measurably improves.",
-    d30: "Your body is operating at a new level.",
-  },
-  immune: {
-    d7: "Vitamin D levels are beginning to rise.",
-    d21: "Your immune response is strengthening.",
-    d30: "A robust, consistent immune baseline.",
+  antiaging: {
+    d7: "Antioxidants are beginning to neutralize oxidative stress.",
+    d21: "Skin hydration improving. Inflammation markers dropping.",
+    d30: "Cellular renewal is accelerating. You look and feel younger.",
   },
 };
 
 export const NOTIFICATION_EXAMPLES: Record<string, string> = {
   energy: "Low energy this morning? Here's why it matters today.",
-  sleep: "Tonight's sleep starts with what you do right now.",
   stress: "Busy day ahead? Your nervous system needs this.",
-  focus: "Your brain's best hours are ahead. Don't leave them behind.",
-  hormones: "Your hormones need consistency. Today matters.",
+  pain: "Stiff joints this morning? Your body is asking for help.",
+  menopause: "Hot flash season? Consistency is your best ally.",
   metabolism: "Your metabolism is listening. Give it what it needs.",
-  sport: "Recovery starts now. Your muscles are waiting.",
-  immune: "Your immune system runs on what you give it today.",
+  digestion: "Your gut microbiome depends on what you feed it today.",
+  focus: "Your brain's best hours are ahead. Don't leave them behind.",
+  cycle: "Your hormones need consistency. Today matters.",
+  fertility: "Every day of preparation counts for your future baby.",
+  antiaging: "Your cells are aging right now. You can slow it down.",
 };
 
 export const ROUTINE_TIMES = [
@@ -149,39 +171,32 @@ export function getVariableReward(day: number): string {
 
 export const CURIOSITY_NOTIFICATIONS: Record<string, string[]> = {
   energy: [
-    "Low energy today? There's a reason for that. 🌿",
+    "Low energy today? There's a reason for that.",
     "Your mitochondria called. They need something.",
     "That afternoon crash? It's preventable.",
     "3pm slump incoming. You know what to do.",
     "Energy isn't random. It's a choice you make at 8am.",
-  ],
-  sleep: [
-    "Tonight's sleep starts with what you do right now.",
-    "Your melatonin production needs a head start.",
-    "Deep sleep doesn't happen by accident.",
-    "Tossing and turning? There's a compound for that.",
-    "Your nervous system is asking for help winding down.",
   ],
   stress: [
     "Busy day ahead? Your nervous system needs this.",
     "Cortisol is up. Let's bring it back down.",
     "Feeling reactive? There's a biological reason.",
     "Stress depletes magnesium. Magnesium handles stress.",
-    "Your calm isn't gone. It just needs fuel.",
+    "Tonight's sleep starts with what you do right now.",
   ],
-  focus: [
-    "Your brain's best hours are ahead. Don't leave them behind.",
-    "Mental fog? Your acetylcholine levels might be low.",
-    "Sharp focus requires specific fuel. Daily.",
-    "That scattered feeling has a biological fix.",
-    "Cognitive clarity isn't luck. It's nutrition.",
+  pain: [
+    "Stiff this morning? Your joints need daily support.",
+    "Inflammation doesn't rest. Neither should your protocol.",
+    "That nagging pain? PEA can help your body handle it.",
+    "Your joints remember every day you show up for them.",
+    "Pain management is a marathon, not a sprint.",
   ],
-  hormones: [
-    "Your hormones need consistency. Today matters.",
-    "Hormonal balance isn't automatic. It's built daily.",
-    "Your cycle depends on what you do between cycles.",
-    "Balance starts with showing up. Even today.",
-    "Your endocrine system is listening.",
+  menopause: [
+    "Hot flashes less intense with consistent supplementation.",
+    "Your bones need extra support during this transition.",
+    "Mood swings? Your hormones are asking for help.",
+    "Perimenopause is a process. Consistency smooths it.",
+    "Your body is changing. Give it the tools to adapt.",
   ],
   metabolism: [
     "Your metabolism is listening. Give it what it needs.",
@@ -190,19 +205,40 @@ export const CURIOSITY_NOTIFICATIONS: Record<string, string[]> = {
     "Your insulin sensitivity improves with every day.",
     "Metabolic health is built in the boring moments.",
   ],
-  sport: [
-    "Recovery starts now. Your muscles are waiting.",
-    "Performance is built between sessions.",
-    "Your VO2 max has opinions about today.",
-    "Inflammation slows recovery. You can fix that.",
-    "Today's supplement is tomorrow's PR.",
+  digestion: [
+    "Your gut microbiome is hungry. Feed it fiber.",
+    "Bloating isn't normal. It's a signal.",
+    "70% of your immune system lives in your gut.",
+    "Regularity is built daily, not weekly.",
+    "Your gut-brain axis is listening.",
   ],
-  immune: [
-    "Your immune system runs on what you give it today.",
-    "70% of immunity lives in your gut. Feed it.",
-    "Vitamin D levels drop fast without daily intake.",
-    "Your white blood cells need reinforcements.",
-    "Prevention beats cure. Every single time.",
+  focus: [
+    "Your brain's best hours are ahead. Don't leave them behind.",
+    "Mental fog? Your acetylcholine levels might be low.",
+    "Sharp focus requires specific fuel. Daily.",
+    "That scattered feeling has a biological fix.",
+    "Cognitive clarity isn't luck. It's nutrition.",
+  ],
+  cycle: [
+    "Your hormones need consistency. Today matters.",
+    "Hormonal balance isn't automatic. It's built daily.",
+    "Your cycle depends on what you do between cycles.",
+    "Balance starts with showing up. Even today.",
+    "Your endocrine system is listening.",
+  ],
+  fertility: [
+    "Egg quality improves with consistent micronutrient support.",
+    "Your future baby needs you to show up today.",
+    "Fertility is a 90-day game. Every day counts.",
+    "Folate, iron, DHA — your body is stocking up.",
+    "Preparation is the best gift you can give.",
+  ],
+  antiaging: [
+    "Free radicals are damaging your cells right now.",
+    "Your skin's collagen production depends on what you take.",
+    "Aging is optional at the cellular level.",
+    "Antioxidants work best when taken consistently.",
+    "Your cells are renewing. Give them the building blocks.",
   ],
 };
 
@@ -251,21 +287,90 @@ export const GOAL_METRICS: Record<string, GoalMetric[]> = {
       { value: '3+', label: '3+ (survival mode)', emoji: '🆘' },
     ] },
   ],
-  sleep: [
+  stress: [
+    { id: 'baseline_tension', label: 'Baseline tension', question: 'Rate your resting tension level — jaw, shoulders, chest', type: 'score', lowLabel: 'Tight & clenched', highLabel: 'Fully relaxed', icon: 'Leaf', color: '#7B8FC4' },
+    { id: 'stress_triggers', label: 'Trigger response', question: 'When something stressful happened, how quickly did you recover?', type: 'choice', icon: 'Wind', color: '#8B6BB8', options: [
+      { value: 'fast', label: 'Recovered in minutes', emoji: '😌' },
+      { value: 'moderate', label: 'Took 30+ min', emoji: '😟' },
+      { value: 'slow', label: 'Lingered for hours', emoji: '😰' },
+      { value: 'none', label: 'No stressful events', emoji: '✨' },
+    ] },
     { id: 'sleep_onset', label: 'Sleep onset', question: 'How long did it take you to fall asleep?', type: 'choice', icon: 'Clock', color: '#7B8FC4', options: [
       { value: '<10', label: 'Under 10 min', emoji: '😴' },
       { value: '10-20', label: '10–20 min', emoji: '🙂' },
       { value: '20-45', label: '20–45 min', emoji: '😕' },
       { value: '45+', label: 'Over 45 min', emoji: '😩' },
     ] },
-    { id: 'sleep_continuity', label: 'Sleep continuity', question: 'How many times did you wake during the night?', type: 'choice', icon: 'Eye', color: '#C4857A', options: [
-      { value: '0', label: 'Slept through completely', emoji: '😴' },
-      { value: '1', label: 'Once (fell back quickly)', emoji: '👁️' },
-      { value: '2-3', label: '2–3 times', emoji: '😣' },
-      { value: '4+', label: '4+ times or long waking', emoji: '😵' },
+    { id: 'emotional_regulation', label: 'Emotional regulation', question: 'Did you overreact to something that normally wouldn\'t bother you?', type: 'score', lowLabel: 'Multiple overreactions', highLabel: 'Emotionally stable', icon: 'Shield', color: '#5A8A6F' },
+  ],
+  pain: [
+    { id: 'pain_level', label: 'Pain intensity', question: 'Rate your overall pain level today', type: 'score', lowLabel: 'Severe, debilitating', highLabel: 'No pain at all', icon: 'Activity', color: '#E57373' },
+    { id: 'joint_stiffness', label: 'Joint stiffness', question: 'How stiff were your joints upon waking?', type: 'choice', icon: 'Shield', color: '#5A8A6F', options: [
+      { value: 'none', label: 'Moved freely', emoji: '✨' },
+      { value: 'mild', label: 'Mild stiffness, gone in minutes', emoji: '🙂' },
+      { value: 'moderate', label: 'Stiff for 30+ min', emoji: '😕' },
+      { value: 'severe', label: 'Stiff most of the day', emoji: '😣' },
     ] },
-    { id: 'sleep_depth', label: 'Perceived depth', question: 'Rate how deep and restorative your sleep felt', type: 'score', lowLabel: 'Light & restless', highLabel: 'Deep & restorative', icon: 'Moon', color: '#7B8FC4' },
-    { id: 'morning_readiness', label: 'Morning readiness', question: 'Could you function immediately upon waking — no brain fog?', type: 'score', lowLabel: 'Groggy for hours', highLabel: 'Clear from the start', icon: 'Sunrise', color: '#FFB74D' },
+    { id: 'mobility', label: 'Mobility', question: 'Could you perform daily activities without pain limiting you?', type: 'score', lowLabel: 'Very limited', highLabel: 'Full range of motion', icon: 'Activity', color: '#5A8A6F' },
+    { id: 'inflammation_signs', label: 'Inflammation signs', question: 'Any swelling, redness, or warmth in joints today?', type: 'choice', icon: 'Flame', color: '#E87C6F', options: [
+      { value: 'none', label: 'No signs', emoji: '✨' },
+      { value: 'mild', label: 'Slight swelling', emoji: '😐' },
+      { value: 'moderate', label: 'Noticeable inflammation', emoji: '😮‍💨' },
+      { value: 'severe', label: 'Significant swelling/heat', emoji: '😣' },
+    ] },
+  ],
+  menopause: [
+    { id: 'hot_flashes', label: 'Hot flashes', question: 'How many hot flashes did you experience today?', type: 'choice', icon: 'Flame', color: '#E87C6F', options: [
+      { value: 'none', label: 'None', emoji: '✨' },
+      { value: '1-2', label: '1–2 mild ones', emoji: '🙂' },
+      { value: '3-5', label: '3–5 moderate', emoji: '😮‍💨' },
+      { value: '6+', label: '6+ or severe', emoji: '😣' },
+    ] },
+    { id: 'mood_stability', label: 'Mood stability', question: 'Rate your emotional stability today', type: 'score', lowLabel: 'Very volatile', highLabel: 'Steady and calm', icon: 'Heart', color: '#C4857A' },
+    { id: 'sleep_quality_meno', label: 'Night sweats & sleep', question: 'Did night sweats or temperature changes disrupt your sleep?', type: 'choice', icon: 'Moon', color: '#7B8FC4', options: [
+      { value: 'none', label: 'Slept through fine', emoji: '😴' },
+      { value: 'mild', label: 'Woke once, fell back', emoji: '😐' },
+      { value: 'moderate', label: 'Multiple disruptions', emoji: '😕' },
+      { value: 'severe', label: 'Barely slept', emoji: '😩' },
+    ] },
+    { id: 'bone_joint', label: 'Bone & joint comfort', question: 'Any new aches, stiffness, or bone discomfort?', type: 'score', lowLabel: 'Significant discomfort', highLabel: 'Feeling strong', icon: 'Shield', color: '#5A8A6F' },
+  ],
+  metabolism: [
+    { id: 'post_meal_energy', label: 'Post-meal glucose', question: 'After your largest meal, did you crash or stay stable?', type: 'choice', icon: 'Utensils', color: '#FFB74D', options: [
+      { value: 'crashed', label: 'Needed to nap', emoji: '😴' },
+      { value: 'sluggish', label: 'Felt sluggish for 30+ min', emoji: '😮‍💨' },
+      { value: 'mild', label: 'Mild dip, recovered fast', emoji: '🙂' },
+      { value: 'stable', label: 'No dip — stayed sharp', emoji: '⚡' },
+    ] },
+    { id: 'hunger_signal', label: 'Hunger signals', question: 'Were your hunger signals predictable and gradual today?', type: 'choice', icon: 'Activity', color: '#E57373', options: [
+      { value: 'erratic', label: 'Sudden, intense cravings', emoji: '🔥' },
+      { value: 'somewhat', label: 'Somewhat unpredictable', emoji: '〰️' },
+      { value: 'gradual', label: 'Gradual, easy to manage', emoji: '📊' },
+      { value: 'barely', label: 'Barely thought about food', emoji: '✨' },
+    ] },
+    { id: 'sugar_craving', label: 'Sugar cravings', question: 'Rate the intensity of sugar or carb cravings today', type: 'score', lowLabel: 'Intense, hard to resist', highLabel: 'No cravings at all', icon: 'Cookie', color: '#D4A853' },
+    { id: 'bloating_gi', label: 'GI comfort', question: 'Any bloating, gas, or digestive discomfort after eating?', type: 'score', lowLabel: 'Very uncomfortable', highLabel: 'Completely comfortable', icon: 'Activity', color: '#81C784' },
+  ],
+  digestion: [
+    { id: 'bloating', label: 'Bloating', question: 'How bloated did you feel today?', type: 'choice', icon: 'Activity', color: '#81C784', options: [
+      { value: 'none', label: 'No bloating at all', emoji: '✨' },
+      { value: 'mild', label: 'Slight after meals', emoji: '😐' },
+      { value: 'moderate', label: 'Noticeable discomfort', emoji: '😮‍💨' },
+      { value: 'severe', label: 'Painful bloating', emoji: '😣' },
+    ] },
+    { id: 'regularity', label: 'Regularity', question: 'How was your bowel regularity today?', type: 'choice', icon: 'Clock', color: '#5A8A6F', options: [
+      { value: 'regular', label: 'Regular and comfortable', emoji: '✨' },
+      { value: 'slightly_off', label: 'Slightly off', emoji: '😐' },
+      { value: 'irregular', label: 'Irregular or strained', emoji: '😕' },
+      { value: 'problematic', label: 'Very problematic', emoji: '😣' },
+    ] },
+    { id: 'gut_comfort', label: 'Gut comfort', question: 'Rate your overall digestive comfort today', type: 'score', lowLabel: 'Very uncomfortable', highLabel: 'Completely comfortable', icon: 'Leaf', color: '#81C784' },
+    { id: 'food_tolerance', label: 'Food tolerance', question: 'Did any foods cause discomfort that normally wouldn\'t?', type: 'choice', icon: 'Utensils', color: '#FFB74D', options: [
+      { value: 'none', label: 'Tolerated everything fine', emoji: '✨' },
+      { value: 'mild', label: 'One food caused mild issues', emoji: '🤔' },
+      { value: 'several', label: 'Multiple sensitivities', emoji: '😕' },
+      { value: 'many', label: 'Most foods caused issues', emoji: '😣' },
+    ] },
   ],
   focus: [
     { id: 'deep_work', label: 'Deep work capacity', question: 'What was your longest uninterrupted focus block today?', type: 'choice', icon: 'Target', color: '#4A90D9', options: [
@@ -284,39 +389,7 @@ export const GOAL_METRICS: Record<string, GoalMetric[]> = {
     ] },
     { id: 'afternoon_cognition', label: 'PM clarity', question: 'Was your thinking as sharp at 4pm as it was at 10am?', type: 'score', lowLabel: 'Significantly worse', highLabel: 'Just as sharp', icon: 'Cloud', color: '#8A8A8A' },
   ],
-  stress: [
-    { id: 'baseline_tension', label: 'Baseline tension', question: 'Rate your resting tension level — jaw, shoulders, chest', type: 'score', lowLabel: 'Tight & clenched', highLabel: 'Fully relaxed', icon: 'Leaf', color: '#7B8FC4' },
-    { id: 'stress_triggers', label: 'Trigger response', question: 'When something stressful happened, how quickly did you recover?', type: 'choice', icon: 'Wind', color: '#8B6BB8', options: [
-      { value: 'fast', label: 'Recovered in minutes', emoji: '😌' },
-      { value: 'moderate', label: 'Took 30+ min', emoji: '😟' },
-      { value: 'slow', label: 'Lingered for hours', emoji: '😰' },
-      { value: 'none', label: 'No stressful events', emoji: '✨' },
-    ] },
-    { id: 'sleep_anxiety', label: 'Pre-sleep mind', question: 'Could you quiet your mind before bed, or did thoughts race?', type: 'choice', icon: 'Moon', color: '#5A8A6F', options: [
-      { value: 'quiet', label: 'Mind was calm', emoji: '😌' },
-      { value: 'some', label: 'Some thoughts, manageable', emoji: '😐' },
-      { value: 'racing', label: 'Racing thoughts', emoji: '🌀' },
-      { value: 'couldnt', label: 'Couldn\'t stop thinking', emoji: '😣' },
-    ] },
-    { id: 'emotional_regulation', label: 'Emotional regulation', question: 'Did you overreact to something that normally wouldn\'t bother you?', type: 'score', lowLabel: 'Multiple overreactions', highLabel: 'Emotionally stable', icon: 'Shield', color: '#5A8A6F' },
-  ],
-  metabolism: [
-    { id: 'post_meal_energy', label: 'Post-meal glucose', question: 'After your largest meal, did you crash or stay stable?', type: 'choice', icon: 'Utensils', color: '#FFB74D', options: [
-      { value: 'crashed', label: 'Needed to nap', emoji: '😴' },
-      { value: 'sluggish', label: 'Felt sluggish for 30+ min', emoji: '😮‍💨' },
-      { value: 'mild', label: 'Mild dip, recovered fast', emoji: '🙂' },
-      { value: 'stable', label: 'No dip — stayed sharp', emoji: '⚡' },
-    ] },
-    { id: 'hunger_signal', label: 'Hunger signals', question: 'Were your hunger signals predictable and gradual today?', type: 'choice', icon: 'Activity', color: '#E57373', options: [
-      { value: 'erratic', label: 'Sudden, intense cravings', emoji: '🔥' },
-      { value: 'somewhat', label: 'Somewhat unpredictable', emoji: '〰️' },
-      { value: 'gradual', label: 'Gradual, easy to manage', emoji: '📊' },
-      { value: 'barely', label: 'Barely thought about food', emoji: '✨' },
-    ] },
-    { id: 'sugar_craving', label: 'Sugar cravings', question: 'Rate the intensity of sugar or carb cravings today', type: 'score', lowLabel: 'Intense, hard to resist', highLabel: 'No cravings at all', icon: 'Cookie', color: '#D4A853' },
-    { id: 'bloating_gi', label: 'GI comfort', question: 'Any bloating, gas, or digestive discomfort after eating?', type: 'score', lowLabel: 'Very uncomfortable', highLabel: 'Completely comfortable', icon: 'Activity', color: '#81C784' },
-  ],
-  hormones: [
+  cycle: [
     { id: 'mood_volatility', label: 'Mood volatility', question: 'How many noticeable mood swings did you have today?', type: 'choice', icon: 'Heart', color: '#C4857A', options: [
       { value: 'none', label: 'Steady all day', emoji: '✨' },
       { value: '1-2', label: '1–2 shifts', emoji: '🔄' },
@@ -332,37 +405,32 @@ export const GOAL_METRICS: Record<string, GoalMetric[]> = {
     ] },
     { id: 'skin_breakout', label: 'Skin & breakouts', question: 'Rate your skin clarity — new breakouts, oiliness, dryness', type: 'score', lowLabel: 'Active breakout', highLabel: 'Clear & balanced', icon: 'Sparkles', color: '#FFB74D' },
   ],
-  sport: [
-    { id: 'recovery_readiness', label: 'Recovery readiness', question: 'Could you train at full intensity right now?', type: 'score', lowLabel: 'Body says no', highLabel: 'Completely ready', icon: 'RotateCcw', color: '#5A8A6F' },
-    { id: 'training_load', label: 'Training load', question: 'What did you train today?', type: 'choice', icon: 'Dumbbell', color: '#4A90D9', options: [
-      { value: 'rest', label: 'Full rest day', emoji: '🛋️' },
-      { value: 'light', label: 'Active recovery / mobility', emoji: '🧘' },
-      { value: 'moderate', label: 'Moderate session', emoji: '🏃' },
-      { value: 'intense', label: 'High intensity / heavy lifts', emoji: '🔥' },
+  fertility: [
+    { id: 'supplement_timing', label: 'Supplement timing', question: 'Did you take your fertility supplements at the recommended time?', type: 'choice', icon: 'Clock', color: '#D4768A', options: [
+      { value: 'perfect', label: 'Perfect timing', emoji: '✨' },
+      { value: 'close', label: 'Within 1 hour', emoji: '🙂' },
+      { value: 'off', label: 'Significantly off schedule', emoji: '😕' },
+      { value: 'missed', label: 'Missed entirely', emoji: '😣' },
     ] },
-    { id: 'doms', label: 'DOMS severity', question: 'Rate your delayed onset muscle soreness from recent sessions', type: 'score', lowLabel: 'Can barely move', highLabel: 'No soreness', icon: 'Activity', color: '#FFB74D' },
-    { id: 'perceived_exertion', label: 'RPE output', question: 'Did today\'s training feel harder or easier than it should?', type: 'choice', icon: 'TrendingUp', color: '#D4A853', options: [
-      { value: 'harder', label: 'Felt much harder than expected', emoji: '😩' },
-      { value: 'slightly_harder', label: 'Slightly harder', emoji: '😤' },
-      { value: 'normal', label: 'Felt about right', emoji: '💪' },
-      { value: 'easier', label: 'Felt easier than expected', emoji: '🚀' },
+    { id: 'energy_fertility', label: 'Overall energy', question: 'Rate your energy and vitality today', type: 'score', lowLabel: 'Exhausted', highLabel: 'Full of energy', icon: 'Zap', color: '#D4A853' },
+    { id: 'stress_level', label: 'Stress level', question: 'Rate your stress and anxiety level today', type: 'score', lowLabel: 'Very stressed', highLabel: 'Calm and relaxed', icon: 'Leaf', color: '#7B8FC4' },
+    { id: 'body_signals', label: 'Body signals', question: 'Any unusual symptoms — nausea, tenderness, cramping?', type: 'choice', icon: 'Activity', color: '#C4857A', options: [
+      { value: 'none', label: 'Feeling normal', emoji: '✨' },
+      { value: 'mild', label: 'Mild symptoms', emoji: '😐' },
+      { value: 'moderate', label: 'Noticeable symptoms', emoji: '😮‍💨' },
+      { value: 'significant', label: 'Significant symptoms', emoji: '😣' },
     ] },
   ],
-  immune: [
-    { id: 'symptom_check', label: 'Symptom check', question: 'Any signs of illness — sore throat, sniffles, fatigue, headache?', type: 'choice', icon: 'Thermometer', color: '#E57373', options: [
-      { value: 'none', label: 'Completely clear', emoji: '✨' },
-      { value: 'vague', label: 'Something feels off', emoji: '🤔' },
-      { value: 'mild', label: 'Mild symptoms present', emoji: '🤧' },
-      { value: 'sick', label: 'Actively fighting something', emoji: '🤒' },
+  antiaging: [
+    { id: 'skin_quality', label: 'Skin quality', question: 'Rate your skin\'s glow, hydration, and firmness today', type: 'score', lowLabel: 'Dull and dry', highLabel: 'Glowing and firm', icon: 'Sparkles', color: '#C9956B' },
+    { id: 'energy_vitality', label: 'Vitality', question: 'Rate your overall sense of vitality and youthfulness', type: 'score', lowLabel: 'Feeling old and tired', highLabel: 'Vibrant and youthful', icon: 'Zap', color: '#D4A853' },
+    { id: 'recovery_speed', label: 'Recovery speed', question: 'How quickly do you bounce back from physical exertion?', type: 'choice', icon: 'RotateCcw', color: '#5A8A6F', options: [
+      { value: 'fast', label: 'Recover quickly', emoji: '✨' },
+      { value: 'normal', label: 'Normal recovery', emoji: '🙂' },
+      { value: 'slow', label: 'Slow to recover', emoji: '😕' },
+      { value: 'very_slow', label: 'Very slow, lingering fatigue', emoji: '😣' },
     ] },
-    { id: 'recovery_speed', label: 'Recovery speed', question: 'If you felt run down recently, are you bouncing back?', type: 'choice', icon: 'RotateCcw', color: '#4A90D9', options: [
-      { value: 'fine', label: 'Haven\'t been run down', emoji: '💪' },
-      { value: 'fast', label: 'Recovering fast', emoji: '📈' },
-      { value: 'slow', label: 'Slow to recover', emoji: '🐢' },
-      { value: 'worse', label: 'Getting worse', emoji: '📉' },
-    ] },
-    { id: 'joint_inflammation', label: 'Joint & inflammation', question: 'Rate any joint stiffness, swelling, or inflammatory pain', type: 'score', lowLabel: 'Significant pain', highLabel: 'No inflammation', icon: 'Flame', color: '#C4857A' },
-    { id: 'vitality_rating', label: 'Overall vitality', question: 'Rate your body\'s overall resilience and strength today', type: 'score', lowLabel: 'Fragile & vulnerable', highLabel: 'Robust & strong', icon: 'Shield', color: '#81C784' },
+    { id: 'joint_flexibility', label: 'Joint flexibility', question: 'Rate your joint comfort and flexibility today', type: 'score', lowLabel: 'Stiff and creaky', highLabel: 'Flexible and comfortable', icon: 'Activity', color: '#81C784' },
   ],
 };
 

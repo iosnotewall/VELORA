@@ -20,13 +20,15 @@ const Colors = {
 
   category: {
     energy: '#D4A853',
-    sleep: '#7B8FC4',
-    hormones: '#C4857A',
-    sport: '#5A8A6F',
-    immune: '#4A90D9',
-    focus: '#8B6BB8',
-    metabolism: '#D4A853',
     stress: '#7B8FC4',
+    pain: '#5A8A6F',
+    menopause: '#E87C6F',
+    metabolism: '#E8A838',
+    digestion: '#81C784',
+    focus: '#8B6BB8',
+    cycle: '#C4857A',
+    fertility: '#D4768A',
+    antiaging: '#C9956B',
   } as Record<string, string>,
 
   tabActive: '#1A1F3C',
