@@ -143,9 +143,9 @@ export default function GoalScreen() {
                 outputRange: [Colors.border, categoryColor],
               });
 
-              const borderWidth = selectionAnims[globalIndex].interpolate({
+              const shadowOpacity = selectionAnims[globalIndex].interpolate({
                 inputRange: [0, 1],
-                outputRange: [1, 2.5],
+                outputRange: [0, 0.18],
               });
 
               return (
@@ -167,7 +167,12 @@ export default function GoalScreen() {
                         {
                           backgroundColor: bgColor,
                           borderColor: borderColor,
-                          borderWidth: borderWidth,
+                          borderWidth: 1.5,
+                          shadowColor: categoryColor,
+                          shadowOpacity: shadowOpacity,
+                          shadowRadius: 8,
+                          shadowOffset: { width: 0, height: 2 },
+                          elevation: isSelected ? 4 : 0,
                         },
                       ]}
                     >
@@ -232,7 +237,7 @@ const styles = StyleSheet.create({
   },
   card: {
     borderRadius: 18,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: Colors.border,
     paddingTop: 16,
     paddingBottom: 18,
