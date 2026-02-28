@@ -40,7 +40,7 @@ export default function LoveItScreen() {
   }, []);
 
   const handleContinue = useCallback(() => {
-    router.push('/onboarding/snapshot' as any);
+    router.push('/onboarding/reviews' as any);
   }, [router]);
 
   return (
