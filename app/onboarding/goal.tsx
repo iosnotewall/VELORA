@@ -23,11 +23,8 @@ export default function GoalScreen() {
   const { updateState } = useAppState();
   const [selected, setSelected] = useState<string>('');
 
-  const scaleAnims = useRef(GOALS.map(() => new Animated.Value(1))).current;
   const rowOpacity = useRef(Array.from({ length: ROW_COUNT }, () => new Animated.Value(0))).current;
   const rowSlide = useRef(Array.from({ length: ROW_COUNT }, () => new Animated.Value(30))).current;
-  const selectionAnims = useRef(GOALS.map(() => new Animated.Value(0))).current;
-  const checkAnims = useRef(GOALS.map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
     const animations = Array.from({ length: ROW_COUNT }, (_, rowIndex) =>
@@ -49,57 +46,10 @@ export default function GoalScreen() {
     Animated.stagger(120, animations).start();
   }, []);
 
-  const handleSelect = useCallback((goalId: string, index: number) => {
+  const handleSelect = useCallback((goalId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-
-    const prevIndex = GOALS.findIndex(g => g.id === selected);
-    if (prevIndex >= 0 && prevIndex !== index) {
-      Animated.parallel([
-        Animated.timing(selectionAnims[prevIndex], {
-          toValue: 0,
-          duration: 250,
-          easing: Easing.out(Easing.cubic),
-          useNativeDriver: false,
-        }),
-        Animated.timing(checkAnims[prevIndex], {
-          toValue: 0,
-          duration: 150,
-          useNativeDriver: Platform.OS !== 'web',
-        }),
-      ]).start();
-    }
-
     setSelected(goalId);
-
-    Animated.sequence([
-      Animated.timing(scaleAnims[index], {
-        toValue: 0.93,
-        duration: 80,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-      Animated.spring(scaleAnims[index], {
-        toValue: 1,
-        damping: 10,
-        stiffness: 200,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-    ]).start();
-
-    Animated.parallel([
-      Animated.timing(selectionAnims[index], {
-        toValue: 1,
-        duration: 350,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: false,
-      }),
-      Animated.spring(checkAnims[index], {
-        toValue: 1,
-        damping: 12,
-        stiffness: 200,
-        useNativeDriver: Platform.OS !== 'web',
-      }),
-    ]).start();
-  }, [selected, scaleAnims, selectionAnims, checkAnims]);
+  }, []);
 
   const handleContinue = useCallback(() => {
     updateState({ goal: selected });
@@ -128,51 +78,28 @@ export default function GoalScreen() {
             ]}
           >
             {row.map((goal) => {
-              const globalIndex = GOALS.findIndex(g => g.id === goal.id);
               const IconComponent = ICON_MAP[goal.icon];
               const isSelected = selected === goal.id;
               const categoryColor = Colors.category[goal.id] || Colors.navy;
 
-              const bgColor = selectionAnims[globalIndex].interpolate({
-                inputRange: [0, 1],
-                outputRange: [Colors.white, categoryColor + '12'],
-              });
-
-              const borderColor = selectionAnims[globalIndex].interpolate({
-                inputRange: [0, 1],
-                outputRange: [Colors.border, categoryColor],
-              });
-
-              const shadowOpacity = selectionAnims[globalIndex].interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, 0.18],
-              });
-
               return (
-                <Animated.View
-                  key={goal.id}
-                  style={{
-                    width: CARD_WIDTH,
-                    transform: [{ scale: scaleAnims[globalIndex] }],
-                  }}
-                >
+                <View key={goal.id} style={{ width: CARD_WIDTH }}>
                   <TouchableOpacity
-                    onPress={() => handleSelect(goal.id, globalIndex)}
+                    onPress={() => handleSelect(goal.id)}
                     activeOpacity={0.8}
                     testID={`goal-${goal.id}`}
                   >
-                    <Animated.View
+                    <View
                       style={[
                         styles.card,
-                        {
-                          backgroundColor: bgColor,
-                          borderColor: borderColor,
-                          borderWidth: 1.5,
+                        isSelected && {
+                          backgroundColor: categoryColor + '12',
+                          borderColor: categoryColor,
                           shadowColor: categoryColor,
-                          shadowOpacity: shadowOpacity,
+                          shadowOpacity: 0.18,
                           shadowRadius: 8,
                           shadowOffset: { width: 0, height: 2 },
-                          elevation: isSelected ? 4 : 0,
+                          elevation: 4,
                         },
                       ]}
                     >
@@ -180,31 +107,19 @@ export default function GoalScreen() {
                         <View style={[styles.iconCircle, { backgroundColor: categoryColor + '18' }]}>
                           {IconComponent && <IconComponent size={24} color={categoryColor} strokeWidth={2.2} />}
                         </View>
-                        <Animated.View
-                          style={[
-                            styles.checkBadge,
-                            {
-                              backgroundColor: categoryColor,
-                              opacity: checkAnims[globalIndex],
-                              transform: [{
-                                scale: checkAnims[globalIndex].interpolate({
-                                  inputRange: [0, 1],
-                                  outputRange: [0.3, 1],
-                                }),
-                              }],
-                            },
-                          ]}
-                        >
-                          <Check size={12} color={Colors.white} strokeWidth={3} />
-                        </Animated.View>
+                        {isSelected && (
+                          <View style={[styles.checkBadge, { backgroundColor: categoryColor }]}>
+                            <Check size={12} color={Colors.white} strokeWidth={3} />
+                          </View>
+                        )}
                       </View>
                       <Text style={[styles.cardLabel, isSelected && { color: categoryColor }]} numberOfLines={2}>
                         {goal.label}
                       </Text>
                       <Text style={styles.cardSub} numberOfLines={2}>{goal.sub}</Text>
-                    </Animated.View>
+                    </View>
                   </TouchableOpacity>
-                </Animated.View>
+                </View>
               );
             })}
           </Animated.View>
