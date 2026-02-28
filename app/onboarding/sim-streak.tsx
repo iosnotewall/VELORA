@@ -3,15 +3,18 @@ import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import LottieView from 'lottie-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import PrimaryButton from '@/components/PrimaryButton';
 
 const WEEK_DAYS = ['su', 'mo', 'tu', 'we', 'th', 'fr', 'sa'];
+const useNative = Platform.OS !== 'web';
 
 export default function SimStreakScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const lottieRef = useRef<LottieView>(null);
 
   const today = new Date();
   const todayDayIndex = today.getDay();
@@ -26,8 +29,6 @@ export default function SimStreakScreen() {
   const firePulse = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    const useNative = Platform.OS !== 'web';
-
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
     Animated.sequence([
@@ -80,9 +81,19 @@ export default function SimStreakScreen() {
         <View style={styles.fireSection}>
           <Animated.View style={[styles.fireGlow, { transform: [{ scale: firePulse }] }]} />
           <Animated.View style={{ opacity: fireAnim, transform: [{ scale: fireScale }] }}>
-            <Animated.Text style={[styles.fireEmoji, { transform: [{ scale: firePulse }] }]}>
-              🔥
-            </Animated.Text>
+            {Platform.OS !== 'web' ? (
+              <LottieView
+                ref={lottieRef}
+                source={require('@/assets/animations/Fire.json')}
+                autoPlay
+                loop
+                style={styles.lottieAnimation}
+              />
+            ) : (
+              <Animated.Text style={[styles.fireEmoji, { transform: [{ scale: firePulse }] }]}>
+                🔥
+              </Animated.Text>
+            )}
           </Animated.View>
         </View>
 
@@ -146,6 +157,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center' as const,
     marginBottom: 16,
     position: 'relative' as const,
+    width: 140,
+    height: 140,
   },
   fireGlow: {
     position: 'absolute' as const,
@@ -153,6 +166,10 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 65,
     backgroundColor: 'rgba(212,128,58,0.08)',
+  },
+  lottieAnimation: {
+    width: 120,
+    height: 120,
   },
   fireEmoji: {
     fontSize: 72,

@@ -360,7 +360,7 @@ export default function SupplementTimingScreen() {
     }).start();
 
     setTimeout(() => {
-      router.push('/onboarding/sim-checkin' as any);
+      router.push('/onboarding/sim-notification' as any);
     }, 1200);
   }, [suggestedTimes, updateState, router]);
 
@@ -373,7 +373,7 @@ export default function SupplementTimingScreen() {
       : [{ productId: 'default', productName: 'Your supplements', time: timeStr }];
 
     updateState({ supplementTimes: times, routineTime: timeStr });
-    router.push('/onboarding/sim-checkin' as any);
+    router.push('/onboarding/sim-notification' as any);
   }, [selectedHour, selectedMinute, allProducts, updateState, router]);
 
   const fadeSlide = (anim: Animated.Value, dist = 20) => ({

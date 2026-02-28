@@ -2,12 +2,14 @@ import React, { useEffect, useRef, useCallback } from 'react';
 import { View, Text, StyleSheet, Animated, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Leaf, Pill, Hourglass, Flame } from 'lucide-react-native';
+import { Pill, Hourglass, Flame, TrendingUp } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
 import { useAppState } from '@/hooks/useAppState';
 import { GOALS, COMMITMENT_OPTIONS, FREQUENCY_OPTIONS } from '@/constants/content';
 import PrimaryButton from '@/components/PrimaryButton';
+
+const useNative = Platform.OS !== 'web';
 
 export default function SnapshotScreen() {
   const router = useRouter();
@@ -16,7 +18,7 @@ export default function SnapshotScreen() {
 
   const goalData = GOALS.find(g => g.id === goal);
   const commitOption = COMMITMENT_OPTIONS.find(c => c.id === commitmentLevel);
-  const freqOption = FREQUENCY_OPTIONS.find(f => f.value === frequency);
+  const goalColor = Colors.category[goal] || Colors.blue;
 
   const consistencyDays = frequency || 3;
   const commitPercent = commitOption ? (commitOption.value / 4) * 100 : 50;
@@ -36,14 +38,14 @@ export default function SnapshotScreen() {
 
   useEffect(() => {
     Animated.sequence([
-      Animated.timing(headerAnim, { toValue: 1, duration: 500, useNativeDriver: Platform.OS !== 'web' }),
-      Animated.timing(subtitleAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(headerAnim, { toValue: 1, duration: 500, useNativeDriver: useNative }),
+      Animated.timing(subtitleAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
       Animated.stagger(150, [
-        Animated.spring(card1Anim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 130 }),
-        Animated.spring(card2Anim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 130 }),
-        Animated.spring(card3Anim, { toValue: 1, useNativeDriver: Platform.OS !== 'web', damping: 18, stiffness: 130 }),
+        Animated.spring(card1Anim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 130 }),
+        Animated.spring(card2Anim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 130 }),
+        Animated.spring(card3Anim, { toValue: 1, useNativeDriver: useNative, damping: 18, stiffness: 130 }),
       ]),
-      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: Platform.OS !== 'web' }),
+      Animated.timing(btnAnim, { toValue: 1, duration: 400, useNativeDriver: useNative }),
     ]).start();
 
     Animated.stagger(300, [
@@ -58,74 +60,97 @@ export default function SnapshotScreen() {
     transform: [{ translateY: anim.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }],
   });
 
-  const consistencyLabel = consistencyDays <= 2 ? 'low' : consistencyDays <= 5 ? 'moderate' : 'high';
-  const commitLabel = commitPercent <= 25 ? 'low' : commitPercent <= 75 ? 'moderate' : 'high';
-
   const handleContinue = useCallback(() => {
     router.push('/onboarding/notification' as any);
   }, [router]);
+
+  const consistencyColor = consistencyDays <= 2 ? Colors.warning : consistencyDays <= 5 ? Colors.gold : Colors.success;
+  const absorptionColor = absorptionRate <= 50 ? Colors.warning : absorptionRate <= 75 ? Colors.gold : Colors.success;
+  const commitColor = commitPercent <= 25 ? Colors.warning : commitPercent <= 75 ? Colors.gold : goalColor;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top + 24, paddingBottom: Math.max(insets.bottom, 20) }]}>
       <View style={styles.content}>
         <Animated.View style={fadeSlide(headerAnim)}>
-          <View style={styles.headerIconWrap}>
-            <Leaf size={24} color={Colors.blue} strokeWidth={2} />
+          <View style={[styles.headerBadge, { backgroundColor: goalColor + '12' }]}>
+            <TrendingUp size={14} color={goalColor} strokeWidth={2.5} />
+            <Text style={[styles.headerBadgeText, { color: goalColor }]}>
+              {goalData?.label || 'Your goal'}
+            </Text>
           </View>
-          <Text style={styles.headline}>your personalized{'\n'}supplement snapshot</Text>
+          <Text style={styles.headline}>your supplement{'\n'}snapshot</Text>
         </Animated.View>
 
         <Animated.Text style={[styles.subtitle, fadeSlide(subtitleAnim)]}>
-          based on your answers, here's where you're at:
+          based on your answers, here's where you're starting
         </Animated.Text>
 
         <Animated.View style={[styles.card, fadeSlide(card1Anim)]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardIconWrap}>
-              <Pill size={18} color={Colors.blue} strokeWidth={2} />
+          <View style={styles.cardTop}>
+            <View style={[styles.cardIconWrap, { backgroundColor: consistencyColor + '12' }]}>
+              <Pill size={18} color={consistencyColor} strokeWidth={2} />
             </View>
-            <Text style={styles.cardTitle}>current consistency</Text>
-          </View>
-          <View style={styles.barContainer}>
-            <View style={styles.barLabels}>
-              <Text style={[styles.barLabel, consistencyDays <= 3 && styles.barLabelActive]}>low</Text>
-              <Text style={[styles.barLabel, consistencyDays > 3 && styles.barLabelActive]}>high</Text>
-            </View>
-            <View style={styles.barTrack}>
-              <Animated.View style={[styles.barFill, styles.barFillWarm, { width: bar1Width.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+            <View style={styles.cardTitleArea}>
+              <Text style={styles.cardTitle}>current consistency</Text>
+              <Text style={[styles.cardStat, { color: consistencyColor }]}>{consistencyDays}/7 days</Text>
             </View>
           </View>
-          <Text style={styles.cardStat}>{consistencyDays}/7 days</Text>
+          <View style={styles.barTrack}>
+            <Animated.View style={[styles.barFill, {
+              backgroundColor: consistencyColor,
+              width: bar1Width.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            }]} />
+          </View>
+          <View style={styles.barLabels}>
+            <Text style={styles.barLabel}>rarely</Text>
+            <Text style={styles.barLabel}>daily</Text>
+          </View>
         </Animated.View>
 
         <Animated.View style={[styles.card, fadeSlide(card2Anim)]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardIconWrap}>
-              <Hourglass size={18} color={Colors.gold} strokeWidth={2} />
+          <View style={styles.cardTop}>
+            <View style={[styles.cardIconWrap, { backgroundColor: absorptionColor + '12' }]}>
+              <Hourglass size={18} color={absorptionColor} strokeWidth={2} />
             </View>
-            <Text style={styles.cardTitle}>estimated absorption rate</Text>
+            <View style={styles.cardTitleArea}>
+              <Text style={styles.cardTitle}>estimated absorption</Text>
+              <Text style={styles.cardDescription}>
+                based on {productCount} supplement{productCount > 1 ? 's' : ''} & routine
+              </Text>
+            </View>
           </View>
-          <Text style={styles.cardDescription}>based on {productCount} supplement{productCount > 1 ? 's' : ''} &amp; your routine</Text>
-          <Text style={styles.cardBigStat}>{absorptionRate}%</Text>
+          <View style={styles.bigStatRow}>
+            <Text style={[styles.bigStat, { color: absorptionColor }]}>{absorptionRate}</Text>
+            <Text style={[styles.bigStatUnit, { color: absorptionColor }]}>%</Text>
+          </View>
+          <View style={styles.barTrack}>
+            <Animated.View style={[styles.barFill, {
+              backgroundColor: absorptionColor,
+              width: bar2Width.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            }]} />
+          </View>
         </Animated.View>
 
         <Animated.View style={[styles.card, fadeSlide(card3Anim)]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.cardIconWrap}>
-              <Flame size={18} color={Colors.warning} strokeWidth={2} />
+          <View style={styles.cardTop}>
+            <View style={[styles.cardIconWrap, { backgroundColor: commitColor + '12' }]}>
+              <Flame size={18} color={commitColor} strokeWidth={2} />
             </View>
-            <Text style={styles.cardTitle}>commitment level</Text>
-          </View>
-          <View style={styles.barContainer}>
-            <View style={styles.barLabels}>
-              <Text style={[styles.barLabel, commitPercent <= 50 && styles.barLabelActive]}>low</Text>
-              <Text style={[styles.barLabel, commitPercent > 50 && styles.barLabelActive]}>high</Text>
-            </View>
-            <View style={styles.barTrack}>
-              <Animated.View style={[styles.barFill, styles.barFillBlue, { width: bar3Width.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }) }]} />
+            <View style={styles.cardTitleArea}>
+              <Text style={styles.cardTitle}>commitment level</Text>
+              <Text style={[styles.cardStat, { color: commitColor }]}>{Math.round(commitPercent)}%</Text>
             </View>
           </View>
-          <Text style={styles.cardStat}>{Math.round(commitPercent)}%</Text>
+          <View style={styles.barTrack}>
+            <Animated.View style={[styles.barFill, {
+              backgroundColor: commitColor,
+              width: bar3Width.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+            }]} />
+          </View>
+          <View style={styles.barLabels}>
+            <Text style={styles.barLabel}>low</Text>
+            <Text style={styles.barLabel}>extremely</Text>
+          </View>
         </Animated.View>
       </View>
 
@@ -139,28 +164,35 @@ export default function SnapshotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F9FC',
+    backgroundColor: '#FAF7F2',
     paddingHorizontal: 20,
   },
   content: {
     flex: 1,
     paddingTop: 16,
   },
-  headerIconWrap: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: Colors.softBlue,
+  headerBadge: {
+    flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    marginBottom: 8,
+    alignSelf: 'flex-start' as const,
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginBottom: 12,
+  },
+  headerBadgeText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    letterSpacing: 0.3,
   },
   headline: {
     fontFamily: Fonts.heading,
-    fontSize: 26,
+    fontSize: 28,
     color: Colors.navy,
-    lineHeight: 34,
+    lineHeight: 36,
     marginBottom: 8,
+    letterSpacing: -0.3,
   },
   subtitle: {
     fontFamily: Fonts.body,
@@ -171,79 +203,85 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: Colors.white,
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 18,
     marginBottom: 12,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
+    shadowColor: '#8A7A68',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: 'rgba(138,122,104,0.06)',
   },
-  cardHeader: {
+  cardTop: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    gap: 10,
-    marginBottom: 10,
+    gap: 12,
+    marginBottom: 14,
   },
   cardIconWrap: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: '#F0F2F8',
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
+  },
+  cardTitleArea: {
+    flex: 1,
   },
   cardTitle: {
     fontFamily: Fonts.heading,
     fontSize: 15,
     color: Colors.navy,
+    letterSpacing: -0.1,
   },
   cardDescription: {
     fontFamily: Fonts.body,
-    fontSize: 13,
-    color: Colors.mediumGray,
-    marginBottom: 6,
-  },
-  cardBigStat: {
-    fontFamily: Fonts.heading,
-    fontSize: 32,
-    color: Colors.navy,
-  },
-  cardStat: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 13,
-    color: Colors.darkGray,
-    marginTop: 6,
-  },
-  barContainer: {
-    gap: 4,
-  },
-  barLabels: {
-    flexDirection: 'row' as const,
-    justifyContent: 'space-between' as const,
-  },
-  barLabel: {
-    fontFamily: Fonts.body,
     fontSize: 12,
     color: Colors.mediumGray,
+    marginTop: 2,
   },
-  barLabelActive: {
-    fontFamily: Fonts.bodySemiBold,
-    color: Colors.darkGray,
+  cardStat: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 13,
+    marginTop: 2,
+  },
+  bigStatRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'baseline' as const,
+    marginBottom: 10,
+    paddingLeft: 50,
+  },
+  bigStat: {
+    fontFamily: Fonts.heading,
+    fontSize: 40,
+    letterSpacing: -1,
+  },
+  bigStatUnit: {
+    fontFamily: Fonts.heading,
+    fontSize: 20,
+    marginLeft: 2,
   },
   barTrack: {
-    height: 8,
-    backgroundColor: '#EAECF0',
-    borderRadius: 4,
+    height: 6,
+    backgroundColor: Colors.lightGray,
+    borderRadius: 3,
     overflow: 'hidden' as const,
   },
   barFill: {
     height: '100%',
-    borderRadius: 4,
+    borderRadius: 3,
   },
-  barFillWarm: {
-    backgroundColor: '#E8A55A',
+  barLabels: {
+    flexDirection: 'row' as const,
+    justifyContent: 'space-between' as const,
+    marginTop: 6,
   },
-  barFillBlue: {
-    backgroundColor: Colors.blue,
+  barLabel: {
+    fontFamily: Fonts.body,
+    fontSize: 11,
+    color: Colors.mediumGray,
   },
   footer: {
     paddingTop: 12,

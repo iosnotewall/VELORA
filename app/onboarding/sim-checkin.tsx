@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, Animated, PanResponder, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, TrendingUp, Clock, Coffee, Zap, Activity, Shield, Heart, Moon, Flame, Brain, Leaf, Sparkles, Target, Cloud, Sun, Thermometer, Circle, RotateCcw } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
@@ -11,7 +11,11 @@ import type { GoalMetric, ChoiceOption } from '@/constants/content';
 import { useAppState } from '@/hooks/useAppState';
 import PrimaryButton from '@/components/PrimaryButton';
 
-const SCORE_OPTIONS = [1, 2, 3, 4, 5];
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const SLIDER_WIDTH = SCREEN_WIDTH - 96;
+const SLIDER_TRACK_HEIGHT = 6;
+const THUMB_SIZE = 32;
+const useNative = Platform.OS !== 'web';
 
 const SCORE_LABELS: Record<number, string> = {
   1: 'Rough',
@@ -21,48 +25,148 @@ const SCORE_LABELS: Record<number, string> = {
   5: 'Great',
 };
 
-function ScoreInput({
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
+  Sunrise: Sun,
+  BatteryLow: Zap,
+  Activity: Activity,
+  Coffee: Coffee,
+  Leaf: Leaf,
+  Wind: Cloud,
+  Clock: Clock,
+  Shield: Shield,
+  Heart: Heart,
+  Moon: Moon,
+  Flame: Flame,
+  Brain: Brain,
+  Sparkles: Sparkles,
+  Target: Target,
+  Cloud: Cloud,
+  Sun: Sun,
+  Thermometer: Thermometer,
+  Circle: Circle,
+  RotateCcw: RotateCcw,
+  Zap: Zap,
+  Lightbulb: Sparkles,
+  Utensils: Coffee,
+  Cookie: Circle,
+  Star: Sparkles,
+  TrendingUp: TrendingUp,
+};
+
+function SliderInput({
   metric,
   value,
   onSelect,
+  goalColor,
 }: {
   metric: GoalMetric;
   value: number;
   onSelect: (score: number) => void;
+  goalColor: string;
 }) {
+  const sliderAnim = useRef(new Animated.Value(value > 0 ? (value - 1) / 4 : 0)).current;
+  const [currentVal, setCurrentVal] = useState(value);
+  const lastHapticVal = useRef(value);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (_, gestureState) => {
+        const touchX = gestureState.x0 - 48;
+        const fraction = Math.max(0, Math.min(1, touchX / SLIDER_WIDTH));
+        const score = Math.round(fraction * 4) + 1;
+        const snappedFraction = (score - 1) / 4;
+        sliderAnim.setValue(snappedFraction);
+        setCurrentVal(score);
+        onSelect(score);
+        if (score !== lastHapticVal.current) {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          lastHapticVal.current = score;
+        }
+      },
+      onPanResponderMove: (_, gestureState) => {
+        const touchX = gestureState.x0 + gestureState.dx - 48;
+        const fraction = Math.max(0, Math.min(1, touchX / SLIDER_WIDTH));
+        const score = Math.round(fraction * 4) + 1;
+        const snappedFraction = (score - 1) / 4;
+        sliderAnim.setValue(snappedFraction);
+        if (score !== lastHapticVal.current) {
+          setCurrentVal(score);
+          onSelect(score);
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          lastHapticVal.current = score;
+        }
+      },
+      onPanResponderRelease: () => {
+        const score = lastHapticVal.current;
+        const snappedFraction = (score - 1) / 4;
+        Animated.spring(sliderAnim, {
+          toValue: snappedFraction,
+          useNativeDriver: false,
+          damping: 20,
+          stiffness: 300,
+        }).start();
+      },
+    })
+  ).current;
+
+  const thumbLeft = sliderAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, SLIDER_WIDTH - THUMB_SIZE],
+  });
+
+  const fillWidth = sliderAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0%', '100%'],
+  });
+
+  const accentColor = metric.color;
+
   return (
-    <View style={scoreStyles.container}>
-      <View style={scoreStyles.row}>
-        {SCORE_OPTIONS.map((score) => {
-          const isSelected = value === score;
-          return (
-            <TouchableOpacity
-              key={score}
-              onPress={() => onSelect(score)}
-              activeOpacity={0.7}
-              style={[
-                scoreStyles.button,
-                isSelected && { backgroundColor: metric.color, borderColor: metric.color },
-              ]}
-            >
-              <Text style={[
-                scoreStyles.buttonText,
-                isSelected && scoreStyles.buttonTextActive,
-              ]}>
-                {score}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
-      <View style={scoreStyles.labels}>
-        <Text style={scoreStyles.labelText}>{metric.lowLabel}</Text>
-        {value > 0 && (
-          <Text style={[scoreStyles.selectedLabel, { color: metric.color }]}>
-            {SCORE_LABELS[value]}
-          </Text>
+    <View style={sliderStyles.container}>
+      <View style={sliderStyles.valueRow}>
+        {currentVal > 0 ? (
+          <>
+            <Text style={[sliderStyles.valueNumber, { color: accentColor }]}>{currentVal}</Text>
+            <Text style={[sliderStyles.valueLabel, { color: accentColor }]}>{SCORE_LABELS[currentVal]}</Text>
+          </>
+        ) : (
+          <Text style={sliderStyles.valuePlaceholder}>slide to rate</Text>
         )}
-        <Text style={scoreStyles.labelText}>{metric.highLabel}</Text>
+      </View>
+
+      <View style={sliderStyles.trackContainer} {...panResponder.panHandlers}>
+        <View style={sliderStyles.track}>
+          <Animated.View style={[sliderStyles.trackFill, { width: fillWidth, backgroundColor: accentColor }]} />
+        </View>
+
+        {[1, 2, 3, 4, 5].map((dot) => (
+          <View
+            key={dot}
+            style={[
+              sliderStyles.tickDot,
+              { left: ((dot - 1) / 4) * (SLIDER_WIDTH - 4) },
+              currentVal >= dot && { backgroundColor: accentColor },
+            ]}
+          />
+        ))}
+
+        <Animated.View style={[
+          sliderStyles.thumb,
+          {
+            left: thumbLeft,
+            backgroundColor: currentVal > 0 ? accentColor : Colors.mediumGray,
+            shadowColor: accentColor,
+          },
+        ]}>
+          <View style={sliderStyles.thumbInner} />
+        </Animated.View>
+      </View>
+
+      <View style={sliderStyles.labels}>
+        <Text style={sliderStyles.labelText}>{metric.lowLabel}</Text>
+        <Text style={sliderStyles.labelText}>{metric.highLabel}</Text>
       </View>
     </View>
   );
@@ -72,12 +176,16 @@ function ChoiceInput({
   metric,
   value,
   onSelect,
+  goalColor,
 }: {
   metric: GoalMetric;
   value: string;
   onSelect: (val: string) => void;
+  goalColor: string;
 }) {
   const options = metric.options ?? [];
+  const IconComp = ICON_MAP[metric.icon] || Activity;
+
   return (
     <View style={choiceStyles.container}>
       {options.map((option: ChoiceOption) => {
@@ -89,10 +197,20 @@ function ChoiceInput({
             activeOpacity={0.7}
             style={[
               choiceStyles.option,
-              isSelected && { backgroundColor: metric.color + '12', borderColor: metric.color },
+              isSelected && {
+                backgroundColor: metric.color + '10',
+                borderColor: metric.color + '50',
+              },
             ]}
           >
-            {option.emoji && <Text style={choiceStyles.emoji}>{option.emoji}</Text>}
+            <View style={[
+              choiceStyles.radioOuter,
+              isSelected && { borderColor: metric.color },
+            ]}>
+              {isSelected && (
+                <View style={[choiceStyles.radioInner, { backgroundColor: metric.color }]} />
+              )}
+            </View>
             <Text style={[
               choiceStyles.optionText,
               isSelected && { color: Colors.navy },
@@ -120,6 +238,7 @@ export default function SimCheckinScreen() {
   const [choices, setChoices] = useState<Record<string, string>>({});
 
   const fadeAnim = useRef(new Animated.Value(1)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
 
   const currentMetric = metrics[currentStep] as GoalMetric | undefined;
   const isLastStep = currentStep >= metrics.length;
@@ -135,7 +254,6 @@ export default function SimCheckinScreen() {
 
   const handleScoreSelect = useCallback((score: number) => {
     if (!currentMetric) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setScores(prev => ({ ...prev, [currentMetric.id]: score }));
   }, [currentMetric]);
 
@@ -145,30 +263,31 @@ export default function SimCheckinScreen() {
     setChoices(prev => ({ ...prev, [currentMetric.id]: val }));
   }, [currentMetric]);
 
-  const animateTransition = useCallback((callback: () => void) => {
-    const useNative = Platform.OS !== 'web';
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 150,
-      useNativeDriver: useNative,
-    }).start(() => {
+  const animateTransition = useCallback((callback: () => void, direction: 'forward' | 'back' = 'forward') => {
+    const exitVal = direction === 'forward' ? -30 : 30;
+    const enterVal = direction === 'forward' ? 30 : -30;
+
+    Animated.parallel([
+      Animated.timing(fadeAnim, { toValue: 0, duration: 150, useNativeDriver: useNative }),
+      Animated.timing(slideAnim, { toValue: exitVal, duration: 150, useNativeDriver: useNative }),
+    ]).start(() => {
       callback();
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 250,
-        useNativeDriver: useNative,
-      }).start();
+      slideAnim.setValue(enterVal);
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: useNative }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: useNative, damping: 20, stiffness: 200 }),
+      ]).start();
     });
-  }, [fadeAnim]);
+  }, [fadeAnim, slideAnim]);
 
   const handleNext = useCallback(() => {
     if (!isCurrentAnswered()) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     if (currentStep < metrics.length - 1) {
-      animateTransition(() => setCurrentStep(prev => prev + 1));
+      animateTransition(() => setCurrentStep(prev => prev + 1), 'forward');
     } else {
-      animateTransition(() => setCurrentStep(metrics.length));
+      animateTransition(() => setCurrentStep(metrics.length), 'forward');
     }
   }, [currentStep, metrics.length, isCurrentAnswered, animateTransition]);
 
@@ -178,7 +297,7 @@ export default function SimCheckinScreen() {
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    animateTransition(() => setCurrentStep(prev => prev - 1));
+    animateTransition(() => setCurrentStep(prev => prev - 1), 'back');
   }, [currentStep, router, animateTransition]);
 
   const { updateState } = useAppState();
@@ -202,11 +321,13 @@ export default function SimCheckinScreen() {
     if (metric.type === 'choice') {
       const val = choices[metric.id];
       const opt = metric.options?.find(o => o.value === val);
-      return opt ? `${opt.emoji ?? ''} ${opt.label}` : '';
+      return opt ? opt.label : '';
     }
     const score = scores[metric.id] ?? 0;
-    return `${score}/5`;
+    return `${score}/5 — ${SCORE_LABELS[score] || ''}`;
   };
+
+  const MetricIcon = currentMetric ? (ICON_MAP[currentMetric.icon] || Activity) : Activity;
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -215,30 +336,30 @@ export default function SimCheckinScreen() {
           <ChevronLeft size={24} color={Colors.navy} />
         </TouchableOpacity>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: `${progressFraction * 100}%`, backgroundColor: goalColor }]} />
+          <Animated.View style={[styles.progressFill, { width: `${progressFraction * 100}%`, backgroundColor: goalColor }]} />
         </View>
-        <View style={styles.backPlaceholder} />
+        <Text style={styles.stepText}>
+          {isLastStep ? '' : `${currentStep + 1}/${metrics.length}`}
+        </Text>
       </View>
 
       {!isLastStep && currentMetric ? (
-        <Animated.View style={[styles.questionArea, { opacity: fadeAnim }]}>
+        <Animated.View style={[styles.questionArea, {
+          opacity: fadeAnim,
+          transform: [{ translateX: slideAnim }],
+        }]}>
           <View style={styles.topContent}>
             {currentStep === 0 && displayName ? (
-              <Text style={styles.greeting}>
-                {displayName.toLowerCase()}, let's check in
-              </Text>
-            ) : null}
-
-            <View style={styles.stepRow}>
-              <View style={[styles.goalPill, { backgroundColor: goalColor + '14' }]}>
-                <View style={[styles.goalDot, { backgroundColor: goalColor }]} />
-                <Text style={[styles.goalPillText, { color: goalColor }]}>
-                  {goalData?.label ?? 'Daily'}
+              <View style={styles.greetingRow}>
+                <View style={[styles.greetingDot, { backgroundColor: goalColor }]} />
+                <Text style={styles.greeting}>
+                  {displayName.toLowerCase()}, let's check in
                 </Text>
               </View>
-              <Text style={styles.stepCounter}>
-                {currentStep + 1} of {metrics.length}
-              </Text>
+            ) : null}
+
+            <View style={[styles.metricIconWrap, { backgroundColor: currentMetric.color + '12' }]}>
+              <MetricIcon size={22} color={currentMetric.color} strokeWidth={2} />
             </View>
 
             <Text style={styles.question}>{currentMetric.question}</Text>
@@ -249,46 +370,56 @@ export default function SimCheckinScreen() {
             </View>
           </View>
 
-          <View style={styles.inputCard}>
+          <View style={styles.inputArea}>
             {currentMetric.type === 'score' ? (
-              <ScoreInput
+              <SliderInput
                 metric={currentMetric}
                 value={scores[currentMetric.id] ?? 0}
                 onSelect={handleScoreSelect}
+                goalColor={goalColor}
               />
             ) : (
               <ChoiceInput
                 metric={currentMetric}
                 value={choices[currentMetric.id] ?? ''}
                 onSelect={handleChoiceSelect}
+                goalColor={goalColor}
               />
             )}
           </View>
         </Animated.View>
       ) : (
         <ScrollView style={styles.summaryScroll} contentContainerStyle={styles.summaryContent} showsVerticalScrollIndicator={false}>
-          <Text style={styles.summaryTitle}>your snapshot</Text>
-          <Text style={styles.summarySub}>
-            {displayName ? `here's what you logged, ${displayName.toLowerCase()}` : "here's what you logged"}
-          </Text>
-
-          <View style={styles.summaryCards}>
-            {metrics.map((metric) => (
-              <View key={metric.id} style={styles.summaryCard}>
-                <View style={styles.summaryCardLeft}>
-                  <View style={[styles.summaryDot, { backgroundColor: metric.color }]} />
-                  <View style={styles.summaryCardInfo}>
-                    <Text style={styles.summaryMetricLabel}>{metric.label}</Text>
-                  </View>
-                </View>
-                <Text style={[styles.summaryValue, { color: metric.color }]}>
-                  {getSummaryValue(metric)}
-                </Text>
-              </View>
-            ))}
+          <View style={styles.summaryHeaderSection}>
+            <View style={[styles.summaryCheckCircle, { backgroundColor: goalColor + '12', borderColor: goalColor + '30' }]}>
+              <TrendingUp size={28} color={goalColor} strokeWidth={2} />
+            </View>
+            <Text style={styles.summaryTitle}>your snapshot</Text>
+            <Text style={styles.summarySub}>
+              {displayName ? `here's what you logged, ${displayName.toLowerCase()}` : "here's what you logged"}
+            </Text>
           </View>
 
-          <View style={styles.summaryNote}>
+          <View style={styles.summaryCards}>
+            {metrics.map((metric) => {
+              const IconComp = ICON_MAP[metric.icon] || Activity;
+              return (
+                <View key={metric.id} style={styles.summaryCard}>
+                  <View style={styles.summaryCardLeft}>
+                    <View style={[styles.summaryIconWrap, { backgroundColor: metric.color + '12' }]}>
+                      <IconComp size={16} color={metric.color} strokeWidth={2} />
+                    </View>
+                    <Text style={styles.summaryMetricLabel}>{metric.label}</Text>
+                  </View>
+                  <Text style={[styles.summaryValue, { color: metric.color }]} numberOfLines={1}>
+                    {getSummaryValue(metric)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+
+          <View style={[styles.summaryNote, { borderLeftColor: goalColor }]}>
             <Text style={styles.summaryNoteTitle}>this is your daily check-in</Text>
             <Text style={styles.summaryNoteText}>
               Track these metrics every day to reveal patterns you can't feel day-to-day.
@@ -327,50 +458,84 @@ export default function SimCheckinScreen() {
   );
 }
 
-const scoreStyles = StyleSheet.create({
+const sliderStyles = StyleSheet.create({
   container: {
     width: '100%',
+    paddingHorizontal: 0,
   },
-  row: {
+  valueRow: {
     flexDirection: 'row' as const,
-    gap: 10,
-    justifyContent: 'center' as const,
-    marginBottom: 12,
+    alignItems: 'baseline' as const,
+    gap: 8,
+    marginBottom: 20,
+    minHeight: 32,
   },
-  button: {
-    width: 54,
-    height: 54,
-    borderRadius: 16,
-    backgroundColor: Colors.cream,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-  },
-  buttonText: {
+  valueNumber: {
     fontFamily: Fonts.heading,
-    fontSize: 18,
+    fontSize: 36,
+    letterSpacing: -1,
+  },
+  valueLabel: {
+    fontFamily: Fonts.headingSemiBold,
+    fontSize: 16,
+  },
+  valuePlaceholder: {
+    fontFamily: Fonts.bodyMedium,
+    fontSize: 15,
     color: Colors.mediumGray,
   },
-  buttonTextActive: {
-    color: '#FFFFFF',
+  trackContainer: {
+    height: 48,
+    justifyContent: 'center' as const,
+    position: 'relative' as const,
+  },
+  track: {
+    height: SLIDER_TRACK_HEIGHT,
+    backgroundColor: Colors.lightGray,
+    borderRadius: SLIDER_TRACK_HEIGHT / 2,
+    overflow: 'hidden' as const,
+  },
+  trackFill: {
+    height: '100%',
+    borderRadius: SLIDER_TRACK_HEIGHT / 2,
+  },
+  tickDot: {
+    position: 'absolute' as const,
+    top: (48 - SLIDER_TRACK_HEIGHT) / 2 + SLIDER_TRACK_HEIGHT / 2 - 2,
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+  },
+  thumb: {
+    position: 'absolute' as const,
+    top: (48 - THUMB_SIZE) / 2,
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  thumbInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.9)',
   },
   labels: {
     flexDirection: 'row' as const,
     justifyContent: 'space-between' as const,
-    alignItems: 'center' as const,
-    width: 54 * 5 + 10 * 4,
-    alignSelf: 'center' as const,
-    paddingHorizontal: 4,
+    marginTop: 8,
   },
   labelText: {
     fontFamily: Fonts.body,
-    fontSize: 11,
+    fontSize: 12,
     color: Colors.mediumGray,
-  },
-  selectedLabel: {
-    fontFamily: Fonts.headingSemiBold,
-    fontSize: 13,
+    maxWidth: '45%',
   },
 });
 
@@ -382,16 +547,27 @@ const choiceStyles = StyleSheet.create({
   option: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    backgroundColor: Colors.cream,
-    borderRadius: 14,
+    backgroundColor: Colors.white,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 15,
     borderWidth: 1.5,
     borderColor: Colors.border,
-    gap: 10,
+    gap: 12,
   },
-  emoji: {
-    fontSize: 18,
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: Colors.border,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
   },
   optionText: {
     fontFamily: Fonts.headingSemiBold,
@@ -419,10 +595,6 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
   },
-  backPlaceholder: {
-    width: 36,
-    height: 36,
-  },
   progressTrack: {
     flex: 1,
     height: 4,
@@ -434,55 +606,51 @@ const styles = StyleSheet.create({
     height: '100%',
     borderRadius: 100,
   },
+  stepText: {
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
+    color: Colors.mediumGray,
+    minWidth: 30,
+    textAlign: 'right' as const,
+  },
   questionArea: {
     flex: 1,
     paddingHorizontal: 24,
   },
   topContent: {
-    paddingTop: 12,
-    marginBottom: 28,
+    paddingTop: 16,
+    marginBottom: 32,
+  },
+  greetingRow: {
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
+    gap: 8,
+    marginBottom: 20,
+  },
+  greetingDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   greeting: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 15,
     color: Colors.mediumGray,
+  },
+  metricIconWrap: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
     marginBottom: 16,
-  },
-  stepRow: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    justifyContent: 'space-between' as const,
-    marginBottom: 20,
-  },
-  goalPill: {
-    flexDirection: 'row' as const,
-    alignItems: 'center' as const,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    gap: 6,
-  },
-  goalDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  goalPillText: {
-    fontFamily: Fonts.bodySemiBold,
-    fontSize: 11,
-    letterSpacing: 0.3,
-  },
-  stepCounter: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 13,
-    color: Colors.mediumGray,
   },
   question: {
     fontFamily: Fonts.heading,
     fontSize: 26,
     color: Colors.navy,
     lineHeight: 34,
-    marginBottom: 10,
+    marginBottom: 12,
     letterSpacing: -0.3,
   },
   metricTag: {
@@ -501,15 +669,15 @@ const styles = StyleSheet.create({
     color: Colors.mediumGray,
     letterSpacing: 0.3,
   },
-  inputCard: {
+  inputArea: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
-    padding: 20,
+    borderRadius: 22,
+    padding: 24,
     shadowColor: '#8A7A68',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.07,
+    shadowRadius: 20,
+    elevation: 4,
     borderWidth: 1,
     borderColor: 'rgba(138,122,104,0.06)',
   },
@@ -518,8 +686,21 @@ const styles = StyleSheet.create({
   },
   summaryContent: {
     paddingHorizontal: 24,
-    paddingTop: 12,
+    paddingTop: 20,
     paddingBottom: 20,
+  },
+  summaryHeaderSection: {
+    alignItems: 'center' as const,
+    marginBottom: 28,
+  },
+  summaryCheckCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 1,
+    marginBottom: 16,
   },
   summaryTitle: {
     fontFamily: Fonts.heading,
@@ -534,10 +715,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: Colors.mediumGray,
     textAlign: 'center' as const,
-    marginBottom: 28,
   },
   summaryCards: {
-    gap: 6,
+    gap: 8,
     marginBottom: 20,
   },
   summaryCard: {
@@ -562,13 +742,12 @@ const styles = StyleSheet.create({
     gap: 12,
     flex: 1,
   },
-  summaryDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  summaryCardInfo: {
-    flex: 1,
+  summaryIconWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
   },
   summaryMetricLabel: {
     fontFamily: Fonts.headingSemiBold,
@@ -576,9 +755,11 @@ const styles = StyleSheet.create({
     color: Colors.navy,
   },
   summaryValue: {
-    fontFamily: Fonts.heading,
-    fontSize: 14,
+    fontFamily: Fonts.bodySemiBold,
+    fontSize: 12,
     marginLeft: 8,
+    maxWidth: '40%',
+    textAlign: 'right' as const,
   },
   summaryNote: {
     backgroundColor: Colors.white,
@@ -586,7 +767,7 @@ const styles = StyleSheet.create({
     padding: 18,
     borderWidth: 1,
     borderColor: 'rgba(138,122,104,0.06)',
-    alignItems: 'center' as const,
+    borderLeftWidth: 3,
   },
   summaryNoteTitle: {
     fontFamily: Fonts.heading,
@@ -598,7 +779,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.body,
     fontSize: 13,
     color: Colors.mediumGray,
-    textAlign: 'center' as const,
     lineHeight: 20,
   },
   footer: {

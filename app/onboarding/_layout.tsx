@@ -27,6 +27,7 @@ export default function OnboardingLayout() {
       <Stack.Screen name="walkthrough" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="notify-permission" options={{ animation: 'fade' }} />
       <Stack.Screen name="supplement-timing" options={{ animation: 'fade' }} />
+      <Stack.Screen name="sim-notification" options={{ animation: 'fade', gestureEnabled: false }} />
       <Stack.Screen name="sim-checkin" options={{ animation: 'fade' }} />
       <Stack.Screen name="sim-wisdom" options={{ animation: 'fade' }} />
       <Stack.Screen name="sim-congrats" options={{ animation: 'fade' }} />
