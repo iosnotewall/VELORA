@@ -26,12 +26,19 @@ export interface OnboardingSimData {
   completedAt: string;
 }
 
+export interface SupplementTime {
+  productId: string;
+  productName: string;
+  time: string;
+}
+
 export interface AppState {
   goal: string;
   gapScore: number;
   products: string[];
   customProducts: CustomProduct[];
   routineTime: string;
+  supplementTimes: SupplementTime[];
   userName: string;
   gender: string;
   currentStreak: number;
@@ -61,6 +68,7 @@ const DEFAULT_STATE: AppState = {
   products: [],
   customProducts: [],
   routineTime: '08:00',
+  supplementTimes: [],
   userName: '',
   gender: 'female',
   currentStreak: 0,

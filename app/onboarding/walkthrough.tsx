@@ -249,7 +249,7 @@ export default function WalkthroughScreen() {
 
   const handleStart = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push('/onboarding/sim-checkin' as any);
+    router.push('/onboarding/notify-permission' as any);
   }, [router]);
 
   const fadeSlide = (anim: Animated.Value, dist = 24) => ({
