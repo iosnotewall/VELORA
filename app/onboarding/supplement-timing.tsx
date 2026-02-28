@@ -8,11 +8,10 @@ import {
   Platform,
   Dimensions,
   ScrollView,
-  PanResponder,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Clock, Sparkles, ChevronRight, HelpCircle, Check } from 'lucide-react-native';
+import { Clock, Sparkles, ChevronRight, Check, Wand2 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
@@ -23,6 +22,13 @@ import { GOALS } from '@/constants/content';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const useNative = Platform.OS !== 'web';
+
+const BG_COLOR = '#FDFBF7';
+const TEXT_PRIMARY = '#1A1F3C';
+const TEXT_SECONDARY = '#6B6B7B';
+const TEXT_TERTIARY = '#9A9AAA';
+const CARD_BG = '#FFFFFF';
+const CARD_BORDER = '#EEEAE4';
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -115,7 +121,7 @@ function WheelPicker({
 
   return (
     <View style={wheelStyles.container}>
-      <View style={[wheelStyles.highlight, { borderColor: goalColor + '40' }]} />
+      <View style={[wheelStyles.highlight, { borderColor: goalColor + '30' }]} />
       <ScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
@@ -144,8 +150,8 @@ function WheelPicker({
             >
               <Text style={[
                 wheelStyles.itemText,
-                isSelected && { color: '#FFFFFF', fontSize: 22 },
-                !isSelected && { color: 'rgba(255,255,255,0.25)' },
+                isSelected && { color: TEXT_PRIMARY, fontSize: 22 },
+                !isSelected && { color: TEXT_TERTIARY },
               ]}>
                 {formatItem(item)}
               </Text>
@@ -279,8 +285,8 @@ export default function SupplementTimingScreen() {
     setSuggestedTimes(suggestions);
 
     const greeting = displayName
-      ? `Hey ${displayName}! I'm here to help. 💊`
-      : "Hey! I'm here to help. 💊";
+      ? `Hey ${displayName}! I'm here to help.`
+      : "Hey! I'm here to help.";
 
     const productNames = allProducts.length > 0
       ? allProducts.map(p => p.name).join(', ')
@@ -384,16 +390,14 @@ export default function SupplementTimingScreen() {
   if (showAssistant) {
     return (
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        <View style={[styles.glowCircle, { backgroundColor: goalColor + '06' }]} />
-
         <ScrollView
           style={styles.assistantScroll}
           contentContainerStyle={[styles.assistantContent, { paddingBottom: Math.max(insets.bottom, 20) + 80 }]}
           showsVerticalScrollIndicator={false}
         >
           <Animated.View style={[styles.assistantHeader, { opacity: assistantAnim }]}>
-            <View style={[styles.avatarContainer, { borderColor: goalColor + '40' }]}>
-              <View style={[styles.avatar, { backgroundColor: goalColor + '15' }]}>
+            <View style={[styles.avatarContainer, { borderColor: goalColor + '30' }]}>
+              <View style={[styles.avatar, { backgroundColor: goalColor + '12' }]}>
                 <Sparkles size={24} color={goalColor} strokeWidth={2} />
               </View>
               <View style={[styles.avatarBadge, { backgroundColor: goalColor }]}>
@@ -456,7 +460,7 @@ export default function SupplementTimingScreen() {
                       <Text style={styles.suggestionName} numberOfLines={1}>{st.productName}</Text>
                       {guide && <Text style={styles.suggestionReason}>{guide.reason}</Text>}
                     </View>
-                    <View style={[styles.suggestionTime, { backgroundColor: color + '12' }]}>
+                    <View style={[styles.suggestionTime, { backgroundColor: color + '10' }]}>
                       <Text style={[styles.suggestionTimeText, { color }]}>
                         {formatTime(hour, minute)}
                       </Text>
@@ -472,7 +476,7 @@ export default function SupplementTimingScreen() {
               opacity: acceptAnim,
               transform: [{ scale: acceptAnim }],
             }]}>
-              <View style={[styles.acceptedCircle, { backgroundColor: Colors.success + '15' }]}>
+              <View style={[styles.acceptedCircle, { backgroundColor: Colors.success + '12' }]}>
                 <Check size={28} color={Colors.success} strokeWidth={2.5} />
               </View>
               <Text style={styles.acceptedText}>Schedule saved!</Text>
@@ -502,12 +506,9 @@ export default function SupplementTimingScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={[styles.glowCircle, { backgroundColor: goalColor + '06' }]} />
-      <View style={styles.glowBottom} />
-
       <View style={styles.mainContent}>
         <Animated.View style={fadeSlide(titleAnim)}>
-          <View style={[styles.clockIcon, { backgroundColor: goalColor + '15', borderColor: goalColor + '25' }]}>
+          <View style={[styles.clockIcon, { backgroundColor: goalColor + '10', borderColor: goalColor + '20' }]}>
             <Clock size={26} color={goalColor} strokeWidth={2} />
           </View>
         </Animated.View>
@@ -553,7 +554,7 @@ export default function SupplementTimingScreen() {
                 }}
                 style={[
                   styles.ampmButton,
-                  selectedHour < 12 && { backgroundColor: goalColor + '20' },
+                  selectedHour < 12 && { backgroundColor: goalColor + '15' },
                 ]}
                 activeOpacity={0.7}
               >
@@ -571,7 +572,7 @@ export default function SupplementTimingScreen() {
                 }}
                 style={[
                   styles.ampmButton,
-                  selectedHour >= 12 && { backgroundColor: goalColor + '20' },
+                  selectedHour >= 12 && { backgroundColor: goalColor + '15' },
                 ]}
                 activeOpacity={0.7}
               >
@@ -594,12 +595,20 @@ export default function SupplementTimingScreen() {
           <TouchableOpacity
             onPress={handleDontKnow}
             activeOpacity={0.7}
-            style={styles.helpButton}
+            style={[styles.helpButton, { borderColor: goalColor + '25' }]}
           >
-            <Sparkles size={16} color={goalColor} strokeWidth={2} />
-            <Text style={[styles.helpText, { color: goalColor }]}>
-              I don't know when to take my supplements
-            </Text>
+            <View style={[styles.helpIconWrap, { backgroundColor: goalColor + '10' }]}>
+              <Wand2 size={16} color={goalColor} strokeWidth={2} />
+            </View>
+            <View style={styles.helpTextWrap}>
+              <Text style={[styles.helpTitle, { color: goalColor }]}>
+                Not sure? Let AI pick for you
+              </Text>
+              <Text style={styles.helpSub}>
+                We'll analyze your stack and find the best times
+              </Text>
+            </View>
+            <ChevronRight size={16} color={goalColor} strokeWidth={2} />
           </TouchableOpacity>
         </Animated.View>
 
@@ -644,7 +653,7 @@ const wheelStyles = StyleSheet.create({
   itemText: {
     fontFamily: Fonts.heading,
     fontSize: 18,
-    color: 'rgba(255,255,255,0.25)',
+    color: TEXT_TERTIARY,
   },
 });
 
@@ -665,24 +674,7 @@ const typingStyles = StyleSheet.create({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1A2E',
-  },
-  glowCircle: {
-    position: 'absolute' as const,
-    top: -80,
-    left: -60,
-    width: 280,
-    height: 280,
-    borderRadius: 140,
-  },
-  glowBottom: {
-    position: 'absolute' as const,
-    bottom: -100,
-    right: -80,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(74,144,217,0.04)',
+    backgroundColor: BG_COLOR,
   },
   mainContent: {
     flex: 1,
@@ -701,7 +693,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: '#F1F5F9',
+    color: TEXT_PRIMARY,
     lineHeight: 40,
     letterSpacing: -0.5,
     marginBottom: 10,
@@ -709,17 +701,22 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.45)',
+    color: TEXT_SECONDARY,
     lineHeight: 24,
     marginBottom: 32,
   },
   pickerCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: CARD_BG,
     borderRadius: 24,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: CARD_BORDER,
     alignItems: 'center' as const,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   pickerRow: {
     flexDirection: 'row' as const,
@@ -730,7 +727,7 @@ const styles = StyleSheet.create({
   pickerColon: {
     fontFamily: Fonts.heading,
     fontSize: 24,
-    color: 'rgba(255,255,255,0.5)',
+    color: TEXT_SECONDARY,
     marginBottom: 4,
   },
   ampmContainer: {
@@ -741,17 +738,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: '#F5F3EF',
   },
   ampmText: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.35)',
+    color: TEXT_TERTIARY,
   },
   selectedTimeLabel: {
     fontFamily: Fonts.heading,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.6)',
+    color: TEXT_SECONDARY,
     marginTop: 12,
     letterSpacing: 0.5,
   },
@@ -763,17 +760,37 @@ const styles = StyleSheet.create({
   helpButton: {
     flexDirection: 'row' as const,
     alignItems: 'center' as const,
-    justifyContent: 'center' as const,
-    gap: 8,
+    gap: 12,
     paddingVertical: 14,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    paddingHorizontal: 16,
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  helpText: {
-    fontFamily: Fonts.bodySemiBold,
+  helpIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+  },
+  helpTextWrap: {
+    flex: 1,
+  },
+  helpTitle: {
+    fontFamily: Fonts.headingSemiBold,
     fontSize: 14,
+    marginBottom: 2,
+  },
+  helpSub: {
+    fontFamily: Fonts.body,
+    fontSize: 12,
+    color: TEXT_TERTIARY,
   },
   ctaButton: {
     height: 58,
@@ -784,7 +801,7 @@ const styles = StyleSheet.create({
     gap: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
   },
@@ -827,7 +844,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#0B1A2E',
+    borderColor: BG_COLOR,
   },
   avatarBadgeText: {
     fontFamily: Fonts.heading,
@@ -838,46 +855,56 @@ const styles = StyleSheet.create({
   assistantName: {
     fontFamily: Fonts.heading,
     fontSize: 18,
-    color: '#F1F5F9',
+    color: TEXT_PRIMARY,
     marginBottom: 4,
   },
   assistantSub: {
     fontFamily: Fonts.body,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.4)',
+    color: TEXT_TERTIARY,
   },
   messagesContainer: {
     gap: 10,
     marginBottom: 20,
   },
   messageBubble: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: CARD_BG,
     borderRadius: 18,
     borderTopLeftRadius: 6,
     paddingHorizontal: 16,
     paddingVertical: 12,
     maxWidth: '85%',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.06)',
+    borderColor: CARD_BORDER,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
+    elevation: 1,
   },
   messageText: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 15,
-    color: 'rgba(255,255,255,0.85)',
+    color: TEXT_PRIMARY,
     lineHeight: 22,
   },
   suggestionsCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: CARD_BG,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: CARD_BORDER,
     marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   suggestionsTitle: {
     fontFamily: Fonts.heading,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.85)',
+    color: TEXT_PRIMARY,
     marginBottom: 16,
   },
   suggestionRow: {
@@ -897,13 +924,13 @@ const styles = StyleSheet.create({
   suggestionName: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 13,
-    color: 'rgba(255,255,255,0.8)',
+    color: TEXT_PRIMARY,
     marginBottom: 2,
   },
   suggestionReason: {
     fontFamily: Fonts.body,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.35)',
+    color: TEXT_TERTIARY,
     lineHeight: 15,
   },
   suggestionTime: {
@@ -930,12 +957,12 @@ const styles = StyleSheet.create({
   acceptedText: {
     fontFamily: Fonts.heading,
     fontSize: 20,
-    color: '#F1F5F9',
+    color: TEXT_PRIMARY,
   },
   acceptedSub: {
     fontFamily: Fonts.body,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.45)',
+    color: TEXT_SECONDARY,
   },
   assistantFooter: {
     position: 'absolute' as const,
@@ -944,9 +971,9 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 24,
     paddingTop: 16,
-    backgroundColor: 'rgba(11,26,46,0.95)',
+    backgroundColor: BG_COLOR + 'F2',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.06)',
+    borderTopColor: CARD_BORDER,
   },
   acceptButton: {
     height: 58,
@@ -957,7 +984,7 @@ const styles = StyleSheet.create({
     gap: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
   },

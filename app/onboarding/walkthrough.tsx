@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, Platform, Dimensions, TouchableOpacit
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { Bell, ClipboardList, BarChart3, ArrowRight, ChevronRight } from 'lucide-react-native';
 import Colors from '@/constants/colors';
 import { Fonts } from '@/constants/fonts';
@@ -10,6 +11,8 @@ import { useAppState } from '@/hooks/useAppState';
 import { GOALS, GOAL_METRICS, DEFAULT_METRICS, NOTIFICATION_EXAMPLES } from '@/constants/content';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+const NOTIFICATION_SOUND_URL = 'https://cdn.pixabay.com/audio/2022/12/12/audio_e8c1b54047.mp3';
 
 const GOAL_WALKTHROUGH: Record<string, {
   notifText: string;
@@ -99,6 +102,7 @@ export default function WalkthroughScreen() {
 
   const [phase, setPhase] = useState(0);
   const useNative = Platform.OS !== 'web';
+  const soundRef = useRef<Audio.Sound | null>(null);
 
   const phase0Line1 = useRef(new Animated.Value(0)).current;
   const phase0Line2 = useRef(new Animated.Value(0)).current;
@@ -106,6 +110,7 @@ export default function WalkthroughScreen() {
   const phase0NotifSlide = useRef(new Animated.Value(-80)).current;
   const phase0Line3 = useRef(new Animated.Value(0)).current;
   const phase0Tap = useRef(new Animated.Value(0)).current;
+  const bellWiggle = useRef(new Animated.Value(0)).current;
 
   const phase1Line1 = useRef(new Animated.Value(0)).current;
   const phase1Line2 = useRef(new Animated.Value(0)).current;
@@ -132,6 +137,32 @@ export default function WalkthroughScreen() {
   const tapPulse = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync().catch(() => {});
+      }
+    };
+  }, []);
+
+  const playNotificationSound = useCallback(async () => {
+    try {
+      if (Platform.OS === 'web') return;
+      const { sound } = await Audio.Sound.createAsync(
+        { uri: NOTIFICATION_SOUND_URL },
+        { shouldPlay: true, volume: 0.6 }
+      );
+      soundRef.current = sound;
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync().catch(() => {});
+        }
+      });
+    } catch (e) {
+      console.log('[Walkthrough] Sound play error:', e);
+    }
+  }, []);
+
+  useEffect(() => {
     Animated.loop(
       Animated.sequence([
         Animated.timing(tapPulse, { toValue: 1, duration: 1500, useNativeDriver: useNative }),
@@ -139,6 +170,19 @@ export default function WalkthroughScreen() {
       ])
     ).start();
   }, []);
+
+  const startBellWiggle = useCallback(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(bellWiggle, { toValue: 1, duration: 60, useNativeDriver: useNative }),
+        Animated.timing(bellWiggle, { toValue: -1, duration: 60, useNativeDriver: useNative }),
+        Animated.timing(bellWiggle, { toValue: 1, duration: 60, useNativeDriver: useNative }),
+        Animated.timing(bellWiggle, { toValue: -1, duration: 60, useNativeDriver: useNative }),
+        Animated.timing(bellWiggle, { toValue: 0, duration: 60, useNativeDriver: useNative }),
+        Animated.delay(3000),
+      ])
+    ).start();
+  }, [bellWiggle, useNative]);
 
   const runPhase0 = useCallback(() => {
     Animated.sequence([
@@ -160,8 +204,10 @@ export default function WalkthroughScreen() {
     const hapticDelay = 400 + 600 + 600 + 500 + 800;
     setTimeout(() => {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      playNotificationSound();
+      startBellWiggle();
     }, hapticDelay);
-  }, []);
+  }, [playNotificationSound, startBellWiggle]);
 
   const runPhase1 = useCallback(() => {
     Animated.sequence([
@@ -261,6 +307,11 @@ export default function WalkthroughScreen() {
     ? Animated.multiply(crossfadeOut, crossfadeIn)
     : crossfadeIn;
 
+  const bellRotation = bellWiggle.interpolate({
+    inputRange: [-1, 0, 1],
+    outputRange: ['-15deg', '0deg', '15deg'],
+  });
+
   const progressDots = (
     <View style={styles.progressDots}>
       {[0, 1, 2, 3].map(i => (
@@ -295,11 +346,11 @@ export default function WalkthroughScreen() {
           {phase === 0 && (
             <View style={styles.phaseContent}>
               <Animated.Text style={[styles.phaseTitle, fadeSlide(phase0Line1)]}>
-                Every day, at the{'\n'}right moment
+                Never forget{'\n'}your supplements
               </Animated.Text>
 
               <Animated.Text style={[styles.phaseBody, fadeSlide(phase0Line2)]}>
-                Volera will send you a gentle nudge{'\n'}to check in on {wt.notifText}.
+                Volera sends you a gentle nudge{'\n'}exactly when you need to take them.
               </Animated.Text>
 
               <Animated.View style={[styles.notifCard, {
@@ -307,9 +358,11 @@ export default function WalkthroughScreen() {
                 transform: [{ translateY: phase0NotifSlide }],
               }]}>
                 <View style={styles.notifHeader}>
-                  <View style={[styles.notifIcon, { backgroundColor: goalColor + '20' }]}>
-                    <Bell size={14} color={goalColor} strokeWidth={2.5} />
-                  </View>
+                  <Animated.View style={{ transform: [{ rotate: bellRotation }] }}>
+                    <View style={[styles.notifIcon, { backgroundColor: goalColor + '20' }]}>
+                      <Bell size={14} color={goalColor} strokeWidth={2.5} />
+                    </View>
+                  </Animated.View>
                   <View style={styles.notifHeaderText}>
                     <Text style={styles.notifAppName}>Volera</Text>
                     <Text style={styles.notifTime}>now</Text>
@@ -319,7 +372,7 @@ export default function WalkthroughScreen() {
               </Animated.View>
 
               <Animated.Text style={[styles.phaseSubtle, fadeSlide(phase0Line3)]}>
-                Smart timing. No spam.{'\n'}Just the right nudge when it matters.
+                No spam. No noise.{'\n'}Just the right reminder at the right time.
               </Animated.Text>
 
               <Animated.View style={[styles.tapHint, {
@@ -408,7 +461,7 @@ export default function WalkthroughScreen() {
 
               <Animated.Text style={[styles.phaseBody, fadeSlide(phase3Line2)]}>
                 Your first check-in takes 30 seconds.{'\n'}
-                {goalData ? `We'll track what matters for ${goalData.feeling}.` : "We'll track what matters for your health."}
+                {goalData ? `We'll track what matters most for ${goalData.label.toLowerCase()}.` : "We'll track what matters for your health."}
               </Animated.Text>
 
               <Animated.View style={[styles.ctaContainer, fadeSlide(phase3Btn, 30)]}>
@@ -426,13 +479,7 @@ export default function WalkthroughScreen() {
         </Animated.View>
       </TouchableOpacity>
 
-      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]}>
-        {phase < 3 && (
-          <TouchableOpacity onPress={() => transitionToPhase(3)} activeOpacity={0.7}>
-            <Text style={styles.skipText}>skip intro</Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom, 20) }]} />
     </View>
   );
 }
@@ -640,10 +687,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 28,
     paddingTop: 12,
     alignItems: 'center' as const,
-  },
-  skipText: {
-    fontFamily: Fonts.bodyMedium,
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.25)',
   },
 });

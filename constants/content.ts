@@ -7,7 +7,7 @@ export const GOALS = [
   { id: 'digestion', label: 'Digestion & Gut Health', sub: 'Bloating, regularity, comfort', icon: 'Leaf' as const, feeling: 'digestively comfortable' },
   { id: 'focus', label: 'Memory & Concentration', sub: 'Think sharper, remember more', icon: 'Brain' as const, feeling: 'focused and sharp' },
   { id: 'cycle', label: 'Menstrual Cycle', sub: 'PMS, cramps, hormonal balance', icon: 'Heart' as const, feeling: 'hormonally balanced' },
-  { id: 'fertility', label: 'Fertility & Pregnancy', sub: 'Conception, prenatal, postpartum', icon: 'Star' as const, feeling: 'supported in your journey' },
+  { id: 'fertility', label: 'Fertility & Pregnancy', sub: 'Conception, prenatal, postpartum', icon: 'Star' as const, feeling: 'your fertility journey' },
   { id: 'antiaging', label: 'Anti-Aging', sub: 'Cellular health, skin, longevity', icon: 'Sparkles' as const, feeling: 'youthful and radiant' },
 ] as const;
 
@@ -116,16 +116,16 @@ export const MILESTONES: Record<string, { d7: string; d21: string; d30: string }
 };
 
 export const NOTIFICATION_EXAMPLES: Record<string, string> = {
-  energy: "Low energy this morning? Here's why it matters today.",
-  stress: "Busy day ahead? Your nervous system needs this.",
-  pain: "Stiff joints this morning? Your body is asking for help.",
-  menopause: "Hot flash season? Consistency is your best ally.",
-  metabolism: "Your metabolism is listening. Give it what it needs.",
-  digestion: "Your gut microbiome depends on what you feed it today.",
-  focus: "Your brain's best hours are ahead. Don't leave them behind.",
-  cycle: "Your hormones need consistency. Today matters.",
-  fertility: "Every day of preparation counts for your future baby.",
-  antiaging: "Your cells are aging right now. You can slow it down.",
+  energy: "You have 14 hours of energy ahead. What you do now decides how you feel at 4pm.",
+  stress: "Your cortisol is highest right now. One capsule changes how the next 8 hours feel.",
+  pain: "Your joints are stiffest in the morning. This is the exact moment supplementation matters most.",
+  menopause: "Women who supplement consistently report 47% fewer hot flashes by week 3. Today is day by day.",
+  metabolism: "Your insulin sensitivity peaks in the morning. This is the window to support your metabolism.",
+  digestion: "Your gut bacteria reset overnight. What you feed them first thing shapes your entire day.",
+  focus: "Your brain burns 20% of your energy. Give it the fuel before your sharpest hours begin.",
+  cycle: "Your hormones are rebuilding right now. Consistent support reduces PMS severity by up to 40%.",
+  fertility: "Egg quality takes 90 days to improve. Every single morning counts toward your baby.",
+  antiaging: "Your cells repaired overnight. Antioxidants taken now protect 8 hours of cellular renewal.",
 };
 
 export const ROUTINE_TIMES = [

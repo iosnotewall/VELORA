@@ -12,6 +12,13 @@ import { NOTIFICATION_EXAMPLES } from '@/constants/content';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const useNative = Platform.OS !== 'web';
 
+const BG_COLOR = '#FDFBF7';
+const TEXT_PRIMARY = '#1A1F3C';
+const TEXT_SECONDARY = '#6B6B7B';
+const TEXT_TERTIARY = '#9A9AAA';
+const CARD_BG = '#FFFFFF';
+const CARD_BORDER = '#EEEAE4';
+
 export default function NotifyPermissionScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -158,13 +165,10 @@ export default function NotifyPermissionScreen() {
 
   return (
     <View style={[styles.container, { paddingTop: insets.top }]}>
-      <View style={[styles.glowCircle, { backgroundColor: goalColor + '08' }]} />
-      <View style={styles.glowTop} />
-
       <View style={styles.content}>
         <Animated.View style={[styles.bellContainer, fadeSlide(titleAnim)]}>
           <Animated.View style={{ transform: [{ rotate: bellRotation }] }}>
-            <View style={[styles.bellCircle, { backgroundColor: goalColor + '15', borderColor: goalColor + '30' }]}>
+            <View style={[styles.bellCircle, { backgroundColor: goalColor + '12', borderColor: goalColor + '25' }]}>
               <Bell size={36} color={goalColor} strokeWidth={1.8} />
             </View>
           </Animated.View>
@@ -214,7 +218,7 @@ export default function NotifyPermissionScreen() {
             opacity: checkAnim,
             transform: [{ scale: checkScale }],
           }]}>
-            <View style={[styles.successCircle, { backgroundColor: Colors.success + '15', borderColor: Colors.success + '30' }]}>
+            <View style={[styles.successCircle, { backgroundColor: Colors.success + '12', borderColor: Colors.success + '25' }]}>
               <Text style={styles.successEmoji}>✓</Text>
             </View>
             <Animated.Text style={[styles.successText, { opacity: checkAnim }]}>
@@ -291,24 +295,7 @@ export default function NotifyPermissionScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0B1A2E',
-  },
-  glowCircle: {
-    position: 'absolute' as const,
-    top: -60,
-    right: -80,
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-  },
-  glowTop: {
-    position: 'absolute' as const,
-    bottom: -100,
-    left: -60,
-    width: 250,
-    height: 250,
-    borderRadius: 125,
-    backgroundColor: 'rgba(74,144,217,0.04)',
+    backgroundColor: BG_COLOR,
   },
   content: {
     flex: 1,
@@ -337,7 +324,7 @@ const styles = StyleSheet.create({
     alignItems: 'center' as const,
     justifyContent: 'center' as const,
     borderWidth: 2,
-    borderColor: '#0B1A2E',
+    borderColor: BG_COLOR,
   },
   bellBadgeText: {
     fontFamily: Fonts.heading,
@@ -347,7 +334,7 @@ const styles = StyleSheet.create({
   title: {
     fontFamily: Fonts.heading,
     fontSize: 30,
-    color: '#F1F5F9',
+    color: TEXT_PRIMARY,
     lineHeight: 40,
     letterSpacing: -0.5,
     marginBottom: 12,
@@ -355,7 +342,7 @@ const styles = StyleSheet.create({
   subtitle: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.5)',
+    color: TEXT_SECONDARY,
     lineHeight: 24,
     marginBottom: 28,
   },
@@ -381,20 +368,25 @@ const styles = StyleSheet.create({
   featureLabel: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.85)',
+    color: TEXT_PRIMARY,
     marginBottom: 2,
   },
   featureSub: {
     fontFamily: Fonts.body,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.35)',
+    color: TEXT_TERTIARY,
   },
   previewCard: {
-    backgroundColor: 'rgba(255,255,255,0.06)',
+    backgroundColor: CARD_BG,
     borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
+    borderColor: CARD_BORDER,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
   },
   previewHeader: {
     flexDirection: 'row' as const,
@@ -417,18 +409,18 @@ const styles = StyleSheet.create({
   previewApp: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 12,
-    color: 'rgba(255,255,255,0.6)',
+    color: TEXT_SECONDARY,
     flex: 1,
   },
   previewTime: {
     fontFamily: Fonts.body,
     fontSize: 11,
-    color: 'rgba(255,255,255,0.3)',
+    color: TEXT_TERTIARY,
   },
   previewBody: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.75)',
+    color: TEXT_PRIMARY,
     lineHeight: 20,
   },
   successContainer: {
@@ -451,7 +443,7 @@ const styles = StyleSheet.create({
   successText: {
     fontFamily: Fonts.headingSemiBold,
     fontSize: 16,
-    color: 'rgba(255,255,255,0.85)',
+    color: TEXT_PRIMARY,
   },
   footer: {
     paddingHorizontal: 28,
@@ -466,7 +458,7 @@ const styles = StyleSheet.create({
     gap: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.15,
     shadowRadius: 20,
     elevation: 8,
   },
@@ -484,17 +476,17 @@ const styles = StyleSheet.create({
   skipText: {
     fontFamily: Fonts.bodyMedium,
     fontSize: 14,
-    color: 'rgba(255,255,255,0.25)',
+    color: TEXT_TERTIARY,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.55)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center' as const,
     alignItems: 'center' as const,
     paddingHorizontal: 40,
   },
   popup: {
-    backgroundColor: 'rgba(255,255,255,0.95)',
+    backgroundColor: '#FFFFFF',
     borderRadius: 20,
     paddingTop: 24,
     width: '100%',

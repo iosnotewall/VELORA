@@ -355,14 +355,17 @@ export default function TrajectoryScreen() {
             </TouchableOpacity>
 
             <Text style={styles.modalLabel}>HOW VOLERA WORKS</Text>
-            <Text style={styles.modalTitle}>Three steps to{"\n"}real results.</Text>
+            <Text style={styles.modalTitle}>You already bought{"\n"}the supplements.</Text>
 
             <View style={styles.stepsContainer}>
               <View style={styles.stepRow}>
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>1</Text>
                 </View>
-                <Text style={styles.stepText}>Check in daily</Text>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>We remind you</Text>
+                  <Text style={styles.stepSub}>So you never forget again</Text>
+                </View>
               </View>
 
               <View style={styles.stepDivider} />
@@ -371,7 +374,10 @@ export default function TrajectoryScreen() {
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>2</Text>
                 </View>
-                <Text style={styles.stepText}>Stay on track</Text>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>You take 30 seconds</Text>
+                  <Text style={styles.stepSub}>Quick check-in, no effort</Text>
+                </View>
               </View>
 
               <View style={styles.stepDivider} />
@@ -380,13 +386,16 @@ export default function TrajectoryScreen() {
                 <View style={styles.stepNumber}>
                   <Text style={styles.stepNumberText}>3</Text>
                 </View>
-                <Text style={styles.stepText}>See proof in 30 days</Text>
+                <View style={styles.stepTextWrap}>
+                  <Text style={styles.stepText}>You see it working</Text>
+                  <Text style={styles.stepSub}>Real proof in 30 days</Text>
+                </View>
               </View>
             </View>
 
             <View style={styles.modalFooterWrap}>
               <Text style={styles.modalFooterText}>
-                You don't need better supplements.{"\n"}You need <Text style={styles.modalFooterBold}>fewer missed days.</Text>
+                The supplements you already own{"\n"}<Text style={styles.modalFooterBold}>only work if you take them.</Text>
               </Text>
             </View>
 
@@ -617,11 +626,20 @@ const styles = StyleSheet.create({
     marginVertical: 12,
     marginLeft: 46,
   },
+  stepTextWrap: {
+    flex: 1,
+  },
   stepText: {
     fontFamily: Fonts.bodySemiBold,
     fontSize: 15,
     color: '#FFFFFF',
     fontWeight: '600' as const,
+  },
+  stepSub: {
+    fontFamily: Fonts.body,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.4)',
+    marginTop: 2,
   },
   modalFooterWrap: {
     width: '100%' as const,
